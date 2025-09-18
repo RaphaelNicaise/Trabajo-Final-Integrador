@@ -1,0 +1,38 @@
+# Node.js
+node_modules/
+dist/
+build/
+.env
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Docker
+*.tar
+docker-compose.override.yml
+
+# Vite / React
+.vite/
+.cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Tailwind
+*.css.map
+
+# Otros archivos temporales
+*.tmp
+*.swp
