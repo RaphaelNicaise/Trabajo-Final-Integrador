@@ -17,29 +17,17 @@ services:
     container_name: ecommerce_backend
     ports:
       - "4000:4000"
+    volumes:
+      - ./backend:/app:cached      # sincroniza código host ↔ contenedor
+      - /app/node_modules    # evita sobrescribir node_modules del contenedor
     environment:
-      - NODE_ENV=development
-      - MONGO_URI=mongodb://mongo:27017/ecommerce
+      NODE_ENV: development
+      MONGO_URI: mongodb://mongo:27017/ecommerce
     depends_on:
       - mongo
     networks:
       - app_network
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
 
-  frontend:
-    build: ./frontend
-    container_name: ecommerce_frontend
-    ports:
-      - "5173:80"
-    depends_on:
-      - backend
-    networks:
-      - app_network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
 
 volumes:
   mongo_data:
