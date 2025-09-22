@@ -1,10 +1,25 @@
 import express from 'express';
+import paymentsRoutes from "./routes/payments";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.get('/', (req, res) => {
-  res.send('Backend corriendo 🚀');
+app.use(express.json());
+
+app.get('/', (req, res) => res.send('Backend MercadoPago corriendo 🚀'));
+
+app.use("/payments", paymentsRoutes);
+
+app.get('/success', (req, res) => {
+  res.send('<h1>¡Pago exitoso!</h1>');
+});
+
+app.get('/failure', (req, res) => {
+  res.send('<h1>Pago fallido</h1>');
+});
+
+app.get('/pending', (req, res) => {
+  res.send('<h1>Pago pendiente</h1>');
 });
 
 app.listen(PORT, () => {

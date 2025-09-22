@@ -23,6 +23,9 @@ services:
     environment:
       NODE_ENV: development
       MONGO_URI: mongodb://mongo:27017/ecommerce
+      TEST_MP_ACCESS_TOKEN: ${TEST_MP_ACCESS_TOKEN}
+      TEST_MP_PUBLIC_KEY: ${TEST_MP_PUBLIC_KEY}
+      PORT: 4000
     depends_on:
       - mongo
     networks:
