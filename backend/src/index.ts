@@ -6,7 +6,12 @@ const PORT = process.env.PORT || 4000;
 
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('Backend MercadoPago corriendo 🚀'));
+app.get('/', (req, res) => res.send('Backend corriendo 🚀'));
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK'});
+});
 
 app.use("/payments", paymentsRoutes);
 
