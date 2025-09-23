@@ -182,7 +182,7 @@ Componentes sugeridos:
 
 ## 7. CI/CD (GitHub Actions) — flujo recomendado
 
-- `test.yml` (Pull Request / push): ejecuta tests backend y frontend (unit + linters).
+- `test.yml` (Pull Request / push): ejecuta tests backend y frontend (unit, integration y e2e).
 - `deploy.yml` (push a main):
     - actions/checkout
     - SSH hacia EC2 (`appleboy/ssh-action`) y ejecutar:
@@ -306,6 +306,9 @@ export async function getTenantConnection(dbName: string) {
     return conn;
 }
 ```
+
+## 14. Testing
+En el proyecto se implementarán pruebas unitarias, de integración y end-to-end (e2e) tanto para el backend como para el frontend. Estas pruebas podrán ejecutarse localmente durante el desarrollo y también se correrán automáticamente en el pipeline de CI/CD cada vez que se realice un push o merge a la rama `main`. Esto asegura que los cambios sean validados antes de desplegar, manteniendo la calidad y estabilidad del sistema.
 
 ---
 
