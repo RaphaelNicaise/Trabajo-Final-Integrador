@@ -13,7 +13,10 @@ services:
       - app_network
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+
     container_name: backend
     ports:
       - "4000:4000"
@@ -32,7 +35,9 @@ services:
       - app_network
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     container_name: frontend
     ports:
       - "5173:5173" # puerto por defecto de Vite
