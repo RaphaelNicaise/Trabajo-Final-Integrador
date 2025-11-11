@@ -1,5 +1,5 @@
 import express from 'express';
-import paymentsRoutes from "./routes/payments";
+import paymentsRoutes from "./modules/payments/routes/payments";
 
 const app = express();
 const PORT = process.env.PORT || 4000;

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { preferenceClient } from "../config/mercadopago";
+import { preferenceClient } from "../../../config/mercadopago";
 
 const router = Router();
 
