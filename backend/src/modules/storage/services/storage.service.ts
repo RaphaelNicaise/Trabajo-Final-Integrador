@@ -1,7 +1,8 @@
 import { 
   S3Client, 
   PutObjectCommand, 
-  CreateBucketCommand 
+  CreateBucketCommand,
+  PutBucketPolicyCommand
 } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
@@ -37,11 +38,9 @@ export class StorageService {
       console.log(`✅ Bucket '${BUCKET_NAME}' creado exitosamente.`);
       
     } catch (error: any) {
-      // Manejo de errores tolerante
       const errorCode = error.name;
       const statusCode = error.$metadata?.httpStatusCode;
 
-      // Si el error es que ya existe (409 o códigos específicos), es un éxito.
       if (
         errorCode === 'BucketAlreadyOwnedByYou' || 
         errorCode === 'BucketAlreadyExists' ||
@@ -49,11 +48,33 @@ export class StorageService {
       ) {
         console.log(`Servicio de almacenamiento listo. Bucket '${BUCKET_NAME}'.`);
       } else {
-        // Si es otro error (incluso el 400), solo mostramos advertencia.
-        // NO lanzamos 'throw error' para evitar que el servidor se caiga al iniciar.
+
         console.warn(`Advertencia: No se pudo crear el bucket (Code: ${statusCode}). Verifique MinIO.`);
         console.error('Detalle S3:', error.message);
       }
+    }
+
+    try {
+        const policy = {
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Sid: "PublicReadGetObject",
+              Effect: "Allow",
+              Principal: "*",
+              Action: "s3:GetObject",
+              Resource: `arn:aws:s3:::${BUCKET_NAME}/*`
+            }
+        ]
+      };
+
+      await s3Client.send(new PutBucketPolicyCommand({
+        Bucket: BUCKET_NAME,
+        Policy: JSON.stringify(policy)
+      }));
+
+    } catch (error: any) {
+      console.error('❌ Error:', error.message);
     }
   }
 
@@ -66,7 +87,7 @@ export class StorageService {
     const fileExtension = path.extname(file.originalname);
     const fileName = `${uuidv4()}${fileExtension}`;
     
-    const key = `${shopSlug}/products/${fileName}`;
+    const key = `${shopSlug}/${fileName}`;
 
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
