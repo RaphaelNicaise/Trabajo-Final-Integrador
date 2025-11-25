@@ -23,29 +23,32 @@ Obtiene la lista de productos en la tienda.
 x-tenant-id: <tenant_id> 
 ```
 
+Aquí tenés el bloque actualizado en `.md`, usando **form-data** y reemplazando `imageUrl` por `image` (tipo archivo):
+
+
 ## <span style="color: green;">POST</span> `/api/products`
 
 Crea un nuevo producto en la tienda.
 
 #### Headers
 ```
-x-tenant-id: <tenant_id> 
+
+x-tenant-id: <tenant_id>
+
 ```
 
-#### Body
+#### Body (form-data)
 
-```json
-{
-  "name": "Producto1",
-  "description": "Descripcion de Producto",
-  "price": 3000,
-  "stock": 1000,
-  "imageUrl": ""
-}
+| Campo        | Tipo     | Descripción                     |
+|--------------|----------|----------------------------------|
+| name         | text     | Nombre del producto             |
+| description  | text     | Descripción del producto        |
+| price        | number   | Precio del producto             |
+| stock        | number   | Cantidad en stock               |
+| image        | file     | Archivo de imagen del producto  |
+
+
 ```
-
-
-
-
----
+Content-Type: multipart/form-data
+```
 

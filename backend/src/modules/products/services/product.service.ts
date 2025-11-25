@@ -11,8 +11,6 @@ export class ProductService {
    */
   async createProduct(shopId: string, productData: Partial<IProduct>) {
     // 1. Obtener la conexión a la base de datos de ESA tienda
-    // El prefijo 'db_' es opcional, pero ayuda a organizar en Mongo.
-    // Si tu lógica es que el shopId ya es el nombre de la db, quita el prefijo.
     const dbName = `db_${shopId}`; 
     const tenantConnection = getTenantDB(dbName);
 

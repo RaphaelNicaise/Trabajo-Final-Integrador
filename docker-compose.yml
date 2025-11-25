@@ -28,6 +28,10 @@ services:
       MONGO_URI: ${MONGO_URI}
       TEST_MP_ACCESS_TOKEN: ${TEST_MP_ACCESS_TOKEN}
       TEST_MP_PUBLIC_KEY: ${TEST_MP_PUBLIC_KEY}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      S3_INTERNAL_ENDPOINT: ${S3_INTERNAL_ENDPOINT}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT}
       PORT: ${PORT}
     depends_on:
       - mongo
@@ -52,5 +56,21 @@ services:
     networks:
       - app_network
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # Consola Web
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app_network
+
 volumes:
   mongo_data:
+  minio_data:
