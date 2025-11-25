@@ -24,21 +24,16 @@ app.use('/api/products', productRoutes);
 
 const startServer = async () => {
   try {
-    // 1. Conectamos a la Base de Datos
     await connectToMongoDB();
-    // El console.log de "Conexión exitosa" ya está dentro de esa función,
-    // pero si quieres uno extra aquí, podrías ponerlo.
 
-    // 2. Iniciamos el servidor Express solo si la DB conectó bien
     app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);
     });
 
   } catch (error) {
     console.error('Error crítico al iniciar la aplicación:', error);
-    process.exit(1); // Salir si la DB falla
+    process.exit(1);
   }
-};
+}
 
-// Ejecutamos la función
 startServer();
