@@ -1,4 +1,4 @@
-import { getTenantDB } from '../../database/tenantconnection'; // Ajusta la ruta si es necesario
+import { getTenantDB } from '../../database/tenantConnection'; // Ajusta la ruta si es necesario
 import { getModelByTenant } from '../../database/modelFactory';
 import { ProductSchema, IProduct } from '../models/product.schema';
 
