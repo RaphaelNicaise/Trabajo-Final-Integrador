@@ -37,7 +37,7 @@ export class StorageService {
       
       // Intentamos crear directamente. Si ya existe, fallará con un error específico que controlaremos.
       await s3Client.send(new CreateBucketCommand({ Bucket: BUCKET_NAME }));
-      console.log(`✅ Bucket '${BUCKET_NAME}' creado exitosamente.`);
+      console.log(`Bucket '${BUCKET_NAME}' creado.`);
       
     } catch (error: any) {
       const errorCode = error.name;
@@ -76,7 +76,7 @@ export class StorageService {
       }));
 
     } catch (error: any) {
-      console.error('❌ Error:', error.message);
+      console.error('Error:', error.message);
     }
   }
 
@@ -89,7 +89,7 @@ export class StorageService {
     const fileExtension = path.extname(file.originalname);
     const fileName = `${uuidv4()}${fileExtension}`;
     
-    const key = `${shopSlug}/${fileName}`;
+    const key = `${shopSlug}/products/${fileName}`;
 
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
@@ -113,6 +113,33 @@ export class StorageService {
     }
   }
 
+    async uploadLogoShop(shopSlug: string, file: Express.Multer.File): Promise<string> {
+    
+    const fileExtension = path.extname(file.originalname);
+    const fileName = `${uuidv4()}${fileExtension}`;
+    
+    const key = `${shopSlug}/${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    });
+
+    try {
+      await s3Client.send(command);
+      
+      const publicBaseUrl = PUBLIC_ENDPOINT
+      
+      return `${publicBaseUrl}/${BUCKET_NAME}/${key}`;
+
+    } catch (error) {
+      console.error('Error subiendo imagen a MinIO:', error);
+      throw new Error('Falló la subida de la imagen');
+    }
+  }
+
   async deleteFile(fileUrl: string): Promise<void> {
     try {
       // fileUrl ejemplo: http://localhost:9000/platform-bucket/shop1/uuid.jpg
@@ -120,7 +147,7 @@ export class StorageService {
       // Separamos la URL para obtener la Key relativa (lo que está después del nombre del bucket)
       const urlParts = fileUrl.split(`${BUCKET_NAME}/`);
       
-      // Si el split funcionó correctamente, urlParts[1] debería ser: "shop1/uuid.jpg"
+      // Si el split funcionó correctamente, urlParts[1] debería ser: "shop1/products/uuid.jpg"
       if (urlParts.length >= 2) {
         const key = urlParts[1];
 
