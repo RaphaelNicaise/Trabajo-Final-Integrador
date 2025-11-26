@@ -2,8 +2,10 @@ import {
   S3Client, 
   PutObjectCommand, 
   CreateBucketCommand,
-  PutBucketPolicyCommand
+  PutBucketPolicyCommand,
+  DeleteObjectCommand
 } from '@aws-sdk/client-s3';
+
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -108,6 +110,31 @@ export class StorageService {
     } catch (error) {
       console.error('Error subiendo imagen a MinIO:', error);
       throw new Error('Falló la subida de la imagen');
+    }
+  }
+
+  async deleteFile(fileUrl: string): Promise<void> {
+    try {
+      // fileUrl ejemplo: http://localhost:9000/platform-bucket/shop1/uuid.jpg
+      
+      // Separamos la URL para obtener la Key relativa (lo que está después del nombre del bucket)
+      const urlParts = fileUrl.split(`${BUCKET_NAME}/`);
+      
+      // Si el split funcionó correctamente, urlParts[1] debería ser: "shop1/uuid.jpg"
+      if (urlParts.length >= 2) {
+        const key = urlParts[1];
+
+        const command = new DeleteObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: key
+        });
+
+        await s3Client.send(command);
+      } else {
+          console.warn(' No se pudo extraer la key de la URL para borrar:', fileUrl);
+      }
+    } catch (error) {
+      console.error('error',error);
     }
   }
 }

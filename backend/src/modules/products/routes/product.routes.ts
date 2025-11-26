@@ -11,10 +11,11 @@ const upload = multer({
 });
 
 // Definimos las rutas
-// GET /api/products (Requiere header x-tenant-id)
+// /api/products (Requieren header x-tenant-id)
 router.get('/', (req, res) => productController.getAll(req, res));
-
-// POST /api/products (Requiere header x-tenant-id)
+router.get('/:id', (req, res) => productController.getById(req, res));
 router.post('/', upload.single('image'), (req, res) => productController.create(req, res));
+router.put('/:id', upload.single('image'), (req, res) => productController.update(req, res));
+router.delete('/:id', (req, res) => productController.delete(req, res));
 
 export default router;

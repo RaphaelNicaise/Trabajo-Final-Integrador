@@ -9,60 +9,32 @@ const productService = new ProductService();
 export class ProductController {
 
   async create(req: Request, res: Response) { 
-    console.log('--- [ProductController] Iniciando creación de producto ---');
     try {
-      // 1. Validar Header
       const shopSlug = req.headers['x-tenant-id'] as string;
-      console.log('1. Header x-tenant-id recibido:', shopSlug);
 
-      if (!shopSlug) {
-        console.warn('❌ Error: Falta el header x-tenant-id');
-        return res.status(400).json({ error: 'Falta el header x-tenant-id para identificar la tienda.' });
-      }
-
-      // 2. Revisar el Body y Validar Campos Obligatorios
-      // Esto previene crashes si el body llega vacío o malformado
-      console.log('2. Datos del Body:', req.body);
+      if (!shopSlug) {return res.status(400).json({ error: 'Falta el header x-tenant-id para identificar la tienda.' });}
       
       const { name, price } = req.body || {};
       
-      if (!name) {
-        return res.status(400).json({ error: 'El campo "name" es obligatorio.' });
-      }
-      
-      // Verificamos que price exista y no sea una cadena vacía (el 0 es válido)
-      if (price === undefined || price === null || price === '') {
-        return res.status(400).json({ error: 'El campo "price" es obligatorio.' });
-      }
-
-      console.log('3. Archivo recibido (req.file):', req.file ? `Sí (${req.file.originalname})` : 'No');
+      if (!name) {return res.status(400).json({ error: 'El campo "name" es obligatorio.' });}      
+      if (price === undefined || price === null || price === '') { return res.status(400).json({ error: 'El campo "price" es obligatorio.' });}
 
       let imageUrl = null; 
 
-      // 3. Subir Imagen (solo si la validación básica pasó)
       if (req.file) {
-        console.log('--- Intentando subir imagen a MinIO/S3 ---');
         try {
           imageUrl = await storageService.uploadProductImage(shopSlug, req.file);
-          console.log('✅ Imagen subida exitosamente. URL:', imageUrl);
         } catch (uploadError) {
-          console.error('❌ Error al subir imagen:', uploadError);
-          // Decidimos fallar la creación si la imagen no se pudo subir, para mantener consistencia
           return res.status(500).json({ error: 'Error al subir la imagen al almacenamiento.' });
         }
       }
-
-      // 4. Preparar datos
+      
       const productData = {
         ...req.body,
         imageUrl: imageUrl 
       };
-      console.log('4. Datos finales a guardar en MongoDB:', productData);
 
-      // 5. Guardar en DB
-      console.log(`--- Conectando a DB tenant: ${shopSlug} ---`);
       const product = await productService.createProduct(shopSlug, productData);
-      console.log('✅ Producto creado en DB:', product._id);
       
       res.status(201).json({
         message: 'Producto creado exitosamente',
@@ -70,7 +42,6 @@ export class ProductController {
       });
 
     } catch (error: any) {
-      console.error('❌ Error CRÍTICO en [ProductController.create]:', error);
 
       if (error.code === 11000) { // error de clave duplicada de MongoDB
         return res.status(400).json({ 
@@ -103,7 +74,93 @@ export class ProductController {
       res.json(products);
 
     } catch (error: any) {
-      console.error('Error al obtener productos:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getById(req: Request, res: Response) {
+    try {
+      const shopSlug = req.headers['x-tenant-id'] as string;
+      const { id } = req.params;
+      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+      if (!id) return res.status(400).json({ error: 'Falta el ID del producto' });
+
+      const product = await productService.getProductById(shopSlug, id);
+
+      if (!product) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    try {
+      const shopSlug = req.headers['x-tenant-id'] as string;
+      const { id } = req.params; // ID del producto a editar
+
+      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+      if (!id) return res.status(400).json({ error: 'Falta el ID del producto' });
+
+      const currentProduct = await productService.getProductById(shopSlug, id);
+      if (!currentProduct) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+
+      const updateData = { ...req.body };
+
+      if (req.file) {
+        
+        const newImageUrl = await storageService.uploadProductImage(shopSlug, req.file);
+        updateData.imageUrl = newImageUrl;
+
+  
+        if (currentProduct.imageUrl) {
+            await storageService.deleteFile(currentProduct.imageUrl); 
+        }
+      }
+
+      const updatedProduct = await productService.updateProduct(shopSlug, id, updateData);
+
+      res.json({
+        message: 'Producto actualizado correctamente',
+        data: updatedProduct
+      });
+
+    } catch (error: any) {
+      console.error('Error actualizando producto:', error);
+      if (error.code === 11000) return res.status(400).json({ error: 'El nombre ya está en uso por otro producto.' });
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async delete(req: Request, res: Response) {
+    try {
+      const shopSlug = req.headers['x-tenant-id'] as string;
+      const { id } = req.params;
+
+      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+      if (!id) return res.status(400).json({ error: 'Falta el ID del producto' });
+
+      const product = await productService.getProductById(shopSlug, id);
+      
+      if (!product) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+
+      if (product.imageUrl) {
+        console.log(`Eliminando imagen asociada: ${product.imageUrl}`);
+        await storageService.deleteFile(product.imageUrl);
+      }
+
+      await productService.deleteProduct(shopSlug, id);
+
+      res.json({ message: 'Producto eliminado correctamente' });
+
+    } catch (error: any) {
+      console.error('Error eliminando producto:', error);
       res.status(500).json({ error: error.message });
     }
   }
