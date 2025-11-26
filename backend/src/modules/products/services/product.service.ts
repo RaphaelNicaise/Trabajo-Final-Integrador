@@ -4,32 +4,43 @@ import { ProductSchema, IProduct } from '../models/product.schema';
 
 export class ProductService {
 
-  /**
-   * Crea un producto en la base de datos de una tienda específica.
-   * @param shopId El identificador de la tienda (ej: 'shop_1') que será el nombre de la DB.
-   * @param productData Los datos del producto.
-   */
-  async createProduct(shopId: string, productData: Partial<IProduct>) {
-    // 1. Obtener la conexión a la base de datos de ESA tienda
-    const dbName = `db_${shopId}`; 
+  private getModel(shopSlug: string) {
+    const dbName = `db_${shopSlug}`;
     const tenantConnection = getTenantDB(dbName);
-
-    // 2. Obtener el modelo Producto vinculado a esa conexión
-    const ProductModel = getModelByTenant<IProduct>(tenantConnection, 'Product', ProductSchema);
-
-    // 3. Crear y guardar
+    return getModelByTenant<IProduct>(tenantConnection, 'Product', ProductSchema);
+  }
+  
+  async createProduct(shopSlug: string, productData: Partial<IProduct>) {
+    const ProductModel = this.getModel(shopSlug);
     const newProduct = new ProductModel(productData);
     return await newProduct.save();
   }
 
-  /**
-   * Obtiene todos los productos de una tienda específica.
-   */
-  async getProducts(shopId: string) {
-    const dbName = `db_${shopId}`;
-    const tenantConnection = getTenantDB(dbName);
-    const ProductModel = getModelByTenant<IProduct>(tenantConnection, 'Product', ProductSchema);
-
+  async getProducts(shopSlug: string) {
+    const ProductModel = this.getModel(shopSlug);
     return await ProductModel.find().sort({ createdAt: -1 });
   }
+
+  async getProductById(shopSlug: string, productId: string) {
+    const ProductModel = this.getModel(shopSlug);
+    return await ProductModel.findById(productId);
+  }
+  
+  async updateProduct(shopSlug: string, productId: string, updateData: Partial<IProduct>) {
+    const ProductModel = this.getModel(shopSlug);
+    
+    // { new: true } devuelve el documento YA actualizado
+    // { runValidators: true } asegura que no guarden precios negativos o datos raros al editar
+    return await ProductModel.findByIdAndUpdate(productId, updateData, { 
+      new: true, 
+      runValidators: true 
+    });
+  }
+
+  async deleteProduct(shopSlug: string, productId: string) {
+    const ProductModel = this.getModel(shopSlug);
+    return await ProductModel.findByIdAndDelete(productId);
+  }
+
+
 }
