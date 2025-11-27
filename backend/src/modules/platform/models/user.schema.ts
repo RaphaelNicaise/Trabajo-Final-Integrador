@@ -5,8 +5,6 @@ export interface IUser extends Document {
   name: string;
   email: string;
   passwordHash?: string; // Opcional para usuarios que entran con Google
-  googleId?: string;     // ID único de Google (sub)
-  avatar?: string;       // URL de la foto de perfil
   
   // Relación N:N - Tiendas a las que este usuario tiene acceso
   // Vital para el Dashboard "Mis Tiendas" al iniciar sesión
@@ -14,7 +12,8 @@ export interface IUser extends Document {
     tenantId: Types.ObjectId;
     slug: string;
     storeName: string;
-    role: 'owner' | 'admin' | 'manager';
+    role: 'owner' | 'admin'; // to-do Por ahora no cambia nada, pero a futuro deberia afectar permisos
+    // owner, solo el que crea, admin los que el owner agrega
   }>;
 
   validatePassword(password: string): Promise<boolean>;
@@ -39,18 +38,6 @@ const UserSchema = new Schema<IUser>({
     required: false 
   },
   
-  // ID de Google: sparse: true permite que varios usuarios tengan este campo como null (los que usan password)
-  googleId: { 
-    type: String, 
-    unique: true, 
-    sparse: true 
-  },
-  
-  avatar: { 
-    type: String,
-    default: null
-  },
-  
   // Lista de permisos sobre tiendas (a modificar)
   associatedStores: {
     type: [{
@@ -59,8 +46,7 @@ const UserSchema = new Schema<IUser>({
       storeName: { type: String },
       role: { 
         type: String, 
-        enum: ['owner', 'admin', 'manager'],
-        default: 'manager'
+        enum: ['owner', 'admin']
       }
     }],
     default: [] // Se inicia vacío explícitamente
