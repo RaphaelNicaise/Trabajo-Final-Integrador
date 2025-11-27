@@ -68,4 +68,32 @@
 
         return user.associatedStores;
     }
+        /**
+         * Actualiza los datos visuales de una tienda (no el slug ni el ownerEmail)
+         */
+        async updateShop(shopSlug: string, updateData: {
+            storeName?: string,
+            location?: string,
+            description?: string
+        }) {
+            const metaConnection = getMetaDB();
+            const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
+            // Solo permitimos modificar datos visuales, NO el slug ni el ownerEmail
+            return await TenantModel.findOneAndUpdate(
+                { slug: shopSlug },
+                updateData,
+                { new: true }
+            );
+        }
+
+        /**
+         * Elimina una tienda (Tenant) de la plataforma
+         */
+        async deleteShop(shopSlug: string) {
+            const metaConnection = getMetaDB();
+            const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
+            // Nota: En un entorno real, también deberíamos borrar la DB física y sacar la tienda del array del usuario
+            // Por ahora, borramos el Tenant
+            return await TenantModel.findOneAndDelete({ slug: shopSlug });
+        }
     }
