@@ -14,7 +14,7 @@ export class ProductController {
 
       if (!shopSlug) {return res.status(400).json({ error: 'Falta el header x-tenant-id para identificar la tienda.' });}
       
-      const { name, price } = req.body || {};
+      const { name, price, categories  } = req.body || {};
       
       if (!name) {return res.status(400).json({ error: 'El campo "name" es obligatorio.' });}      
       if (price === undefined || price === null || price === '') { return res.status(400).json({ error: 'El campo "price" es obligatorio.' });}
@@ -31,7 +31,8 @@ export class ProductController {
       
       const productData = {
         ...req.body,
-        imageUrl: imageUrl 
+        imageUrl: imageUrl,
+        categories: this.parseCategories(categories)
       };
 
       const product = await productService.createProduct(shopSlug, productData);
@@ -111,6 +112,10 @@ export class ProductController {
 
       const updateData = { ...req.body };
 
+      if (req.body.categories) {
+        updateData.categories = this.parseCategories(req.body.categories);
+      }
+
       if (req.file) {
         
         const newImageUrl = await storageService.uploadProductImage(shopSlug, req.file);
@@ -163,5 +168,23 @@ export class ProductController {
       console.error('Error eliminando producto:', error);
       res.status(500).json({ error: error.message });
     }
+  }
+
+  // metodo para parsear categorias desde el req.body
+  private parseCategories(categoriesInput: any): any[] {
+    if (!categoriesInput) return [];
+    
+    if (typeof categoriesInput === 'string') {
+        try {
+            const parsed = JSON.parse(categoriesInput);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (e) {
+            return [categoriesInput];
+        }
+        return [categoriesInput];
+    }
+    if (Array.isArray(categoriesInput)) return categoriesInput;
+    
+    return [];
   }
 }
