@@ -7,14 +7,11 @@ export const PublicNavbar = () => {
 
   return (
     <nav className="bg-[#1E1B4B] border-b border-slate-700 sticky top-0 z-50 shadow-md">
-      {/* CAMBIO: w-full para ocupar todo el ancho, px-8 para márgenes laterales */}
       <div className="w-full px-4 sm:px-8 lg:px-12">
-        {/* CAMBIO: h-24 para dar altura suficiente al logo grande */}
         <div className="flex items-center justify-between h-24">
           
           {/* 1. SECCIÓN IZQUIERDA: Logo Grande */}
           <div className="flex-shrink-0 flex items-center cursor-pointer">
-            {/* CAMBIO: Logo h-16 (64px) mucho más grande que antes */}
             <img 
               src={logoSH} 
               alt="StoreHub Logo" 
@@ -23,16 +20,14 @@ export const PublicNavbar = () => {
           </div>
 
           {/* 2. SECCIÓN CENTRAL: Buscador Corto y Centrado */}
-          {/* hidden md:flex para ocultar en móvil. flex-1 y justify-center para centrar. */}
-          <div className="hidden md:flex flex-1 justify-center px-8">
-            {/* CAMBIO: max-w-md hace el buscador más corto (aprox 450px) */}
+¡          <div className="hidden md:flex flex-1 justify-center px-8">
             <div className="relative w-full max-w-md">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-slate-400" strokeWidth={2} />
               </div>
               <input
                 type="text"
-                placeholder="Buscar tiendas..."
+                placeholder="     Buscar tiendas..."
                 className="block w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-full leading-5 bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-inner"
               />
             </div>
@@ -94,7 +89,7 @@ export const PublicNavbar = () => {
             </div>
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="    Buscar tiendas..."
               className="block w-full pl-10 pr-4 py-3 border border-slate-600 rounded-md bg-slate-800 text-white focus:ring-2 focus:ring-indigo-500"
             />
           </div>
