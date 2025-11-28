@@ -1,58 +1,65 @@
-    import { Types } from 'mongoose';
-    import { getMetaDB } from '../../database/tenantConnection';
-    import { getModelByTenant } from '../../database/modelFactory';
+import { Types } from "mongoose";
+import { getMetaDB } from "../../database/tenantConnection";
+import { getModelByTenant } from "../../database/modelFactory";
 
-    import { TenantSchema, ITenant } from '../../platform/models/tenant.schema';
-    import { UserSchema, IUser } from '../../platform/models/user.schema';
+import { TenantSchema, ITenant } from "../../platform/models/tenant.schema";
+import { UserSchema, IUser } from "../../platform/models/user.schema";
 
-
-    export class ShopService {
-
+export class ShopService {
     /**
      * Crea una tienda (Tenant) en la plataforma.
      * La base de datos física 'db_{slug}' se creará automáticamente
      * cuando se agregue el primer producto o categoría.
      */
-    async createShop(data: { 
-        userId: string, 
-        slug: string, 
-        storeName: string, 
-        ownerEmail: string,
-        location?: string,
-        description?: string
+    async createShop(data: {
+        userId: string;
+        slug: string;
+        storeName: string;
+        ownerEmail: string;
+        location?: string;
+        description?: string;
     }) {
         const { userId, slug, storeName, ownerEmail, location, description } = data;
 
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
-        const UserModel = getModelByTenant<IUser>(metaConnection, 'User', UserSchema);
+        const TenantModel = getModelByTenant<ITenant>(
+            metaConnection,
+            "Tenant",
+            TenantSchema
+        );
+        const UserModel = getModelByTenant<IUser>(
+            metaConnection,
+            "User",
+            UserSchema
+        );
 
         // 2. Validar slug
         const existingTenant = await TenantModel.findOne({ slug });
-        if (existingTenant) throw new Error('El nombre de la tienda (slug) ya está en uso.');
+        if (existingTenant)
+            throw new Error("El nombre de la tienda (slug) ya está en uso.");
 
         const newTenant = new TenantModel({
-        slug,
-        dbName: `db_${slug}`,
-        storeName,
-        ownerEmail,
-        location,
-        description,
-        members: [{ userId: new Types.ObjectId(userId), role: 'owner' }]
+            slug,
+            dbName: `db_${slug}`,
+            storeName,
+            ownerEmail,
+            location,
+            description,
+            members: [{ userId: new Types.ObjectId(userId), role: "owner" }],
         });
         await newTenant.save();
 
         await UserModel.findByIdAndUpdate(userId, {
-        $push: {
-            associatedStores: {
-            tenantId: newTenant._id,
-            slug: slug,
-            storeName: storeName,
-            role: 'owner'
-            }
-        }
+            $push: {
+                associatedStores: {
+                    tenantId: newTenant._id,
+                    slug: slug,
+                    storeName: storeName,
+                    role: "owner",
+                },
+            },
         });
-        
+
         return newTenant;
     }
 
@@ -61,39 +68,61 @@
      */
     async getUserShops(userId: string) {
         const metaConnection = getMetaDB();
-        const UserModel = getModelByTenant<IUser>(metaConnection, 'User', UserSchema);
+        const UserModel = getModelByTenant<IUser>(
+            metaConnection,
+            "User",
+            UserSchema
+        );
 
-        const user = await UserModel.findById(userId).select('associatedStores');
-        if (!user) throw new Error('Usuario no encontrado');
+        const user = await UserModel.findById(userId).select("associatedStores");
+        if (!user) throw new Error("Usuario no encontrado");
 
         return user.associatedStores;
     }
-        /**
-         * Actualiza los datos visuales de una tienda (no el slug ni el ownerEmail)
-         */
-        async updateShop(shopSlug: string, updateData: {
-            storeName?: string,
-            location?: string,
-            description?: string
-        }) {
-            const metaConnection = getMetaDB();
-            const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
-            // Solo permitimos modificar datos visuales, NO el slug ni el ownerEmail
-            return await TenantModel.findOneAndUpdate(
-                { slug: shopSlug },
-                updateData,
-                { new: true }
-            );
+    /**
+     * Actualiza los datos visuales de una tienda (no el slug ni el ownerEmail)
+     */
+    async updateShop(
+        shopSlug: string,
+        updateData: {
+            storeName?: string;
+            location?: string;
+            description?: string;
         }
-
-        /**
-         * Elimina una tienda (Tenant) de la plataforma
-         */
-        async deleteShop(shopSlug: string) {
-            const metaConnection = getMetaDB();
-            const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
-            // Nota: En un entorno real, también deberíamos borrar la DB física y sacar la tienda del array del usuario
-            // Por ahora, borramos el Tenant
-            return await TenantModel.findOneAndDelete({ slug: shopSlug });
-        }
+    ) {
+        const metaConnection = getMetaDB();
+        const TenantModel = getModelByTenant<ITenant>(
+            metaConnection,
+            "Tenant",
+            TenantSchema
+        );
+        // Solo permitimos modificar datos visuales, NO el slug ni el ownerEmail
+        return await TenantModel.findOneAndUpdate({ slug: shopSlug }, updateData, {
+            new: true,
+        });
     }
+
+    /**
+     * Elimina una tienda (Tenant) de la plataforma
+     */
+    async deleteShop(shopSlug: string) {
+        const metaConnection = getMetaDB();
+        const TenantModel = getModelByTenant<ITenant>(
+            metaConnection,
+            "Tenant",
+            TenantSchema
+        );
+        
+        return await TenantModel.findOneAndDelete({ slug: shopSlug });
+    }
+
+    async getAllShops() {
+        const metaConnection = getMetaDB();
+        const TenantModel = getModelByTenant<ITenant>(
+            metaConnection,
+            "Tenant",
+            TenantSchema
+        );
+        return await TenantModel.find();
+    }
+}
