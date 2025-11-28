@@ -6,6 +6,7 @@ export interface IProduct extends Document {
   price: number;
   stock: number;
   imageUrl?: string;
+  categories?: Schema.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,7 +34,11 @@ export const ProductSchema = new Schema<IProduct>({
   imageUrl: { 
     type: String,
     default: null
-  }
+  },
+  categories: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Category'
+  }]
 }, { 
   timestamps: true // Esto crea automáticamente createdAt y updatedAt
 });
