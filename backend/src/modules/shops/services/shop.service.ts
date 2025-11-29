@@ -1,9 +1,12 @@
 import { Types } from "mongoose";
-import { getMetaDB } from "../../database/tenantConnection";
+import { getMetaDB, getTenantDB } from "../../database/tenantConnection"; 
 import { getModelByTenant } from "../../database/modelFactory";
 
 import { TenantSchema, ITenant } from "../../platform/models/tenant.schema";
 import { UserSchema, IUser } from "../../platform/models/user.schema";
+import { StorageService } from "../../storage/services/storage.service"; 
+
+const storageService = new StorageService();
 
 export class ShopService {
     /**
@@ -105,7 +108,7 @@ export class ShopService {
     /**
      * Elimina una tienda (Tenant) de la plataforma y actualiza los usuarios asociados.
      */
-   async deleteShop(shopSlug: string) {
+    async deleteShop(shopSlug: string) {
         const metaConnection = getMetaDB();
         const TenantModel = getModelByTenant<ITenant>(
             metaConnection,
@@ -118,22 +121,34 @@ export class ShopService {
             UserSchema
         );
         
-        const deletedTenant = await TenantModel.findOneAndDelete({ slug: shopSlug });
+        const tenantToDelete = await TenantModel.findOne({ slug: shopSlug });
 
-        if (deletedTenant) {            
-            const memberIds = deletedTenant.members.map(m => m.userId);
+        if (!tenantToDelete) return null;
 
-            await UserModel.updateMany(
-                { _id: { $in: memberIds } },
-                { 
-                    $pull: { 
-                        associatedStores: { tenantId: deletedTenant._id } 
-                    } 
-                }
-            );
+        // eliminar la db fisica
+        try {
+            const dbName = `db_${shopSlug}`;
+            const tenantConnection = getTenantDB(dbName);
+            await tenantConnection.dropDatabase();
+            console.log(`Base de datos ${dbName} eliminada.`);
+        } catch (error) {
+            console.error(`Error al borrar DB física ${shopSlug}:`, error);
         }
 
-        return deletedTenant;
+        await storageService.deleteShopFolder(shopSlug); // elimina imagenes del minio
+
+        const memberIds = tenantToDelete.members.map(m => m.userId); // le eliminamos a cada usuario la referencia a esta tienda
+        await UserModel.updateMany(
+            { _id: { $in: memberIds } },
+            { 
+                $pull: { 
+                    associatedStores: { tenantId: tenantToDelete._id } 
+                } 
+            }
+        );
+
+
+        return await TenantModel.findByIdAndDelete(tenantToDelete._id);// y por ultimo eliminamos el Tenant de la plataforma
     }
 
     async getAllShops() {
