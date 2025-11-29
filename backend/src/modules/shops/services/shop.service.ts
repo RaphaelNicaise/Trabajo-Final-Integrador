@@ -103,17 +103,37 @@ export class ShopService {
     }
 
     /**
-     * Elimina una tienda (Tenant) de la plataforma
+     * Elimina una tienda (Tenant) de la plataforma y actualiza los usuarios asociados.
      */
-    async deleteShop(shopSlug: string) {
+   async deleteShop(shopSlug: string) {
         const metaConnection = getMetaDB();
         const TenantModel = getModelByTenant<ITenant>(
             metaConnection,
             "Tenant",
             TenantSchema
         );
+        const UserModel = getModelByTenant<IUser>(
+            metaConnection,
+            "User",
+            UserSchema
+        );
         
-        return await TenantModel.findOneAndDelete({ slug: shopSlug });
+        const deletedTenant = await TenantModel.findOneAndDelete({ slug: shopSlug });
+
+        if (deletedTenant) {            
+            const memberIds = deletedTenant.members.map(m => m.userId);
+
+            await UserModel.updateMany(
+                { _id: { $in: memberIds } },
+                { 
+                    $pull: { 
+                        associatedStores: { tenantId: deletedTenant._id } 
+                    } 
+                }
+            );
+        }
+
+        return deletedTenant;
     }
 
     async getAllShops() {
@@ -124,5 +144,15 @@ export class ShopService {
             TenantSchema
         );
         return await TenantModel.find();
+    }
+
+    async getShopBySlug(shopSlug: string) {
+        const metaConnection = getMetaDB();
+        const TenantModel = getModelByTenant<ITenant>(
+            metaConnection,
+            "Tenant",
+            TenantSchema
+        );
+        return await TenantModel.findOne({ slug: shopSlug });
     }
 }

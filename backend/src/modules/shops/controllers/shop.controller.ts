@@ -74,4 +74,20 @@ export class ShopController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async getBySlug(req: Request, res: Response) {
+    try {
+      const { slug } = req.params;
+      if (!slug) {
+        return res.status(400).json({ error: 'Falta el slug de la tienda' });
+      }
+      const shop = await shopService.getShopBySlug(slug);
+      if (!shop) {
+        return res.status(404).json({ error: 'Tienda no encontrada' });
+      }
+      res.status(200).json(shop);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
