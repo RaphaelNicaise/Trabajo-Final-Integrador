@@ -7,7 +7,8 @@ import { StorageService } from './modules/storage/services/storage.service';
 import paymentsRoutes from "./modules/payments/routes/payments";
 import productRoutes from './modules/products/routes/product.routes';
 import shopRoutes from './modules/shops/routes/shop.routes';
-
+import categoryRoutes from './modules/categories/routes/category.routes';
+import orderRoutes from './modules/orders/routes/order.routes';
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api/products', productRoutes);
 app.use('/api/shops', shopRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/orders', orderRoutes);
 
 const startServer = async () => {
   try {
