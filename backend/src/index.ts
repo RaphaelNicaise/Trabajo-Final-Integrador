@@ -9,6 +9,7 @@ import productRoutes from './modules/products/routes/product.routes';
 import shopRoutes from './modules/shops/routes/shop.routes';
 import categoryRoutes from './modules/categories/routes/category.routes';
 import orderRoutes from './modules/orders/routes/order.routes';
+import authRoutes from './modules/auth/routes/auth.routes';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/auth', authRoutes);
 
 const startServer = async () => {
   try {

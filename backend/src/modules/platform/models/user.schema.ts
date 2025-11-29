@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 export interface IUser extends Document {
   name: string;
   email: string;
-  passwordHash?: string; // Opcional para usuarios que entran con Google
+  passwordHash: string; 
   
   // Relación N:N - Tiendas a las que este usuario tiene acceso
   // Vital para el Dashboard "Mis Tiendas" al iniciar sesión
@@ -32,10 +32,9 @@ const UserSchema = new Schema<IUser>({
     lowercase: true 
   },
   
-  // Contraseña opcional: solo requerida si el usuario se registra con email/pass tradicional
   passwordHash: { 
     type: String, 
-    required: false 
+    required: true 
   },
   
   // Lista de permisos sobre tiendas (a modificar)

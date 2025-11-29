@@ -3,7 +3,9 @@ import {
   PutObjectCommand, 
   CreateBucketCommand,
   PutBucketPolicyCommand,
-  DeleteObjectCommand
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command
 } from '@aws-sdk/client-s3';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -29,13 +31,12 @@ const s3Client = new S3Client({
 export class StorageService {
 
   /**
-   * Intenta crear el bucket directamente (Estrategia Idempotente).
-   * SOLUCIÓN DEL CRASH: Eliminamos HeadBucketCommand.
+   * Intenta crear el bucket directamente
    */
   async initializeMainBucket(): Promise<void> {
     try {
       
-      // Intentamos crear directamente. Si ya existe, fallará con un error específico que controlaremos.
+      // intentamos crear directamente y si falla es que ya existe
       await s3Client.send(new CreateBucketCommand({ Bucket: BUCKET_NAME }));
       console.log(`Bucket '${BUCKET_NAME}' creado.`);
       
@@ -102,7 +103,6 @@ export class StorageService {
       await s3Client.send(command);
       
       // Construir URL Pública para el frontend
-      // CORRECCIÓN: Usar variable pública (localhost) para que el navegador pueda ver la imagen
       const publicBaseUrl = PUBLIC_ENDPOINT
       
       return `${publicBaseUrl}/${BUCKET_NAME}/${key}`;
@@ -164,4 +164,36 @@ export class StorageService {
       console.error('error',error);
     }
   }
-}
+
+    async deleteShopFolder(shopSlug: string): Promise<void> {
+    const prefix = `${shopSlug}/`; // "tienda1/"
+
+    try {
+      const listCommand = new ListObjectsV2Command({
+        Bucket: BUCKET_NAME,
+        Prefix: prefix
+      });
+      const listedObjects = await s3Client.send(listCommand);
+
+      if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
+        console.log(`La carpeta ${prefix} ya estaba vacía o no existe.`);
+        return;
+      }
+
+      const deleteParams = {
+        Bucket: BUCKET_NAME,
+        Delete: { Objects: listedObjects.Contents.map(({ Key }) => ({ Key })) }
+      };
+
+      await s3Client.send(new DeleteObjectsCommand(deleteParams));
+      console.log(`Carpeta eliminada: ${prefix}`);
+
+      if (listedObjects.IsTruncated) {
+        await this.deleteShopFolder(shopSlug);
+      }
+
+    } catch (error) {
+      console.error('Error eliminando carpeta de tienda:', error);
+    }
+  }
+}	
