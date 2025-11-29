@@ -34,6 +34,7 @@ export const TenantSchema = new Schema<ITenant>({
   description: { type: String },  // Nuevo
   
   members: [{
+    _id: false,
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     role: { type: String, enum: ['owner', 'admin'], default: 'admin' }
   }],
