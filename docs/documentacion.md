@@ -39,12 +39,12 @@ docker compose up --build
 ---
 
 ### API -> [Documentacion API](api.md)
+### Podes importar la coleccion de postman mediante este archivo: [Postman Collection](TrabajoFinal.postman_collection.json)
+- Crear un Entorno en Postman con la variable `host` y asignarle el valor `http://127.0.0.1:4000`
 
 ---
 
 ### MongoDB Multi-Tenant
-
-Aquí tenés una versión más ordenada, estilizada y lista para meter directamente en una documentación técnica:
 
 ---
 
