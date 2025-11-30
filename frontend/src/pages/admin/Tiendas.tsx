@@ -128,30 +128,33 @@ export const TiendasPage = () => {
               {shops.map((shop) => (
                 <div
                   key={shop.id}
-                  className="w-full max-w-2xl bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 border border-slate-200 flex items-center justify-between gap-4 mx-auto"
+                  className="w-full max-w-2xl bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 p-6 flex items-center justify-between gap-6 mx-auto group relative"
+                  style={{ minHeight: '110px' }}
                 >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-14 h-14 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Store className="w-7 h-7 text-emerald-600" />
+                  <div className="flex items-center gap-5 flex-1">
+                    <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-emerald-200 group-hover:border-emerald-400 transition-all">
+                      <Store className="w-8 h-8 text-emerald-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-semibold text-slate-800 text-lg truncate">
+                        <h3 className="font-bold text-slate-800 text-xl truncate group-hover:text-emerald-700 transition-colors">
                           {shop.name}
                         </h3>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded flex-shrink-0">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded group-hover:bg-blue-200 transition-colors flex-shrink-0">
                           {shop.role === 'owner' ? 'Propietario' : 'Admin'}
                         </span>
                       </div>
-                      <span className="text-xs text-slate-500">@{shop.slug}</span>
-                      <div className="flex items-center gap-4 mt-2">
+                      <span className="text-xs text-slate-500 font-mono">@{shop.slug}</span>
+                      <div className="flex flex-wrap items-center gap-4 mt-2">
                         {shop.location && (
-                          <p className="text-sm text-slate-600">{shop.location}</p>
+                          <span className="inline-block text-sm text-slate-600 bg-slate-100 rounded px-2 py-1">
+                            {shop.location}
+                          </span>
                         )}
                         {shop.description && (
-                          <p className="text-sm text-slate-600 truncate">
+                          <span className="inline-block text-sm text-slate-600 truncate max-w-[180px] bg-slate-50 rounded px-2 py-1">
                             {shop.description}
-                          </p>
+                          </span>
                         )}
                       </div>
                     </div>
@@ -159,19 +162,21 @@ export const TiendasPage = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleDeleteClick(shop)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-all active:scale-95"
+                      className="p-2 text-red-500 hover:bg-red-100 rounded-md transition-all active:scale-95 border border-transparent hover:border-red-300"
                       title="Eliminar tienda"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleSelectShop(shop)}
-                      className="px-6 py-2.5 bg-emerald-500 text-white font-medium rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0"
+                      className="px-6 py-2.5 bg-emerald-500 text-white font-semibold rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0 shadow group-hover:shadow-md"
                     >
                       Administrar
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
+                  {/* Chiche visual: Glow al hover */}
+                  <div className="absolute inset-0 rounded-xl pointer-events-none group-hover:ring-2 group-hover:ring-emerald-300 transition-all"></div>
                 </div>
               ))}
             </div>
