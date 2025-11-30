@@ -89,10 +89,10 @@ export const TiendasPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 flex flex-col items-center justify-start">
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 w-full text-center">
           <h1 className="text-3xl font-bold text-slate-800 mb-2">Mis Tiendas</h1>
           <p className="text-slate-600">
             Selecciona una tienda para administrar o crea una nueva
@@ -101,7 +101,7 @@ export const TiendasPage = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 w-full flex flex-col items-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
             <p className="mt-4 text-slate-600">Cargando tiendas...</p>
           </div>
@@ -109,7 +109,7 @@ export const TiendasPage = () => {
 
         {/* Error State */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6 w-full">
             <p className="text-red-600">{error}</p>
             <button
               onClick={loadShops}
@@ -122,83 +122,80 @@ export const TiendasPage = () => {
 
         {/* Lista de Tiendas */}
         {!loading && !error && (
-          <div className="space-y-4">
+          <div className="w-full flex flex-col items-center gap-6">
             {/* Tarjetas de Tiendas */}
-            {shops.map((shop) => (
-              <div
-                key={shop.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 border border-slate-200 flex items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Store className="w-7 h-7 text-emerald-600" />
+            <div className="w-full flex flex-col items-center gap-4">
+              {shops.map((shop) => (
+                <div
+                  key={shop.id}
+                  className="w-full max-w-2xl bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 border border-slate-200 flex items-center justify-between gap-4 mx-auto"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-14 h-14 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Store className="w-7 h-7 text-emerald-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="font-semibold text-slate-800 text-lg truncate">
+                          {shop.name}
+                        </h3>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded flex-shrink-0">
+                          {shop.role === 'owner' ? 'Propietario' : 'Admin'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500">@{shop.slug}</span>
+                      <div className="flex items-center gap-4 mt-2">
+                        {shop.location && (
+                          <p className="text-sm text-slate-600">{shop.location}</p>
+                        )}
+                        {shop.description && (
+                          <p className="text-sm text-slate-600 truncate">
+                            {shop.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-semibold text-slate-800 text-lg truncate">
-                        {shop.name}
-                      </h3>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded flex-shrink-0">
-                        {shop.role === 'owner' ? 'Propietario' : 'Admin'}
-                      </span>
-                    </div>
-                    <span className="text-xs text-slate-500">@{shop.slug}</span>
-                    
-                    <div className="flex items-center gap-4 mt-2">
-                      {shop.location && (
-                        <p className="text-sm text-slate-600">{shop.location}</p>
-                      )}
-                      {shop.description && (
-                        <p className="text-sm text-slate-600 truncate">
-                          {shop.description}
-                        </p>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDeleteClick(shop)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-all active:scale-95"
+                      title="Eliminar tienda"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleSelectShop(shop)}
+                      className="px-6 py-2.5 bg-emerald-500 text-white font-medium rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0"
+                    >
+                      Administrar
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleDeleteClick(shop)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-all active:scale-95"
-                    title="Eliminar tienda"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                  
-                  <button
-                    onClick={() => handleSelectShop(shop)}
-                    className="px-6 py-2.5 bg-emerald-500 text-white font-medium rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0"
-                  >
-                    Administrar
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-
+              ))}
+            </div>
             {/* Botón Crear Nueva Tienda */}
-            <button
-              onClick={handleCreateShop}
-              className="w-full bg-white border-2 border-dashed border-slate-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all p-6 flex items-center justify-center gap-3 group"
-            >
-              <div className="w-12 h-12 bg-slate-100 group-hover:bg-emerald-100 rounded-full flex items-center justify-center transition-colors">
-                <Plus className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-semibold text-slate-700 group-hover:text-emerald-700 mb-1">
-                  Crear Nueva Tienda
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Comienza a vender en línea
-                </p>
-              </div>
-            </button>
+            <div className="w-full flex items-center justify-center mt-6">
+              <button
+                onClick={handleCreateShop}
+                className="w-full max-w-2xl bg-white border-2 border-dashed border-slate-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all p-6 flex items-center justify-center gap-3 group"
+              >
+                <div className="w-12 h-12 bg-slate-100 group-hover:bg-emerald-100 rounded-full flex items-center justify-center transition-colors">
+                  <Plus className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-slate-700 group-hover:text-emerald-700 mb-1">
+                    Crear Nueva Tienda
+                  </h3>
+                  <p className="text-sm text-slate-500">
+                    Comienza a vender en línea
+                  </p>
+                </div>
+              </button>
+            </div>
           </div>
         )}
-
-        {/* Empty State */}
       </div>
 
       {/* Modal de Crear Tienda */}
