@@ -220,50 +220,43 @@ export const TiendasPage = () => {
 
       {/* Modal Confirmar Eliminación */}
       {showDeleteModal && shopToDelete && (
-        <div className="fixed inset-0 flex items-center justify-center px-4 z-50">
-          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Trash2 className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">Eliminar Tienda</h2>
-                <p className="text-sm text-slate-600">Esta acción no se puede deshacer</p>
-              </div>
+        <Dialog open onClose={() => { setShowDeleteModal(false); setShopToDelete(null); }} maxWidth="xs" fullWidth>
+          <DialogTitle className="flex items-center gap-3 px-6 py-4 border-b border-slate-200 bg-white">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Trash2 className="w-6 h-6 text-red-600" />
             </div>
-
-            {/* Contenido */}
-            <div className="mb-6">
-              <p className="text-slate-700">
-                ¿Estás seguro que quieres eliminar la tienda{' '}
-                <span className="font-semibold text-slate-900">"{shopToDelete.name}"</span>?
-              </p>
-              <p className="text-sm text-slate-500 mt-2">
-                Se eliminarán todos los datos asociados a esta tienda.
-              </p>
+            <div>
+              <span className="text-xl font-bold text-slate-800">Eliminar Tienda</span>
+              <p className="text-sm text-slate-600">Esta accion no se puede deshacer</p>
             </div>
-
-            {/* Botones */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setShopToDelete(null);
-                }}
-                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="flex-1 px-4 py-2.5 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition-all active:scale-95"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
+          </DialogTitle>
+          <DialogContent className="bg-white px-6 py-4">
+            <p className="text-slate-700">
+              Estas seguro que quieres eliminar la tienda{' '}
+              <span className="font-semibold text-slate-900">"{shopToDelete.name}"</span>?
+            </p>
+            <p className="text-sm text-slate-500 mt-2">
+              Se eliminaran todos los datos asociados a esta tienda.
+            </p>
+          </DialogContent>
+          <DialogActions className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+            <button
+              onClick={() => {
+                setShowDeleteModal(false);
+                setShopToDelete(null);
+              }}
+              className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-100 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              className="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition-all active:scale-95"
+            >
+              Eliminar
+            </button>
+          </DialogActions>
+        </Dialog>
       )}
     </div>
   );
