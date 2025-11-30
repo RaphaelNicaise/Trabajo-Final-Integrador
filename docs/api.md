@@ -78,7 +78,7 @@ x-tenant-id: <tenant_id>
 Content-Type: multipart/form-data
 ```
 
-## <span style="color: red;">Delete</span> `/api/products`
+## <span style="color: red;">Delete</span> `/api/products/{id}`
 
 - Elimina un producto existente en la tienda.
 #### Headers
