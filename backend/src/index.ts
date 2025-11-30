@@ -1,8 +1,10 @@
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 
 import { connectToMongoDB } from './modules/database/tenantConnection';
 import { StorageService } from './modules/storage/services/storage.service';
+import { authMiddleware, tenantMiddleware } from './middleware/auth.middleware';
 
 import paymentsRoutes from "./modules/payments/routes/payments";
 import productRoutes from './modules/products/routes/product.routes';
@@ -17,6 +19,14 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const storageService = new StorageService();
 
+// Configurar CORS
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite dev server
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
+}));
+
 app.use(express.json());
 
 app.get('/', (req, res) => res.send('Backend corriendo 🚀'));
@@ -25,11 +35,14 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK'});
 });
 
-app.use('/api/products', productRoutes);
+// Rutas públicas (sin autenticación)
+app.use('/api/auth', authRoutes);
+
+// Rutas con protección selectiva (definen middlewares a nivel de ruta individual)
 app.use('/api/shops', shopRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/auth', authRoutes);
 
 const startServer = async () => {
   try {

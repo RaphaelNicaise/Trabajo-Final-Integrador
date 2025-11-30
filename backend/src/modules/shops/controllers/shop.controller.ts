@@ -7,12 +7,12 @@ export class ShopController {
   async create(req: Request, res: Response) {
     try {
       // Como no hay Auth Middleware aún, recibimos el userId en el body (MOCK)
-      const { userId, slug, storeName, ownerEmail, location, description } = req.body;
-      if (!userId || !slug || !storeName || !ownerEmail) {
-        return res.status(400).json({ error: 'Faltan datos obligatorios' });
+      const { userId, slug, storeName, location, description } = req.body;
+      if (!userId || !slug || !storeName) {
+        return res.status(400).json({ error: 'Faltan datos obligatorios (userId, slug, storeName)' });
       }
       const shop = await shopService.createShop({
-        userId, slug, storeName, ownerEmail, location, description
+        userId, slug, storeName, location, description
       });
       res.status(201).json(shop);
     } catch (error: any) {

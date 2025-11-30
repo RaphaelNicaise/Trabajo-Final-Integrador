@@ -32,7 +32,10 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
       S3_INTERNAL_ENDPOINT: ${S3_INTERNAL_ENDPOINT}
       S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT}
+      VITE_API_URL: ${VITE_API_URL}
       PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
     depends_on:
       - mongo
     networks:
@@ -50,7 +53,7 @@ services:
       - /app/node_modules
     environment:
       NODE_ENV: development
-      VITE_API_URL: http://backend:${PORT}   # para que el front se conecte al back
+      VITE_API_URL: ${VITE_API_URL}   # para que el front se conecte al back
     depends_on:
       - backend
     networks:
