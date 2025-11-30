@@ -66,11 +66,14 @@ export const PublicNavbar = () => {
             <button
               className="relative p-2 group"
               aria-label="Carrito"
+              style={{ minWidth: 44, minHeight: 44 }}
             >
-              <ShoppingCart className="h-9 w-9 text-slate-200 group-hover:text-emerald-400 transition-colors" strokeWidth={2} />
-              <span className="absolute top-0 -right-1 h-6 w-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-[#1E1B4B] shadow-sm transform group-hover:scale-110 transition-transform">
-                3
-              </span>
+              <div className="relative flex items-center justify-center">
+                <ShoppingCart className="h-9 w-9 text-slate-200 group-hover:text-emerald-400 transition-colors" strokeWidth={2} />
+                <span className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-[#1E1B4B] shadow-lg transform group-hover:scale-110 transition-transform" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}>
+                  3
+                </span>
+              </div>
             </button>
           </div>
         </div>
