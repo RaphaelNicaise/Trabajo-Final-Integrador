@@ -1,12 +1,17 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { PrivateRoute } from './components/PrivateRoute'
+import { ShopGuard } from './components/ShopGuard'
 import { PublicNavbar } from './components/layout/PublicNavbar'
 import { AdminLayout } from './layouts/AdminLayout'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { TiendasPage } from './pages/admin/Tiendas'
 import { DashboardPage } from './pages/admin/Dashboard'
 import { ProductosPage } from './pages/admin/Productos'
 import { OrdenesPage } from './pages/admin/Ordenes'
 import { CategoriasPage } from './pages/admin/Categorias'
-import { TiendasPage } from './pages/admin/Tiendas'
 import { ConfiguracionPage } from './pages/admin/Configuracion'
 import { UsuariosPage } from './pages/admin/Usuarios'
 
@@ -35,21 +40,80 @@ function HomePage() {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<TiendasPage />} />
-          <Route path="tiendas" element={<TiendasPage />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="productos" element={<ProductosPage />} />
-          <Route path="ordenes" element={<OrdenesPage />} />
-          <Route path="categorias" element={<CategoriasPage />} />
-          <Route path="configuracion" element={<ConfiguracionPage />} />
-          <Route path="usuarios" element={<UsuariosPage />} />
-        </Route>
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Rutas Públicas */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Rutas Privadas (Panel de Administración) */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminLayout />
+              </PrivateRoute>
+            }
+          >
+            {/* Página de selección de tiendas (no requiere activeShop) */}
+            <Route index element={<TiendasPage />} />
+            <Route path="tiendas" element={<TiendasPage />} />
+
+            {/* Rutas que REQUIEREN tienda activa */}
+            <Route
+              path="dashboard"
+              element={
+                <ShopGuard>
+                  <DashboardPage />
+                </ShopGuard>
+              }
+            />
+            <Route
+              path="productos"
+              element={
+                <ShopGuard>
+                  <ProductosPage />
+                </ShopGuard>
+              }
+            />
+            <Route
+              path="ordenes"
+              element={
+                <ShopGuard>
+                  <OrdenesPage />
+                </ShopGuard>
+              }
+            />
+            <Route
+              path="categorias"
+              element={
+                <ShopGuard>
+                  <CategoriasPage />
+                </ShopGuard>
+              }
+            />
+            <Route
+              path="configuracion"
+              element={
+                <ShopGuard>
+                  <ConfiguracionPage />
+                </ShopGuard>
+              }
+            />
+            <Route
+              path="usuarios"
+              element={
+                <ShopGuard>
+                  <UsuariosPage />
+                </ShopGuard>
+              }
+            />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 

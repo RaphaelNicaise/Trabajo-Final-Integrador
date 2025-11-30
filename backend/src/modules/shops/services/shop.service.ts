@@ -18,11 +18,10 @@ export class ShopService {
         userId: string;
         slug: string;
         storeName: string;
-        ownerEmail: string;
         location?: string;
         description?: string;
     }) {
-        const { userId, slug, storeName, ownerEmail, location, description } = data;
+        const { userId, slug, storeName, location, description } = data;
 
         const metaConnection = getMetaDB();
         const TenantModel = getModelByTenant<ITenant>(
@@ -36,7 +35,13 @@ export class ShopService {
             UserSchema
         );
 
-        // 2. Validar slug
+        // Obtener el email del usuario owner
+        const user = await UserModel.findById(userId);
+        if (!user) throw new Error("Usuario no encontrado");
+
+        const ownerEmail = user.email;
+
+        // Validar slug
         const existingTenant = await TenantModel.findOne({ slug });
         if (existingTenant)
             throw new Error("El nombre de la tienda (slug) ya está en uso.");

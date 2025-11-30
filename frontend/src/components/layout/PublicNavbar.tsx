@@ -1,5 +1,6 @@
 import { Search, ShoppingCart, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import logoSH from '../../assets/logosh.png';
 
 export const PublicNavbar = () => {
@@ -13,13 +14,13 @@ export const PublicNavbar = () => {
       <div className="w-full h-28 flex items-center justify-between px-6 md:pl-12 md:pr-20 ">
         
         {/* 1. LOGO */}
-        <div className="flex-shrink-0 flex items-center cursor-pointer">
+        <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer">
           <img 
             src={logoSH} 
             alt="StoreHub Logo" 
             className="h-20 w-auto object-contain hover:scale-105 transition-transform duration-200" 
           />
-        </div>
+        </Link>
 
         {/* 2. BUSCADOR (Centro) */}
         <div className="hidden md:flex flex-1 justify-center px-10">
@@ -46,14 +47,19 @@ export const PublicNavbar = () => {
             Explorar
           </a>
           
-          <button className="min-w-[140px] h-12 flex items-center justify-center text-lg font-semibold text-slate-100 border-2 border-slate-600 rounded-xl hover:bg-slate-700 hover:border-slate-500 transition-all active:scale-95">
+          <Link 
+            to="/login"
+            className="min-w-[140px] h-12 flex items-center justify-center text-lg font-semibold text-slate-100 border-2 border-slate-600 rounded-xl hover:bg-slate-700 hover:border-slate-500 transition-all active:scale-95"
+          >
             Ingresar
-          </button>
+          </Link>
           
-
-          <button className="min-w-[200px] h-12 flex items-center justify-center bg-emerald-500 text-white text-lg font-bold rounded-xl hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all active:scale-95 transform">
+          <Link 
+            to="/register"
+            className="min-w-[200px] h-12 flex items-center justify-center bg-emerald-500 text-white text-lg font-bold rounded-xl hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all active:scale-95 transform"
+          >
             Vende en StoreHub
-          </button>
+          </Link>
           
      
           <div className="pl-4 ml-2 border-l border-slate-700 flex items-center">
@@ -92,14 +98,19 @@ export const PublicNavbar = () => {
               Explorar Tiendas
             </a>
             
-              <button className="w-full text-left py-4 text-xl font-medium text-slate-200 border-b  border-slate-700">
-                Ingresar
-              </button>
+            <Link 
+              to="/login" 
+              className="w-full text-left py-4 text-xl font-medium text-slate-200 border-b border-slate-700"
+            >
+              Ingresar
+            </Link>
             
-            
-            <button className="w-full py-5 bg-emerald-500 text-white font-bold rounded-xl text-xl shadow-lg mt-4">
+            <Link 
+              to="/register" 
+              className="w-full py-5 bg-emerald-500 text-white font-bold rounded-xl text-xl shadow-lg mt-4 text-center"
+            >
               ¡Quiero Vender!
-            </button>
+            </Link>
           </div>
         </div>
       )}
