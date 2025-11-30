@@ -1,10 +1,428 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { shopsService } from '../../services/shops.service';
+import { Store, Plus, X, ArrowRight, Trash2 } from 'lucide-react';
+
+interface Shop {
+  id: string;
+  slug: string;
+  name: string;
+  location?: string;
+  description?: string;
+  role: string;
+}
+
 export const TiendasPage = () => {
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [shopToDelete, setShopToDelete] = useState<Shop | null>(null);
+  const { user, selectShop, clearActiveShop } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Limpiar la tienda activa al entrar a esta página
+    clearActiveShop();
+    loadShops();
+    
+    // Actualizar título del documento
+    document.title = 'Mis Tiendas | StoreHub';
+    
+    return () => {
+      document.title = 'StoreHub';
+    };
+  }, []);
+
+  const loadShops = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await shopsService.getUserShops(user.id);
+      setShops(data);
+    } catch (err: any) {
+      console.error('Error al cargar tiendas:', err);
+      setError('Error al cargar las tiendas. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectShop = (shop: Shop) => {
+    selectShop({
+      id: shop.id,
+      slug: shop.slug,
+      name: shop.name,
+      role: shop.role,
+    });
+    navigate('/admin/dashboard');
+  };
+
+  const handleCreateShop = () => {
+    setShowModal(true);
+  };
+
+  const handleDeleteClick = (shop: Shop) => {
+    setShopToDelete(shop);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!shopToDelete) return;
+
+    try {
+      await shopsService.deleteShop(shopToDelete.slug);
+      setShowDeleteModal(false);
+      setShopToDelete(null);
+      // Recargar la lista de tiendas
+      await loadShops();
+    } catch (err: any) {
+      console.error('Error al eliminar tienda:', err);
+      setError('Error al eliminar la tienda. Intenta de nuevo.');
+      setShowDeleteModal(false);
+    }
+  };
+
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold text-slate-800 mb-4">Mis Tiendas</h1>
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-        <p className="text-slate-600">Página de Mis Tiendas</p>
+    <div className="min-h-screen bg-slate-50 py-8 px-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Mis Tiendas</h1>
+          <p className="text-slate-600">
+            Selecciona una tienda para administrar o crea una nueva
+          </p>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+            <p className="mt-4 text-slate-600">Cargando tiendas...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={loadShops}
+              className="mt-2 text-sm text-red-700 hover:text-red-800 font-medium"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
+        {/* Lista de Tiendas */}
+        {!loading && !error && (
+          <div className="space-y-4">
+            {/* Tarjetas de Tiendas */}
+            {shops.map((shop) => (
+              <div
+                key={shop.id}
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 border border-slate-200 flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-14 h-14 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Store className="w-7 h-7 text-emerald-600" />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-semibold text-slate-800 text-lg truncate">
+                        {shop.name}
+                      </h3>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded flex-shrink-0">
+                        {shop.role === 'owner' ? 'Propietario' : 'Admin'}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500">@{shop.slug}</span>
+                    
+                    <div className="flex items-center gap-4 mt-2">
+                      {shop.location && (
+                        <p className="text-sm text-slate-600">{shop.location}</p>
+                      )}
+                      {shop.description && (
+                        <p className="text-sm text-slate-600 truncate">
+                          {shop.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleDeleteClick(shop)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-all active:scale-95"
+                    title="Eliminar tienda"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleSelectShop(shop)}
+                    className="px-6 py-2.5 bg-emerald-500 text-white font-medium rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0"
+                  >
+                    Administrar
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Botón Crear Nueva Tienda */}
+            <button
+              onClick={handleCreateShop}
+              className="w-full bg-white border-2 border-dashed border-slate-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all p-6 flex items-center justify-center gap-3 group"
+            >
+              <div className="w-12 h-12 bg-slate-100 group-hover:bg-emerald-100 rounded-full flex items-center justify-center transition-colors">
+                <Plus className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold text-slate-700 group-hover:text-emerald-700 mb-1">
+                  Crear Nueva Tienda
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Comienza a vender en línea
+                </p>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
       </div>
+
+      {/* Modal de Crear Tienda */}
+      {showModal && (
+        <CreateShopModal
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            setShowModal(false);
+            loadShops();
+          }}
+        />
+      )}
+
+      {/* Modal Confirmar Eliminación */}
+      {showDeleteModal && shopToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center px-4 z-50">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Eliminar Tienda</h2>
+                <p className="text-sm text-slate-600">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="mb-6">
+              <p className="text-slate-700">
+                ¿Estás seguro que quieres eliminar la tienda{' '}
+                <span className="font-semibold text-slate-900">"{shopToDelete.name}"</span>?
+              </p>
+              <p className="text-sm text-slate-500 mt-2">
+                Se eliminarán todos los datos asociados a esta tienda.
+              </p>
+            </div>
+
+            {/* Botones */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setShopToDelete(null);
+                }}
+                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 px-4 py-2.5 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition-all active:scale-95"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+// Modal para crear nueva tienda
+interface CreateShopModalProps {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { user } = useAuth();
+
+  // Auto-generar slug desde el nombre
+  const handleNameChange = (value: string) => {
+    setName(value);
+    const generatedSlug = value
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+    setSlug(generatedSlug);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (!user) {
+      setError('Usuario no autenticado');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await shopsService.createShop({
+        userId: user.id,
+        storeName: name,
+        slug,
+        location: location || undefined,
+        description: description || undefined,
+      });
+      onSuccess();
+    } catch (err: any) {
+      console.error('Error al crear tienda:', err);
+      setError(
+        err.response?.data?.error || 
+        'Error al crear la tienda. Intenta de nuevo.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center px-4 z-50">
+      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <h2 className="text-2xl font-bold text-slate-800">Crear Nueva Tienda</h2>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Nombre */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Nombre de la Tienda *
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              placeholder="Mi Tienda Online"
+            />
+          </div>
+
+          {/* Slug */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              URL de la Tienda (Slug) *
+            </label>
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono text-sm"
+              placeholder="mi-tienda-online"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Tu tienda estará en: storehub.com/{slug || 'tu-slug'}
+            </p>
+          </div>
+
+          {/* Ubicación */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Ubicación (Opcional)
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              placeholder="Ciudad, País"
+            />
+          </div>
+
+          {/* Descripción */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Descripción (Opcional)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+              placeholder="Describe tu tienda..."
+            />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Botones */}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-emerald-500 text-white font-medium rounded-md hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creando...' : 'Crear Tienda'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  ) ;
+}
+
