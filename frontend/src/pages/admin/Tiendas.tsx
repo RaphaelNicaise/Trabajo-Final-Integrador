@@ -396,4 +396,4 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
       </form>
     </Dialog>
   );
-
+}
