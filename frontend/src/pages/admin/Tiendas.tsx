@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopsService } from '../../services/shops.service';
 import { Store, Plus, X, ArrowRight, Trash2 } from 'lucide-react';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 interface Shop {
   id: string;
@@ -322,26 +326,17 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center px-4 z-50">
-      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-200">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800">Crear Nueva Tienda</h2>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Nombre */}
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
+        <span className="text-2xl font-bold text-slate-800">Crear Nueva Tienda</span>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <X className="w-6 h-6" />
+        </button>
+      </DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent className="bg-white px-6 py-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Nombre de la Tienda *
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Nombre de la Tienda *</label>
             <input
               type="text"
               value={name}
@@ -351,12 +346,8 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               placeholder="Mi Tienda Online"
             />
           </div>
-
-          {/* Slug */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              URL de la Tienda (Slug) *
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">URL de la Tienda (Slug) *</label>
             <input
               type="text"
               value={slug}
@@ -365,30 +356,20 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono text-sm"
               placeholder="mi-tienda-online"
             />
-            <p className="mt-1 text-xs text-slate-500">
-              Tu tienda estará en: storehub.com/{slug || 'tu-slug'}
-            </p>
+            <p className="mt-1 text-xs text-slate-500">Tu tienda estará en: storehub.com/{slug || 'tu-slug'}</p>
           </div>
-
-          {/* Ubicación */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Ubicación (Opcional)
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Ubicacion (Opcional)</label>
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="Ciudad, País"
+              placeholder="Ciudad, Pais"
             />
           </div>
-
-          {/* Descripción */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Descripción (Opcional)
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Descripcion (Opcional)</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -397,34 +378,29 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               placeholder="Describe tu tienda..."
             />
           </div>
-
-          {/* Error */}
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-md">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
-
-          {/* Botones */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-emerald-500 text-white font-medium rounded-md hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creando...' : 'Crear Tienda'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  ) ;
-}
+        </DialogContent>
+        <DialogActions className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-100 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 px-4 py-2 bg-emerald-500 text-white font-semibold rounded-md hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Creando...' : 'Crear Tienda'}
+          </button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
 
