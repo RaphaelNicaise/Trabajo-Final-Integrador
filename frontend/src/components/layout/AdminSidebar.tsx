@@ -7,9 +7,9 @@ import {
   Settings,
   LogOut,
   User,
-  BarChart2,
+  Users
 } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 // Importamos el isotipo correcto
 import logoSolo from '../../assets/logosolo.png';
 
@@ -17,14 +17,14 @@ interface SidebarItemProps {
   icon: React.ReactNode;
   label: string;
   isActive?: boolean;
-  href?: string;
+  to: string;
   badge?: number;
 }
 
-const SidebarItem = ({ icon, label, isActive, href = "#", badge }: SidebarItemProps) => {
+const SidebarItem = ({ icon, label, isActive, to, badge }: SidebarItemProps) => {
   return (
-    <a
-      href={href}
+    <Link
+      to={to}
       className={`
         relative flex items-center justify-center w-12 h-12 mt-2 rounded-xl transition-all duration-200 group
         ${isActive 
@@ -50,12 +50,25 @@ const SidebarItem = ({ icon, label, isActive, href = "#", badge }: SidebarItemPr
         {/* 2. El texto va SEGUNDO para estar al frente (y con z-10 por seguridad) */}
         <span className="relative z-10">{label}</span>
       </div>
-    </a>
+    </Link>
   );
 };
 
 export const AdminSidebar = () => {
-  const [activeRoute, setActiveRoute] = useState('tiendas');
+  const location = useLocation();
+  const getActiveRoute = () => {
+    const path = location.pathname;
+    if (path.includes('/tiendas')) return 'tiendas';
+    if (path.includes('/dashboard')) return 'dashboard';
+    if (path.includes('/productos')) return 'productos';
+    if (path.includes('/ordenes')) return 'ordenes';
+    if (path.includes('/categorias')) return 'categorias';
+    if (path.includes('/configuracion')) return 'configuracion';
+    if (path.includes('/usuarios')) return 'usuarios';
+    return 'tiendas';
+  };
+  
+  const activeRoute = getActiveRoute();
 
   return (
     // Sidebar principal: overflow-y-visible para permitir que los tooltips salgan del contenedor
@@ -63,7 +76,7 @@ export const AdminSidebar = () => {
     <aside className="flex flex-col items-center w-20 h-screen py-6 bg-[#0F172A] border-r border-slate-800 z-50">
       
       {/* 1. LOGO SUPERIOR */}
-       <a href="/" className="flex items-center justify-center w-12 h-12 mb-6 transition-transform hover:scale-110 group relative flex-shrink-0">
+       <Link to="/" className="flex items-center justify-center w-12 h-12 mb-6 transition-transform hover:scale-110 group relative flex-shrink-0">
         <img src={logoSolo} alt="StoreHub" className="w-10 h-10 object-contain" />
         
         {/* Tooltip del Logo */}
@@ -71,7 +84,7 @@ export const AdminSidebar = () => {
           <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-3 h-3 bg-slate-900 border-l border-b border-slate-700 transform rotate-45 z-10"></div>
           <span className="relative z-20 ml-2">StoreHub Admin</span>
         </div>
-      </a>
+      </Link>
 
       {/* Contenedor Flex que ocupa el espacio restante - SIN SCROLLBARS INTERNAS */}
       <div className="flex-1 w-full flex flex-col items-center gap-2">
@@ -79,52 +92,52 @@ export const AdminSidebar = () => {
         {/* SECCIÓN PRINCIPAL */}
         <div className="w-full flex flex-col items-center border-t border-slate-800/50 pt-4 gap-2">
           
-          <SidebarItem 
-            icon={<Store size={24} strokeWidth={1.5} />} 
+          <SidebarItem
+            icon={<Store size={24} strokeWidth={1.5} />}
             label="Mis Tiendas"
             isActive={activeRoute === 'tiendas'}
-            href='#tiendas'
+            to="/admin/tiendas"
           />
-          <SidebarItem 
-            icon={<LayoutDashboard size={24} strokeWidth={1.5} />} 
+          <SidebarItem
+            icon={<LayoutDashboard size={24} strokeWidth={1.5} />}
             label="Dashboard"
             isActive={activeRoute === 'dashboard'}
-            href='#dashboard'
+            to="/admin/dashboard"
           />
-          <SidebarItem 
-            icon={<Package size={24} strokeWidth={1.5} />} 
+          <SidebarItem
+            icon={<Package size={24} strokeWidth={1.5} />}
             label="Productos"
             isActive={activeRoute === 'productos'}
-            href='#productos'
+            to="/admin/productos"
           />
-          <SidebarItem 
-            icon={<ShoppingCart size={24} strokeWidth={1.5} />} 
+          <SidebarItem
+            icon={<ShoppingCart size={24} strokeWidth={1.5} />}
             label="Órdenes"
-            isActive={activeRoute === 'ordenes'} 
+            isActive={activeRoute === 'ordenes'}
             badge={3}
-            href='#ordenes'
+            to="/admin/ordenes"
           />
         </div>
 
         {/* SECCIÓN SECUNDARIA (Empujada hacia abajo si hay espacio, o simplemente a continuación) */}
         <div className="w-full flex flex-col items-center border-t border-slate-800/50 pt-4 mt-auto gap-2">
-          <SidebarItem 
-            icon={<Tags size={24} strokeWidth={1.5} />} 
+          <SidebarItem
+            icon={<Tags size={24} strokeWidth={1.5} />}
             label="Categorías"
-            href='#categorias'
+            to="/admin/categorias"
             isActive={activeRoute === 'categorias'}
           />
-          <SidebarItem 
-            icon={<BarChart2 size={24} strokeWidth={1.5} />} 
-            label="Analíticas"
-            href='#analiticas'
-            isActive={activeRoute === 'analiticas'}
+          <SidebarItem
+            icon={<Users size={24} strokeWidth={1.5} />}
+            label="Usuarios"
+            isActive={activeRoute === 'usuarios'}
+            to="/admin/usuarios"
           />
-          <SidebarItem 
-            icon={<Settings size={24} strokeWidth={1.5} />} 
+          <SidebarItem
+            icon={<Settings size={24} strokeWidth={1.5} />}
             label="Configuración"
             isActive={activeRoute === 'configuracion'}
-            href='#configuracion' 
+            to="/admin/configuracion"
           />
         </div>
       </div>

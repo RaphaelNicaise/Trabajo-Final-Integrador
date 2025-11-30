@@ -1,7 +1,14 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { PublicNavbar } from './components/layout/PublicNavbar'
-import { AdminSidebar } from './components/layout/AdminSidebar'
+import { AdminLayout } from './layouts/AdminLayout'
+import { DashboardPage } from './pages/admin/Dashboard'
+import { ProductosPage } from './pages/admin/Productos'
+import { OrdenesPage } from './pages/admin/Ordenes'
+import { CategoriasPage } from './pages/admin/Categorias'
+import { TiendasPage } from './pages/admin/Tiendas'
+import { ConfiguracionPage } from './pages/admin/Configuracion'
+import { UsuariosPage } from './pages/admin/Usuarios'
 
 function HomePage() {
   return (
@@ -26,34 +33,21 @@ function HomePage() {
   )
 }
 
-function AdminPage() {
-  return (
-    <div className="flex h-screen bg-slate-50">
-      <AdminSidebar />
-      
-      {/* Contenido del Admin */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-slate-800 mb-6">
-            Panel de Administración
-          </h1>
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-            <p className="text-slate-600">
-              Bienvenido al panel de administración de StoreHub
-            </p>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
-}
-
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<TiendasPage />} />
+          <Route path="tiendas" element={<TiendasPage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="productos" element={<ProductosPage />} />
+          <Route path="ordenes" element={<OrdenesPage />} />
+          <Route path="categorias" element={<CategoriasPage />} />
+          <Route path="configuracion" element={<ConfiguracionPage />} />
+          <Route path="usuarios" element={<UsuariosPage />} />
+        </Route>
       </Routes>
     </Router>
   )
