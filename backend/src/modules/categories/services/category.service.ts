@@ -1,6 +1,7 @@
 import { getTenantDB } from '../../database/tenantConnection'; 
 import { getModelByTenant } from '../../database/modelFactory';
 import { CategorySchema, ICategory } from '../models/category.schema';
+import { ProductSchema, IProduct } from '../../products/models/product.schema';
 
 export class CategoryService {
 
@@ -8,6 +9,12 @@ export class CategoryService {
     const dbName = `db_${shopSlug}`;
     const tenantConnection = getTenantDB(dbName);
     return getModelByTenant<ICategory>(tenantConnection, 'Category', CategorySchema);
+  }
+
+  private getProductModel(shopSlug: string) {
+    const dbName = `db_${shopSlug}`;
+    const tenantConnection = getTenantDB(dbName);
+    return getModelByTenant<IProduct>(tenantConnection, 'Product', ProductSchema);
   }
 
   async createCategory(shopSlug: string, data: Partial<ICategory>) {
@@ -32,6 +39,15 @@ export class CategoryService {
 
   async deleteCategory(shopSlug: string, id: string) {
     const CategoryModel = this.getModel(shopSlug);
+    const ProductModel = this.getProductModel(shopSlug);
+    
+    // Primero eliminar la categoría de todos los productos que la contengan
+    await ProductModel.updateMany(
+      { categories: id },
+      { $pull: { categories: id } }
+    );
+    
+    // Luego eliminar la categoría
     return await CategoryModel.findByIdAndDelete(id);
   }
 }
