@@ -40,12 +40,12 @@ export const PublicNavbar = () => {
         {/* gap-8 para separar los elementos entre sí */}
         <div className="hidden md:flex items-center gap-8 flex-shrink-0 ">
           
-          <a
-            href="#explorar"
+          <Link
+            to="/"
             className="text-lg text-slate-200 hover:text-white font-semibold transition-colors hover:underline underline-offset-4 decoration-emerald-500"
           >
             Explorar
-          </a>
+          </Link>
           
           <Link 
             to="/login"
@@ -97,9 +97,13 @@ export const PublicNavbar = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-[#1E1B4B] border-t border-slate-700 shadow-2xl absolute w-full left-0 z-50 animate-in slide-in-from-top-5 duration-200">
           <div className="p-6 space-y-6 flex flex-col">
-            <a href="#explorar" className="text-xl font-medium text-slate-200 py-2 border-b border-slate-700">
+            <Link 
+              to="/" 
+              className="text-xl font-medium text-slate-200 py-2 border-b border-slate-700"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
               Explorar Tiendas
-            </a>
+            </Link>
             
             <Link 
               to="/login" 
