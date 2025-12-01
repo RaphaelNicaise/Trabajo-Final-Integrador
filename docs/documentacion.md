@@ -1,15 +1,23 @@
 # Documentacion Tecnica StoreHub
 
+- [Stack](#stack)
 - [Deploy](#deploy)
 - [API](#api---documentacion-api)
 - [MongoDB Multi-Tenant](#mongodb-multi-tenant)
 - [Minio](#minio)
+- [Backend](#backend)
+- [Frontend](#frontend)
 
+## Stack
+
+[![My Skills](https://skillicons.dev/icons?i=css,react,nodejs,express,tailwind,vite,ts,mongo,docker,postman,git,nginx,)](https://skillicons.dev) & Minio
 ## Deploy
 Levantar Proyecto:
 
 Como se ejecutan los docker compose y los Dockerfile en [DEV](#dev) y [PROD](#prod)
+
 ![Dockerfiles](assets/dockers.png)
+
 #### Dev:
 
 ```bash
@@ -178,3 +186,115 @@ Cuando se elimina una tienda completa, se borran automáticamente:
 **API S3:** `http://localhost:9000`
 
 El bucket principal se inicializa automáticamente al levantar el backend con política pública de lectura para que las imágenes sean accesibles desde el navegador.
+
+---
+
+## Backend
+
+El backend está organizado en módulos siguiendo una arquitectura modular y escalable. Cada módulo sigue el patrón **MVC** (Model-View-Controller) adaptado para APIs REST.
+
+### Estructura General
+
+```
+backend/src/
+├── index.ts              # Punto de entrada, inicializa servidor Express
+├── config/              # Configuraciones (MercadoPago, etc.)
+├── middleware/          # Middlewares globales (auth, tenant, etc.)
+├── types/              # Definiciones TypeScript
+└── modules/
+    ├── admin/          # Gestión de usuarios y permisos (A IMPLEMENTAR)
+    ├── auth/           # Autenticación y registro
+    ├── categories/     # CRUD de categorías por tienda
+    ├── dashboard/      # Estadísticas y métricas (A IMPLEMENTAR)
+    ├── database/       # Conexiones multi-tenant y factory de modelos
+    ├── orders/         # Gestión de órdenes y pedidos
+    ├── payments/       # Integración con MercadoPago (A IMPLEMENTAR)
+    ├── platform/       # Modelos globales (User, Tenant)
+    ├── products/       # CRUD de productos por tienda
+    ├── shops/          # Creación y gestión de tiendas
+    └── storage/        # Servicio de subida/eliminación de archivos (MinIO)
+```
+
+### Módulos Implementados
+
+#### **auth/** - Autenticación
+- **Funcionalidad**: Registro e inicio de sesión de usuarios
+- **Componentes**:
+  - `AuthController`: Maneja `/register` y `/login`
+  - `AuthService`: Lógica de negocio (hashing, JWT)
+- **Tecnologías**: JWT, bcrypt
+
+#### **categories/** - Categorías
+- **Funcionalidad**: CRUD de categorías para organizar productos
+- **Componentes**:
+  - `CategoryController`: Endpoints CRUD
+  - `CategoryService`: Lógica de negocio multi-tenant
+  - `CategorySchema`: Modelo Mongoose (nombre, descripción)
+- **Multi-Tenant**: Cada tienda tiene sus propias categorías
+
+#### **database/** - Conexiones Multi-Tenant
+- **Funcionalidad**: Gestiona conexiones dinámicas a bases de datos por tenant
+- **Componentes**:
+  - `tenantConnection.ts`: Pool de conexiones a MongoDB
+  - `modelFactory.ts`: Factory para registrar modelos por tenant
+- **Clave**: Permite que cada tienda tenga su propia DB aislada
+
+#### **orders/** - Órdenes
+- **Funcionalidad**: Gestión de pedidos y órdenes de compra
+- **Componentes**:
+  - `OrderController`: CRUD de órdenes
+  - `OrderService`: Lógica de negocio
+  - `OrderSchema`: Modelo (productos, cliente, total, estado)
+- **Multi-Tenant**: Órdenes aisladas por tienda
+
+#### **platform/** - Modelos Globales
+- **Funcionalidad**: Almacena información compartida entre todas las tiendas
+- **Componentes**:
+  - `UserSchema`: Usuarios de la plataforma
+  - `TenantSchema`: Información de tiendas (nombre, slug, owner)
+- **Base de Datos**: `platform_meta` (única para toda la plataforma)
+
+#### **products/** - Productos
+- **Funcionalidad**: CRUD de productos con imágenes
+- **Componentes**:
+  - `ProductController`: Endpoints con soporte multipart/form-data
+  - `ProductService`: Lógica de negocio
+  - `ProductSchema`: Modelo (nombre, precio, stock, categorías, imagen)
+- **Integración**: Se conecta con `storage` para subir imágenes a MinIO
+
+#### **shops/** - Tiendas
+- **Funcionalidad**: Creación, edición y eliminación de tiendas
+- **Componentes**:
+  - `ShopController`: CRUD de tiendas
+  - `ShopService`: Lógica compleja (crear DB, asociar usuario, eliminar todo)
+- **Responsabilidad**: Crea nuevas bases de datos tenant y las asocia a usuarios
+
+#### **storage/** - Almacenamiento
+- **Funcionalidad**: Gestión de archivos en MinIO (subida, eliminación)
+- **Componentes**:
+  - `StorageService`: Cliente S3 para MinIO
+- **Métodos**:
+  - `uploadProductImage()`: Sube imagen a `{tenant}/products/`
+  - `deleteFile()`: Elimina archivo específico
+  - `deleteShopFolder()`: Elimina carpeta completa de una tienda
+
+### Módulos Pendientes de Implementación
+
+#### **admin/** - Panel de Administración
+- **A Implementar**: Gestión de usuarios, roles y permisos avanzados
+- **Uso Previsto**: Dashboard para administradores de plataforma
+
+#### **dashboard/** - Estadísticas
+- **A Implementar**: Métricas, gráficos, reportes de ventas
+- **Uso Previsto**: Visualización de datos para dueños de tiendas
+
+#### **payments/** - Pagos
+- **A Implementar**: Integración completa con MercadoPago
+- **Uso Previsto**: Procesamiento de pagos, webhooks, confirmaciones
+
+
+- **Multi-Tenant**: Controllers reciben `x-tenant-id` del header y lo pasan a los services que usan la factory de modelos
+
+---
+
+## Frontend -> [Guia de Frontend](docs.frontend.md)
