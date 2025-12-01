@@ -5,7 +5,7 @@
 - [MongoDB Multi-Tenant](#mongodb-multi-tenant)
 - [Minio](#minio)
 
-### Deploy
+## Deploy
 Levantar Proyecto:
 
 Como se ejecutan los docker compose y los Dockerfile en [DEV](#dev) y [PROD](#prod)
@@ -35,113 +35,146 @@ docker compose down -v
 docker compose up --build
 ```
 
-#### Prod:
+#### Prod: (todavia no)
 ---
 
-### API -> [Documentacion API](api.md)
+## API -> [Documentacion API](api.md)
 ### Podes importar la coleccion de postman mediante este archivo: [Postman Collection](TrabajoFinal.postman_collection.json)
 - Crear un Entorno en Postman con la variable `host` y asignarle el valor `http://127.0.0.1:4000`
 
 ---
 
-### MongoDB Multi-Tenant
+## MongoDB Multi-Tenant
 
----
+StoreHub implementa una arquitectura **Multi-Tenant** donde cada tienda tiene su propia base de datos MongoDB aislada, pero todas comparten la misma conexión física al clúster. Y la base de datos maestra `platform_meta` almacena la información global de usuarios y sus tiendas asociadas.
 
-# 🗄️ **MongoDB Multi-Tenant — Arquitectura & Lazy Creation**
+###  Arquitectura
 
-Guía técnica sobre cómo manejar múltiples tiendas (tenants) con bases de datos aisladas en MongoDB.
+![Diagrama de Arquitectura Multi-Tenant](assets/mongo.png)
 
----
 
-## 🔹 **1. Modelo Multi-DB por Tenant**
+####  **Conexión al Clúster** [`tenantConnection.ts`](../backend/src/modules/database/tenantConnection.ts)
+- **Conexión Única**: Se establece una sola conexión física al clúster MongoDB usando `mongoose.createConnection()`
+- **Pool de Conexiones**: Configurado con `maxPoolSize: 10` para optimizar rendimiento
+- **Conexiones Lógicas**: Cada base de datos (tenant) usa `useDb()` para crear conexiones lógicas que comparten el mismo socket físico
 
-Cada tienda opera sobre **su propia base de datos** dentro del mismo clúster MongoDB.
+```typescript
+const tenantDb = getTenantDB('db_test');
+```
 
-### **Estructura**
+####  **Factory de Modelos** [`tenantModelFactory.ts`](../backend/src/modules/database/modelFactory.ts)
+- **Registro por Conexión**: Cada modelo (Product, Category, Order) se registra en la conexión específica de su tenant
+- **Caché de Modelos**: Evita re-compilar modelos si ya existen en esa conexión
+- **Reutilización**: Un modelo puede existir en múltiples conexiones sin conflictos
 
-* **Naming:** `db_{shopId}`
-  *Ejemplo:* `db_shop1`, `db_123`
-* **Aislamiento total:**
-  No existe mezcla de datos entre tiendas.
-* **Identificación del tenant:**
-  Se obtiene desde el header HTTP:
+```typescript
+const ProductModel = getModelByTenant(tenantConnection, 'Product', ProductSchema);
+```
 
-  ```
-  x-tenant-id: shopId
-  ```
+### Workflow
 
-El backend direcciona dinámicamente con:
+#### Identificación del Tenant:
+1. El cliente envía el header `x-tenant-id: test`
+2. El middleware extrae el tenant ID
+3. Se genera el nombre de la DB: `db_${tenantId}` → `db_test`
+4. Se obtiene la conexión lógica a esa base de datos
+5. Se opera sobre los modelos de esa conexión específica
 
-```js
-mongoose.connection.useDb(`db_${tenantId}`);
+#### Ejemplo de Request:
+```http
+GET /api/products
+Headers:
+  x-tenant-id: test
+```
+
+El backend:
+1. Detecta `x-tenant-id = "test"`
+2. Conecta a `db_test`
+3. Consulta `db_test.products`
+4. Retorna solo los productos de esa tienda
+
+### Ventajas
+
+- **Aislamiento Total**: Los datos de cada tienda están completamente separados
+- **Escalabilidad**: Fácil agregar nuevas tiendas sin modificar código
+- **Rendimiento**: Pool de conexiones compartido optimiza recursos
+- **Seguridad**: Imposible que una tienda acceda a datos de otra
+- **Simplicidad**: No requiere múltiples instancias de MongoDB
+
+### Base de Datos Maestra (`platform_meta`)
+
+La base de datos `platform_meta` almacena:
+- **Usuarios**: Información de usuarios registrados
+- **Tiendas Asociadas**: Relación entre usuarios y sus tiendas
+
+Cada usuario puede tener múltiples tiendas asociadas:
+```json
+{
+  "_id": "user123",
+  "email": "user@example.com",
+  "associatedStores": [
+    {
+      "tenantId": "db_test",
+      "slug": "test",
+      "storeName": "Mi Tienda",
+      "role": "owner"
+    }
+  ]
+}
 ```
 
 ---
 
-## 🔹 **2. Lazy Creation (Creación Automática de DB y Colecciones)**
+## Minio
 
-No existen scripts de "crear base de datos".
-MongoDB **materializa** la base **solo cuando se utiliza por primera vez**.
+StoreHub utiliza **MinIO** como servicio de almacenamiento de objetos compatible con AWS S3 para gestionar imágenes de productos y logos de tiendas.
 
-### **Flujo de creación automática**
+### ¿Qué es MinIO?
 
-#### **1) Request entrante**
+MinIO es un servidor de almacenamiento de objetos de alto rendimiento compatible con la API de AWS S3. Lo usamos para:
+- Almacenar **imágenes de productos**
+- Almacenar **logos de tiendas**
+- Mantener compatibilidad con S3 para migración futura a AWS
+
+### Arquitectura Multi-Tenant
+
+Al igual que MongoDB, MinIO mantiene la arquitectura multi-tenant mediante carpetas aisladas por tienda:
 
 ```
-x-tenant-id: nueva_tienda
+platform-bucket/
+├── shop1/
+│   ├── logo.jpg
+│   └── products/
+│       ├── producto1.jpg
+│       └── producto2.jpg
+├── shop2/
+│   └── products/
+│       └── producto3.jpg
+└── test/
+    └── products/
+        └── producto4.jpg
 ```
 
-#### **2) Conexión lógica**
+### Sincronización con Bases de Datos
 
-```js
-const db = mongoose.connection.useDb('db_nueva_tienda');
-```
+Cada vez que se crea, actualiza o elimina un producto:
+1. El backend identifica la tienda mediante `x-tenant-id`
+2. Sube/elimina la imagen en la carpeta correspondiente: `{shopSlug}/products/`
+3. Guarda la URL pública en la base de datos del tenant
+4. El frontend accede directamente a la imagen mediante la URL
 
-#### **3) Materialización real**
+**Ejemplo de flujo:**
+- Se crea producto en tienda "test" → imagen se guarda en `test/products/uuid.jpg`
+- URL pública: `http://localhost:9000/platform-bucket/test/products/uuid.jpg`
+- MongoDB guarda la URL en `db_test.products`
 
-* **Al escribir (POST / save()):**
-  Mongo crea la base + colección + documento.
-* **Al leer (GET):**
-  Mongoose compila el modelo e intenta crear índices →
-  Mongo crea la base + colección vacía.
+Cuando se elimina una tienda completa, se borran automáticamente:
+- Base de datos MongoDB (`db_{shopSlug}`)
+- Carpeta completa en MinIO (`{shopSlug}/`)
 
----
+### Configuración
 
-## **Granularidad — Creación Independiente por Colección**
+**Consola Web:** `http://localhost:9001`  
+**API S3:** `http://localhost:9000`
 
-Cada colección se crea **solo cuando se usa**.
-
-### **Ejemplo**
-
-* Guardás una Categoría en tienda nueva:
-
-  * Se crea `db_nueva_tienda`
-  * Se crea **solo** la colección `categories`
-* La colección `products` **NO** existe aún.
-
-➡️ Aparecerá mágicamente **cuando guardes o leas un producto por primera vez**.
-
----
-
-##  **3. Ventajas Clave**
-
-### ✔ **Cero mantenimiento**
-
-No es necesario registrar tiendas manualmente.
-
-### ✔ **Escalabilidad instantánea**
-
-La creación de bases y colecciones ocurre en milisegundos.
-
-### ✔ **Eficiencia**
-
-Tiendas inactivas no consumen espacio (solo metadatos mínimos).
-
----
-
-Si querés también puedo armarte una versión para README, una diagramación con Mermaid, o incluir ejemplos de middleware.
-
----
-
-### Minio
+El bucket principal se inicializa automáticamente al levantar el backend con política pública de lectura para que las imágenes sean accesibles desde el navegador.

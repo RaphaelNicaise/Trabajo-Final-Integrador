@@ -9,6 +9,8 @@
 - [Endpoints Categorías `/api/categories`](#endpoints-categorías-apicategories)
 - [Endpoints Órdenes `/api/orders`](#endpoints-órdenes-apiorders)
 
+### Importar [Postman Collection](TrabajoFinal.postman_collection.json)
+- Crear un Entorno en Postman con la variable `host` y asignarle el valor `http://127.0.0.1:4000`
 ### Path recomendado para probar Endpoints
 
 - Primero registrar y loguear un usuario en el endpoint `/api/auth` para obtener un token JWT.
