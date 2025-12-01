@@ -1,46 +1,12 @@
 {
 	"info": {
-		"_postman_id": "6138882c-7c1a-4ae7-952c-0c78ed01e459",
+		"_postman_id": "6ff13a67-44b7-4382-9ee0-cde2f67560f6",
 		"name": "TrabajoFinal",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "36433443",
-		"_collection_link": "https://blue-astronaut-280925.postman.co/workspace/New-Team-Workspace~42c7c86e-50fe-4779-95b9-94dbafaeac98/collection/36433443-6138882c-7c1a-4ae7-952c-0c78ed01e459?action=share&source=collection_link&creator=36433443"
+		"_collection_link": "https://blue-astronaut-280925.postman.co/workspace/New-Team-Workspace~42c7c86e-50fe-4779-95b9-94dbafaeac98/collection/36433443-6ff13a67-44b7-4382-9ee0-cde2f67560f6?action=share&source=collection_link&creator=36433443"
 	},
 	"item": [
-		{
-			"name": "MP",
-			"item": [
-				{
-					"name": "Crear Preferencia",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"title\": \"Remera negra\",\r\n  \"quantity\": 2,\r\n  \"unit_price\": 3500\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:4000/payments/create-preference",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"payments",
-								"create-preference"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
 		{
 			"name": "Products",
 			"item": [
@@ -124,6 +90,11 @@
 								"key": "x-tenant-id",
 								"value": "tienda1",
 								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -194,17 +165,22 @@
 								"key": "x-tenant-id",
 								"value": "test",
 								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{host}}/api/products/6929d071f4d0cbe96e262d77",
+							"raw": "{{host}}/api/products/692c8ff84abcb017e3c15542",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"products",
-								"6929d071f4d0cbe96e262d77"
+								"692c8ff84abcb017e3c15542"
 							]
 						}
 					},
@@ -252,19 +228,19 @@
 							},
 							{
 								"key": "x-tenant-id",
-								"value": "tienda1",
+								"value": "test",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{host}}/api/products/692649aae19b1eb88683c78e",
+							"raw": "{{host}}/api/products/692c8ff84abcb017e3c15542",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"products",
-								"692649aae19b1eb88683c78e"
+								"692c8ff84abcb017e3c15542"
 							]
 						}
 					},
@@ -278,6 +254,11 @@
 							{
 								"key": "x-tenant-id",
 								"value": "test",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
 								"type": "text"
 							}
 						],
@@ -336,198 +317,6 @@
 			"name": "Shops",
 			"item": [
 				{
-					"name": "Categories",
-					"item": [
-						{
-							"name": "Post Category",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Cache-Control",
-										"value": "no-cache",
-										"type": "text"
-									},
-									{
-										"key": "Postman-Token",
-										"value": "<calculated when request is sent>",
-										"type": "text"
-									},
-									{
-										"key": "Host",
-										"value": "<calculated when request is sent>",
-										"type": "text"
-									},
-									{
-										"key": "User-Agent",
-										"value": "PostmanRuntime/7.39.1",
-										"type": "text"
-									},
-									{
-										"key": "Accept",
-										"value": "*/*",
-										"type": "text"
-									},
-									{
-										"key": "Accept-Encoding",
-										"value": "gzip, deflate, br",
-										"type": "text"
-									},
-									{
-										"key": "Connection",
-										"value": "keep-alive",
-										"type": "text"
-									},
-									{
-										"key": "x-tenant-id",
-										"value": "test",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"name\": \"Deportes\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{host}}/api/categories",
-									"host": [
-										"{{host}}"
-									],
-									"path": [
-										"api",
-										"categories"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Categories",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Cache-Control",
-										"value": "no-cache",
-										"type": "text"
-									},
-									{
-										"key": "Postman-Token",
-										"value": "<calculated when request is sent>",
-										"type": "text"
-									},
-									{
-										"key": "Host",
-										"value": "<calculated when request is sent>",
-										"type": "text"
-									},
-									{
-										"key": "User-Agent",
-										"value": "PostmanRuntime/7.39.1",
-										"type": "text"
-									},
-									{
-										"key": "Accept",
-										"value": "*/*",
-										"type": "text"
-									},
-									{
-										"key": "Accept-Encoding",
-										"value": "gzip, deflate, br",
-										"type": "text"
-									},
-									{
-										"key": "Connection",
-										"value": "keep-alive",
-										"type": "text"
-									},
-									{
-										"key": "x-tenant-id",
-										"value": "test",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{host}}/api/categories",
-									"host": [
-										"{{host}}"
-									],
-									"path": [
-										"api",
-										"categories"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Delete Category",
-							"request": {
-								"method": "DELETE",
-								"header": [
-									{
-										"key": "Cache-Control",
-										"value": "no-cache",
-										"type": "text"
-									},
-									{
-										"key": "Postman-Token",
-										"value": "<calculated when request is sent>",
-										"type": "text"
-									},
-									{
-										"key": "Host",
-										"value": "<calculated when request is sent>",
-										"type": "text"
-									},
-									{
-										"key": "User-Agent",
-										"value": "PostmanRuntime/7.39.1",
-										"type": "text"
-									},
-									{
-										"key": "Accept",
-										"value": "*/*",
-										"type": "text"
-									},
-									{
-										"key": "Accept-Encoding",
-										"value": "gzip, deflate, br",
-										"type": "text"
-									},
-									{
-										"key": "Connection",
-										"value": "keep-alive",
-										"type": "text"
-									},
-									{
-										"key": "x-tenant-id",
-										"value": "test",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{host}}/api/categories/",
-									"host": [
-										"{{host}}"
-									],
-									"path": [
-										"api",
-										"categories",
-										""
-									]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
 					"name": "Get Shops",
 					"request": {
 						"method": "GET",
@@ -549,10 +338,16 @@
 					"name": "Post Shop",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{   \r\n    \"userId\":\"692b594840d446af034ba551\", // id de un user\r\n    \"slug\":\"test\", \r\n    \"storeName\":\"Tienda Test\",\r\n    \"ownerEmail\":\"raphanicaise@gmail.com\",\r\n    \"location\":\"Calle 123\",\r\n    \"description\":\"Me gusta la Formula 1\"\r\n}",
+							"raw": "{   \r\n    \"userId\":\"692c89f67e4ea0c3f344d5a4\", // id de un user creado\r\n    \"slug\":\"test123123\", \r\n    \"storeName\":\"Tienda Test123123\",\r\n    \"location\":\"Calle 123\",\r\n    \"description\":\"Me gusta la Formula 1\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -577,9 +372,15 @@
 					"name": "Get Shop by User",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{host}}/api/shops/user/6929cc5433b34355361eedb4",
+							"raw": "{{host}}/api/shops/user/692c89f67e4ea0c3f344d5a4",
 							"host": [
 								"{{host}}"
 							],
@@ -587,7 +388,7 @@
 								"api",
 								"shops",
 								"user",
-								"6929cc5433b34355361eedb4"
+								"692c89f67e4ea0c3f344d5a4"
 							]
 						}
 					},
@@ -603,7 +404,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{   \r\n    \"userId\":\"6929cc5433b34355361eedb4\", // id de un user\r\n    \"slug\":\"test\", \r\n    \"storeName\":\"Tienda Test\",\r\n    \"ownerEmail\":\"raphanicaise@gmail.com\",\r\n    \"location\":\"Calle 123\",\r\n    \"description\":\"Me gusta la Formula 1\"\r\n}"
+							"raw": ""
 						},
 						"url": {
 							"raw": "{{host}}/api/shops/test",
@@ -623,20 +424,26 @@
 					"name": "Delete Shop",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{   \r\n    \"userId\":\"6929cc5433b34355361eedb4\", // id de un user\r\n    \"slug\":\"test\", \r\n    \"storeName\":\"Tienda Test\",\r\n    \"ownerEmail\":\"raphanicaise@gmail.com\",\r\n    \"location\":\"Calle 123\",\r\n    \"description\":\"Me gusta la Formula 1\"\r\n}"
+							"raw": ""
 						},
 						"url": {
-							"raw": "{{host}}/api/shops/test",
+							"raw": "{{host}}/api/shops/tienda1",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"shops",
-								"test"
+								"tienda1"
 							]
 						}
 					},
@@ -655,6 +462,11 @@
 							{
 								"key": "x-tenant-id",
 								"value": "test",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
 								"type": "text"
 							}
 						],
@@ -684,7 +496,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"buyer\": {\r\n    \"name\": \"Pepe\",          \r\n    \"email\": \"Pepeargento@gmail.com\",   \r\n    \"address\": \"Calle 123\", \r\n    \"postalCode\": \"1234\"           \r\n  },\r\n  \"products\": [\r\n    {\r\n      \"productId\": \"6929d5469ac3806a73abd7ca\", \r\n      \"quantity\": 30                        \r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"buyer\": {\r\n    \"name\": \"Pepe\",          \r\n    \"email\": \"Pepeargento@gmail.com\",   \r\n    \"address\": \"Calle 123\", \r\n    \"postalCode\": \"1234\"           \r\n  },\r\n  \"products\": [\r\n    {\r\n      \"productId\": \"692c90944abcb017e3c15549\", \r\n      \"quantity\": 10                       \r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -712,6 +524,11 @@
 							{
 								"key": "x-tenant-id",
 								"value": "test",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
 								"type": "text"
 							}
 						],
@@ -749,6 +566,11 @@
 							{
 								"key": "x-tenant-id",
 								"value": "test",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
 								"type": "text"
 							}
 						],
@@ -808,7 +630,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\":\"raphanicaise@gmail.com\",\r\n    \"password\":\"1234\"\r\n}",
+							"raw": "{\r\n    \"email\":\"raphanicaise@gmail.com\",\r\n    \"password\":\"123456\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -836,7 +658,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n \"name\":\"Rapha\",\r\n \"email\": \"raphanicaise@gmail.com\",\r\n \"password\": \"1234\"   \r\n}",
+							"raw": "{\r\n \"name\":\"Rapha\",\r\n \"email\": \"raphanicaise@gmail.com\",\r\n \"password\": \"123456\"   \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -858,6 +680,232 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cache-Control",
+								"value": "no-cache",
+								"type": "text"
+							},
+							{
+								"key": "Postman-Token",
+								"value": "<calculated when request is sent>",
+								"type": "text"
+							},
+							{
+								"key": "Host",
+								"value": "<calculated when request is sent>",
+								"type": "text"
+							},
+							{
+								"key": "User-Agent",
+								"value": "PostmanRuntime/7.39.1",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Encoding",
+								"value": "gzip, deflate, br",
+								"type": "text"
+							},
+							{
+								"key": "Connection",
+								"value": "keep-alive",
+								"type": "text"
+							},
+							{
+								"key": "x-tenant-id",
+								"value": "test",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/categories",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cache-Control",
+								"value": "no-cache",
+								"type": "text"
+							},
+							{
+								"key": "Postman-Token",
+								"value": "<calculated when request is sent>",
+								"type": "text"
+							},
+							{
+								"key": "Host",
+								"value": "<calculated when request is sent>",
+								"type": "text"
+							},
+							{
+								"key": "User-Agent",
+								"value": "PostmanRuntime/7.39.1",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Encoding",
+								"value": "gzip, deflate, br",
+								"type": "text"
+							},
+							{
+								"key": "Connection",
+								"value": "keep-alive",
+								"type": "text"
+							},
+							{
+								"key": "x-tenant-id",
+								"value": "test",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/categories/692c8f514abcb017e3c1553f",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"692c8f514abcb017e3c1553f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Cache-Control",
+								"value": "no-cache",
+								"type": "text"
+							},
+							{
+								"key": "Postman-Token",
+								"value": "<calculated when request is sent>",
+								"type": "text"
+							},
+							{
+								"key": "Host",
+								"value": "<calculated when request is sent>",
+								"type": "text"
+							},
+							{
+								"key": "User-Agent",
+								"value": "PostmanRuntime/7.39.1",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Encoding",
+								"value": "gzip, deflate, br",
+								"type": "text"
+							},
+							{
+								"key": "Connection",
+								"value": "keep-alive",
+								"type": "text"
+							},
+							{
+								"key": "x-tenant-id",
+								"value": "test",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <token>",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Bebida\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/categories",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
