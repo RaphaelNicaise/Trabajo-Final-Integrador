@@ -5,3 +5,5 @@ Integrantes:
 - [Santiago Segal](https://github.com/Santucho12) — FullStack
 
 [Trello](https://trello.com/b/Cl5Jz95t/trabajo-final-integrador) 
+
+Documentacion Completa en -> [Docs](docs/documentacion.md) 
