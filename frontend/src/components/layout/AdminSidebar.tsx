@@ -22,36 +22,46 @@ interface SidebarItemProps {
   isActive?: boolean;
   to: string;
   badge?: number;
+  disabled?: boolean;
 }
 
-const SidebarItem = ({ icon, label, isActive, to, badge }: SidebarItemProps) => {
+const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false }: SidebarItemProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    if (disabled) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <Link
-      to={to}
+      to={disabled ? '#' : to}
+      onClick={handleClick}
       className={`
         relative flex items-center justify-center w-12 h-12 mt-2 rounded-xl transition-all duration-200 group
-        ${isActive 
-          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
-          : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+        ${disabled 
+          ? 'opacity-40 cursor-not-allowed text-slate-600' 
+          : isActive 
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
+            : 'text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer'
         }
       `}
     >
       {icon}
       
       {/* Badge de notificaciones */}
-      {badge && badge > 0 && (
+      {badge && badge > 0 && !disabled && (
         <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white border-2 border-[#0F172A]">
           {badge}
         </span>
       )}
 
-       <div className="absolute left-16 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg shadow-xl opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 z-50 whitespace-nowrap border border-slate-700 flex items-center">
+       <div className={`absolute left-16 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg shadow-xl opacity-0 -translate-x-2 pointer-events-none ${!disabled && 'group-hover:opacity-100 group-hover:translate-x-0'} transition-all duration-200 z-50 whitespace-nowrap border border-slate-700 flex items-center`}>
         
         {/* 1. La flecha va PRIMERO para que se renderice DETRÁS del texto */}
         <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-3 h-3 bg-slate-900 border-l border-b border-slate-700 transform rotate-45"></div>
         
         {/* 2. El texto va SEGUNDO para estar al frente (y con z-10 por seguridad) */}
-        <span className="relative z-10">{label}</span>
+        <span className="relative z-10">{disabled ? 'Selecciona una tienda' : label}</span>
       </div>
     </Link>
   );
@@ -162,12 +172,14 @@ export const AdminSidebar = () => {
             label="Dashboard"
             isActive={activeRoute === 'dashboard'}
             to="/admin/dashboard"
+            disabled={!activeShop}
           />
           <SidebarItem
             icon={<Package size={24} strokeWidth={1.5} />}
             label="Productos"
             isActive={activeRoute === 'productos'}
             to="/admin/productos"
+            disabled={!activeShop}
           />
           <SidebarItem
             icon={<ShoppingCart size={24} strokeWidth={1.5} />}
@@ -175,6 +187,7 @@ export const AdminSidebar = () => {
             isActive={activeRoute === 'ordenes'}
             badge={3}
             to="/admin/ordenes"
+            disabled={!activeShop}
           />
         </div>
 
@@ -185,18 +198,21 @@ export const AdminSidebar = () => {
             label="Categorías"
             to="/admin/categorias"
             isActive={activeRoute === 'categorias'}
+            disabled={!activeShop}
           />
           <SidebarItem
             icon={<Users size={24} strokeWidth={1.5} />}
             label="Usuarios"
             isActive={activeRoute === 'usuarios'}
             to="/admin/usuarios"
+            disabled={!activeShop}
           />
           <SidebarItem
             icon={<Settings size={24} strokeWidth={1.5} />}
             label="Configuración"
             isActive={activeRoute === 'configuracion'}
             to="/admin/configuracion"
+            disabled={!activeShop}
           />
         </div>
       </div>
