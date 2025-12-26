@@ -24,7 +24,7 @@ Como se ejecutan los docker compose y los Dockerfile en [DEV](#dev) y [PROD](#pr
 git clone https://github.com/RaphaelNicaise/Trabajo-Final-Integrador.git
 ```
 
-Crear .env en base a .env.template, en el mismo directorio, podes cambiarle manualmente el JWT_SECRET
+Crear .env en base a [.env.template](.env.template), en el mismo directorio, podes cambiarle manualmente el JWT_SECRET
 (lo otro no hace falta tocarlo)
 
 En el caso de querer implementar cambios, se debe crear una rama nueva a partir de develop.
