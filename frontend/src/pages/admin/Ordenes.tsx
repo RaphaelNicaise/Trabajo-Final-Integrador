@@ -11,7 +11,6 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  Box,
   Select,
   MenuItem,
   Dialog,
@@ -127,21 +126,22 @@ export const OrdenesPage = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader 
         title="Órdenes" 
         description="Administra los pedidos de tus clientes"
       />
 
       {/* Error */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600">{error}</p>
-          </div>
-        )}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg alert-animate">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
 
-        {/* Tabla de Órdenes */}
-        <TableContainer component={Paper}>
+      {/* Tabla de Órdenes */}
+      <div className="card-animate">
+        <TableContainer component={Paper} className="shadow-sm">
           <Table>
             <TableHead>
               <TableRow>
@@ -201,7 +201,7 @@ export const OrdenesPage = () => {
                 </TableRow>
               ) : (
                 sortedOrders.map((orderItem) => (
-                  <TableRow key={orderItem._id} hover>
+                  <TableRow key={orderItem._id} hover className="table-row-hover">
                     <TableCell>
                       <span className="text-xs font-mono text-slate-600">
                         {orderItem._id}
@@ -308,9 +308,25 @@ export const OrdenesPage = () => {
               )}
             </TableBody>
           </Table>
-         </TableContainer>
-       </Box>
-     </div>
+        </TableContainer>
+      </div>
+
+      {/* Modal Detalles del Comprador */}
+      <Dialog 
+        open={showBuyerModal} 
+        onClose={() => { setShowBuyerModal(false); setSelectedOrder(null); }}
+        maxWidth="sm"
+        fullWidth
+        className="modal-overlay"
+      >
+        <DialogTitle>Detalles del Comprador</DialogTitle>
+        <DialogContent className="modal-content">
+          {selectedOrder && (
+            <div className="space-y-3 mt-2">
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Nombre:</p>
+                <p className="text-base text-slate-900">{selectedOrder.buyer.name}</p>
+              </div>
               <div>
                 <p className="text-sm font-semibold text-slate-700">Email:</p>
                 <p className="text-base text-slate-900">{selectedOrder.buyer.email}</p>
@@ -339,9 +355,10 @@ export const OrdenesPage = () => {
         onClose={() => { setShowProductsModal(false); setSelectedOrder(null); }}
         maxWidth="md"
         fullWidth
+        className="modal-overlay"
       >
         <DialogTitle>Detalles de Productos</DialogTitle>
-        <DialogContent>
+        <DialogContent className="modal-content">
           {selectedOrder && (
             <TableContainer>
               <Table size="small">

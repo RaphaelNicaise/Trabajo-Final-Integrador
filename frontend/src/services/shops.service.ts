@@ -3,8 +3,6 @@ import api from './api';
 export const shopsService = {
   getUserShops: async (userId: string) => {
     const response = await api.get(`/shops/user/${userId}`);
-    
-    // Mapear la respuesta del backend a la estructura esperada
     return response.data.map((shop: any) => ({
       id: shop.tenantId || shop._id,
       slug: shop.slug,

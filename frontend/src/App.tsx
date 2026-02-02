@@ -1,4 +1,3 @@
-import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { PrivateRoute } from './components/PrivateRoute'
@@ -21,13 +20,13 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Rutas Públicas */}
+          {/* Rutas Publicas */}
           <Route path="/" element={<PublicStoresPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/tienda/:slug" element={<PublicStorePage />} />
 
-          {/* Rutas Privadas (Panel de Administración) */}
+          {/* Rutas Privadas (Panel de Administracion) */}
           <Route
             path="/admin"
             element={
@@ -36,7 +35,7 @@ function App() {
               </PrivateRoute>
             }
           >
-            {/* Página de selección de tiendas (no requiere activeShop) */}
+            {/* Pagina de seleccion de tiendas (no requiere activeShop) */}
             <Route index element={<TiendasPage />} />
             <Route path="tiendas" element={<TiendasPage />} />
 
@@ -97,4 +96,3 @@ function App() {
 }
 
 export default App
-

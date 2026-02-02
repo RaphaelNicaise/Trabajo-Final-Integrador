@@ -18,7 +18,6 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
-  Box,
 } from '@mui/material';
 import { Trash2, Edit, Plus } from 'lucide-react';
 
@@ -157,38 +156,40 @@ export const CategoriasPage = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader 
         title="Categorías" 
         description="Organiza tus productos por categorías"
       />
 
       {/* Botón Agregar Categoría */}
-      <div className="mb-6 flex justify-end">
-          <Button
-            variant="contained"
-            startIcon={<Plus className="w-5 h-5" />}
-            onClick={() => setShowCreateModal(true)}
-            sx={{
-              backgroundColor: '#10b981',
-              '&:hover': {
-                backgroundColor: '#059669',
-              },
-            }}
-          >
-            Agregar Categoría
-          </Button>
+      <div className="flex justify-end">
+        <Button
+          variant="contained"
+          startIcon={<Plus className="w-5 h-5" />}
+          onClick={() => setShowCreateModal(true)}
+          className="button-animate"
+          sx={{
+            backgroundColor: '#10b981',
+            '&:hover': {
+              backgroundColor: '#059669',
+            },
+          }}
+        >
+          Agregar Categoría
+        </Button>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg alert-animate">
+          <p className="text-red-600">{error}</p>
         </div>
+      )}
 
-        {/* Error */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600">{error}</p>
-          </div>
-        )}
-
-        {/* Tabla de Categorías */}
-        <TableContainer component={Paper}>
+      {/* Tabla de Categorías */}
+      <div className="card-animate">
+        <TableContainer component={Paper} className="shadow-sm">
           <Table>
             <TableHead>
               <TableRow>
@@ -230,7 +231,7 @@ export const CategoriasPage = () => {
                 </TableRow>
               ) : (
                 sortedCategories.map((category) => (
-                  <TableRow key={category._id} hover>
+                  <TableRow key={category._id} hover className="table-row-hover">
                     <TableCell sx={{ fontWeight: 500 }}>{category.name}</TableCell>
                     <TableCell sx={{ color: '#64748b' }}>{formatDate(category.createdAt)}</TableCell>
                     <TableCell sx={{ color: '#64748b' }}>{formatDate(category.updatedAt)}</TableCell>
@@ -239,6 +240,7 @@ export const CategoriasPage = () => {
                         onClick={() => openEditModal(category)}
                         color="primary"
                         size="small"
+                        className="icon-animate"
                       >
                         <Edit className="w-5 h-5" />
                       </IconButton>
@@ -246,6 +248,7 @@ export const CategoriasPage = () => {
                         onClick={() => openDeleteModal(category)}
                         color="error"
                         size="small"
+                        className="icon-animate"
                       >
                         <Trash2 className="w-5 h-5" />
                       </IconButton>
@@ -255,8 +258,104 @@ export const CategoriasPage = () => {
               )}
             </TableBody>
           </Table>
-         </TableContainer>
-       </Box>
-     </div>
+        </TableContainer>
+      </div>
+
+      {/* Modal Crear Categoría */}
+      <Dialog 
+        open={showCreateModal} 
+        onClose={() => { setShowCreateModal(false); resetForm(); }}
+        maxWidth="sm"
+        fullWidth
+        className="modal-overlay"
+      >
+        <DialogTitle>Agregar Categoría</DialogTitle>
+        <DialogContent className="modal-content">
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nombre"
+            type="text"
+            fullWidth
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setShowCreateModal(false); resetForm(); }}>
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleCreate} 
+            variant="contained" 
+            color="primary"
+            disabled={!formData.name.trim()}
+          >
+            Crear
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal Editar Categoría */}
+      <Dialog 
+        open={showEditModal} 
+        onClose={() => { setShowEditModal(false); resetForm(); }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Editar Categoría</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nombre"
+            type="text"
+            fullWidth
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setShowEditModal(false); resetForm(); }}>
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleEdit} 
+            variant="contained" 
+            color="primary"
+            disabled={!formData.name.trim()}
+          >
+            Actualizar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal Confirmar Eliminación */}
+      <Dialog 
+        open={showDeleteModal} 
+        onClose={() => { setShowDeleteModal(false); setSelectedCategory(null); }}
+      >
+        <DialogTitle>Eliminar Categoría</DialogTitle>
+        <DialogContent>
+          <p>
+            ¿Estás seguro que quieres eliminar la categoría{' '}
+            <strong>"{selectedCategory?.name}"</strong>?
+          </p>
+          <p className="text-sm text-slate-500 mt-2">
+            Esta acción no se puede deshacer.
+          </p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setShowDeleteModal(false); setSelectedCategory(null); }}>
+            Cancelar
+          </Button>
+          <Button onClick={handleDelete} variant="contained" color="error">
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };

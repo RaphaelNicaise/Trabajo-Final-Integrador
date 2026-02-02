@@ -219,18 +219,19 @@ export const ProductosPage = () => {
   });
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader 
         title="Productos" 
         description="Gestiona el catálogo de productos"
       />
 
       {/* Botón Crear Producto */}
-      <div className="mb-6 flex justify-end">
+      <div className="flex justify-end">
         <Button
           variant="contained"
           startIcon={<Plus className="w-5 h-5" />}
           onClick={() => setShowCreateModal(true)}
+          className="button-animate"
           sx={{
             backgroundColor: '#10b981',
             '&:hover': {
@@ -244,13 +245,14 @@ export const ProductosPage = () => {
 
       {/* Error */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg alert-animate">
           <p className="text-red-600">{error}</p>
         </div>
       )}
 
       {/* Tabla de Productos */}
-      <TableContainer component={Paper}>
+      <div className="card-animate">
+        <TableContainer component={Paper} className="shadow-sm">
         <Table>
           <TableHead>
             <TableRow>
@@ -300,7 +302,7 @@ export const ProductosPage = () => {
               </TableRow>
             ) : (
               sortedProducts.map((product) => (
-                <TableRow key={product._id} hover sx={{ height: '100px' }}>
+                <TableRow key={product._id} hover className="table-row-hover" sx={{ height: '100px' }}>
                   <TableCell>
                     {product.imageUrl ? (
                       <img
@@ -351,6 +353,7 @@ export const ProductosPage = () => {
                       onClick={() => openEditModal(product)}
                       color="primary"
                       size="small"
+                      className="icon-animate"
                     >
                       <Edit className="w-5 h-5" />
                     </IconButton>
@@ -358,6 +361,7 @@ export const ProductosPage = () => {
                       onClick={() => openDeleteModal(product)}
                       color="error"
                       size="small"
+                      className="icon-animate"
                     >
                       <Trash2 className="w-5 h-5" />
                     </IconButton>
@@ -368,9 +372,10 @@ export const ProductosPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      </div>
 
       {/* Modal Crear Producto */}
-      <Dialog open={showCreateModal} onClose={() => { setShowCreateModal(false); resetForm(); }} maxWidth="sm" fullWidth>
+      <Dialog open={showCreateModal} onClose={() => { setShowCreateModal(false); resetForm(); }} maxWidth="sm" fullWidth className="modal-overlay">
         <DialogTitle>Crear Producto</DialogTitle>
         <DialogContent>
           <TextField
