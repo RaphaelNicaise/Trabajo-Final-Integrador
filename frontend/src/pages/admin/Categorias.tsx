@@ -157,16 +157,14 @@ export const CategoriasPage = () => {
   };
 
   return (
-    <div className="p-8">
+    <div>
       <PageHeader 
         title="Categorías" 
         description="Organiza tus productos por categorías"
       />
 
-      {/* Contenedor centrado */}
-      <Box sx={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Botón Agregar Categoría */}
-        <div className="mb-6 flex justify-end pr-6">
+      {/* Botón Agregar Categoría */}
+      <div className="mb-6 flex justify-end">
           <Button
             variant="contained"
             startIcon={<Plus className="w-5 h-5" />}
@@ -257,103 +255,8 @@ export const CategoriasPage = () => {
               )}
             </TableBody>
           </Table>
-        </TableContainer>
-      </Box>
-
-      {/* Modal Crear Categoría */}
-      <Dialog 
-        open={showCreateModal} 
-        onClose={() => { setShowCreateModal(false); resetForm(); }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Agregar Categoría</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre"
-            type="text"
-            fullWidth
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowCreateModal(false); resetForm(); }}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleCreate} 
-            variant="contained" 
-            color="primary"
-            disabled={!formData.name.trim()}
-          >
-            Crear
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Modal Editar Categoría */}
-      <Dialog 
-        open={showEditModal} 
-        onClose={() => { setShowEditModal(false); resetForm(); }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Editar Categoría</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre"
-            type="text"
-            fullWidth
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowEditModal(false); resetForm(); }}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleEdit} 
-            variant="contained" 
-            color="primary"
-            disabled={!formData.name.trim()}
-          >
-            Actualizar
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Modal Confirmar Eliminación */}
-      <Dialog 
-        open={showDeleteModal} 
-        onClose={() => { setShowDeleteModal(false); setSelectedCategory(null); }}
-      >
-        <DialogTitle>Eliminar Categoría</DialogTitle>
-        <DialogContent>
-          <p>
-            ¿Estás seguro que quieres eliminar la categoría{' '}
-            <strong>"{selectedCategory?.name}"</strong>?
-          </p>
-          <p className="text-sm text-slate-500 mt-2">
-            Esta acción no se puede deshacer.
-          </p>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowDeleteModal(false); setSelectedCategory(null); }}>
-            Cancelar
-          </Button>
-          <Button onClick={handleDelete} variant="contained" color="error">
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+         </TableContainer>
+       </Box>
+     </div>
   );
 };

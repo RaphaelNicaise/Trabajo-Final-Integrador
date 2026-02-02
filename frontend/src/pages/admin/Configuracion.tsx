@@ -2,7 +2,7 @@ import { PageHeader } from '../../components/PageHeader';
 
 export const ConfiguracionPage = () => {
   return (
-    <div className="p-8">
+    <div>
       <PageHeader 
         title="Configuración" 
         description="Ajustes generales de la tienda"

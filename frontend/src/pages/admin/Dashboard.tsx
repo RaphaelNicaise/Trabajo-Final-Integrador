@@ -2,7 +2,7 @@ import { PageHeader } from '../../components/PageHeader';
 
 export const DashboardPage = () => {
   return (
-    <div className="p-8">
+    <div>
       <PageHeader 
         title="Dashboard" 
         description="Resumen y métricas de tu tienda"

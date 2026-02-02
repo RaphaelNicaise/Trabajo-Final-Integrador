@@ -127,15 +127,13 @@ export const OrdenesPage = () => {
   };
 
   return (
-    <div className="p-8">
+    <div>
       <PageHeader 
         title="Órdenes" 
         description="Administra los pedidos de tus clientes"
       />
 
-      {/* Contenedor centrado */}
-      <Box sx={{ maxWidth: '1400px', margin: '0 auto' }}>
-        {/* Error */}
+      {/* Error */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-600">{error}</p>
@@ -310,24 +308,9 @@ export const OrdenesPage = () => {
               )}
             </TableBody>
           </Table>
-        </TableContainer>
-      </Box>
-
-      {/* Modal Detalles del Comprador */}
-      <Dialog 
-        open={showBuyerModal} 
-        onClose={() => { setShowBuyerModal(false); setSelectedOrder(null); }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Detalles del Comprador</DialogTitle>
-        <DialogContent>
-          {selectedOrder && (
-            <div className="space-y-3 mt-2">
-              <div>
-                <p className="text-sm font-semibold text-slate-700">Nombre:</p>
-                <p className="text-base text-slate-900">{selectedOrder.buyer.name}</p>
-              </div>
+         </TableContainer>
+       </Box>
+     </div>
               <div>
                 <p className="text-sm font-semibold text-slate-700">Email:</p>
                 <p className="text-base text-slate-900">{selectedOrder.buyer.email}</p>

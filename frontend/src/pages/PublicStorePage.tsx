@@ -26,6 +26,7 @@ export function PublicStorePage() {
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cartCount] = useState(0);
 
   useEffect(() => {
     const loadStoreData = async () => {
@@ -64,12 +65,15 @@ export function PublicStorePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
         <PublicNavbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
-            <p className="mt-4 text-slate-600">Cargando tienda...</p>
+            <div className="relative w-16 h-16 mx-auto mb-4">
+              <div className="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-emerald-500 border-r-emerald-500 animate-spin"></div>
+            </div>
+            <p className="mt-4 text-slate-600 text-lg font-medium">Cargando tienda...</p>
           </div>
         </div>
       </div>
@@ -78,17 +82,26 @@ export function PublicStorePage() {
 
   if (!shop) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
         <PublicNavbar />
         <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">
+          <div className="w-24 h-24 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">
             Tienda no encontrada
           </h2>
+          <p className="text-slate-600 mb-8 text-lg">Lo sentimos, no pudimos encontrar la tienda que buscas</p>
           <Link
             to="/"
-            className="text-emerald-600 hover:text-emerald-700 font-medium"
+            className="inline-flex items-center px-6 py-3 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition-all button-animate"
           >
-            ← Volver a tiendas
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Volver a tiendas
           </Link>
         </div>
       </div>
@@ -96,18 +109,22 @@ export function PublicStorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <PublicNavbar />
 
       {/* Header de la Tienda */}
-      <div className="bg-gradient-to-br from-emerald-500 to-cyan-600 text-white">
-        <div className="container mx-auto px-4 py-12">
+      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-cyan-600 text-white relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
+        
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <Link
             to="/"
-            className="inline-flex items-center text-white/80 hover:text-white mb-4 text-sm"
+            className="inline-flex items-center text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors group button-animate"
           >
             <svg
-              className="h-4 w-4 mr-1"
+              className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -122,12 +139,55 @@ export function PublicStorePage() {
             Volver a tiendas
           </Link>
 
-          <h1 className="text-4xl font-bold mb-2">{shop.storeName}</h1>
-          
-          {shop.location && (
-            <div className="flex items-center text-white/90 mb-2">
+          <div className="page-header-animate">
+            <h1 className="text-5xl md:text-6xl font-bold mb-4 title-animate">{shop.storeName}</h1>
+            
+            {shop.location && (
+              <div className="flex items-center text-white/90 mb-4 gap-2 description-animate">
+                <svg
+                  className="h-5 w-5 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <span className="text-lg">{shop.location}</span>
+              </div>
+            )}
+
+            {shop.description && (
+              <p className="text-white/90 max-w-3xl text-lg leading-relaxed description-animate">{shop.description}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Productos */}
+      <main className="container mx-auto px-4 py-20 max-w-6xl">
+        <div className="mb-12 page-header-animate">
+          <h2 className="text-4xl font-bold text-slate-900 mb-3 title-animate">Productos Disponibles</h2>
+          <p className="text-slate-600 text-lg description-animate">
+            {products.length} {products.length === 1 ? 'producto' : 'productos'} en nuestra tienda
+          </p>
+        </div>
+
+        {products.length === 0 ? (
+          <div className="text-center py-20 card-animate">
+            <div className="w-24 h-24 mx-auto mb-6 bg-slate-100 rounded-full flex items-center justify-center">
               <svg
-                className="h-5 w-5 mr-2"
+                className="w-12 h-12 text-slate-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -136,132 +196,41 @@ export function PublicStorePage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                 />
               </svg>
-              {shop.location}
             </div>
-          )}
-
-          {shop.description && (
-            <p className="text-white/90 max-w-2xl">{shop.description}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Productos */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">Productos</h2>
-          <p className="text-slate-600">
-            {products.length} {products.length === 1 ? 'producto' : 'productos'} disponibles
-          </p>
-        </div>
-
-        {products.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-            <svg
-              className="mx-auto h-24 w-24 text-slate-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              />
-            </svg>
-            <h3 className="mt-4 text-lg font-medium text-slate-900">
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">
               No hay productos disponibles
             </h3>
-            <p className="mt-2 text-slate-500">
-              Esta tienda aún no tiene productos publicados
+            <p className="text-slate-600 text-lg">
+              Esta tienda aún no ha publicado productos. Vuelve pronto para descubrir novedades
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
+            {products.map((product, index) => (
               <div
                 key={product._id}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-slate-200 flex flex-col"
+                className="group card-animate card-hover-lift"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Imagen del producto */}
-                <div className="h-64 bg-slate-100 flex items-center justify-center overflow-hidden">
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <svg
-                      className="h-20 w-20 text-slate-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  )}
-                </div>
-
-                {/* Contenido */}
-                <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-2 line-clamp-2">
-                    {product.name}
-                  </h3>
-
-                  <p className="text-slate-600 text-sm mb-3 line-clamp-2 flex-1">
-                    {product.description}
-                  </p>
-
-                  {/* Precio y Stock */}
-                  <div className="mb-3">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-emerald-600">
-                        ${product.price.toLocaleString()}
-                      </span>
-                    </div>
-                    
-                    <div className="mt-1">
-                      {product.stock > 0 ? (
-                        <span className="text-xs text-slate-500">
-                          Stock disponible: {product.stock}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-red-500 font-medium">
-                          Sin stock
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Botón de Agregar al Carrito (sin funcionalidad) */}
-                  <button
-                    disabled={product.stock === 0}
-                    className={`w-full py-2.5 px-4 rounded-md font-medium transition-colors ${
-                      product.stock > 0
-                        ? 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {product.stock > 0 ? (
-                      <span className="flex items-center justify-center gap-2">
+                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 h-full flex flex-col">
+                  {/* Imagen del producto */}
+                  <div className="h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden relative">
+                    {product.imageUrl ? (
+                      <>
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center">
                         <svg
-                          className="h-5 w-5"
+                          className="h-16 w-16 text-slate-400 group-hover:text-slate-500 transition-colors"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -269,16 +238,83 @@ export function PublicStorePage() {
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                            strokeWidth={1.5}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
-                        Agregar al carrito
-                      </span>
-                    ) : (
-                      'Agotado'
+                        <p className="text-slate-500 text-sm mt-2">Sin imagen</p>
+                      </div>
                     )}
-                  </button>
+                  </div>
+
+                  {/* Contenido */}
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                      {product.name}
+                    </h3>
+
+                    <p className="text-slate-600 text-sm mb-4 line-clamp-2 flex-1">
+                      {product.description}
+                    </p>
+
+                    {/* Precio y Stock */}
+                    <div className="mb-4 pb-4 border-t border-slate-100">
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="text-3xl font-bold text-emerald-600">
+                          ${product.price.toLocaleString('es-AR')}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        {product.stock > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-emerald-700">
+                              {product.stock} en stock
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-red-600">
+                              Agotado
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Botón de Agregar al Carrito */}
+                    <button
+                      disabled={product.stock === 0}
+                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-all button-animate flex items-center justify-center gap-2 ${
+                        product.stock > 0
+                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg hover:scale-105'
+                          : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {product.stock > 0 ? (
+                        <>
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
+                          </svg>
+                          Agregar al carrito
+                        </>
+                      ) : (
+                        'Agotado'
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -286,10 +322,10 @@ export function PublicStorePage() {
         )}
       </main>
 
-      {/* Carrito flotante (solo visual) */}
-      <button className="fixed bottom-6 right-6 bg-emerald-500 text-white rounded-full p-4 shadow-lg hover:bg-emerald-600 transition-colors">
+      {/* Carrito flotante */}
+      <button className="fixed bottom-8 right-8 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 button-animate border-4 border-white/20 group z-40">
         <svg
-          className="h-6 w-6"
+          className="h-6 w-6 group-hover:scale-125 transition-transform"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -301,9 +337,11 @@ export function PublicStorePage() {
             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
           />
         </svg>
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-          0
-        </span>
+        {cartCount > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg chip-animate">
+            {cartCount}
+          </span>
+        )}
       </button>
     </div>
   );

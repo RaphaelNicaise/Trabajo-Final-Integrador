@@ -219,14 +219,14 @@ export const ProductosPage = () => {
   });
 
   return (
-    <div className="p-8">
+    <div>
       <PageHeader 
         title="Productos" 
         description="Gestiona el catálogo de productos"
       />
 
       {/* Botón Crear Producto */}
-      <div className="mb-6 flex justify-end pr-6">
+      <div className="mb-6 flex justify-end">
         <Button
           variant="contained"
           startIcon={<Plus className="w-5 h-5" />}

@@ -2,7 +2,7 @@ import { PageHeader } from '../../components/PageHeader';
 
 export const UsuariosPage = () => {
   return (
-    <div className="p-8">
+    <div>
       <PageHeader 
         title="Usuarios" 
         description="Gestiona los usuarios y permisos"

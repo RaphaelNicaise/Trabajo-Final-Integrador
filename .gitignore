@@ -36,3 +36,5 @@ docker-compose.override.yml
 # Otros archivos temporales
 *.tmp
 *.swp
+
+TODO.md

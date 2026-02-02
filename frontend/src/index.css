@@ -78,3 +78,334 @@ body {
 .scrollbar-track-slate-100::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
+
+/* ========================================
+   ANIMACIONES Y TRANSICIONES GLOBALES
+   ======================================== */
+
+/* Animaciones keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* PageHeader animations */
+.page-header-animate {
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.title-animate {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.shop-badge-animate {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.description-animate {
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+/* Animaciones para cards */
+.card-animate {
+  animation: fadeInUp 0.5s ease-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación para botones */
+.button-animate {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button-animate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.button-animate:active {
+  transform: translateY(0);
+}
+
+/* Animación para inputs */
+.input-animate {
+  transition: all 0.3s ease;
+}
+
+.input-animate:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Animación para tablas */
+.table-row-animate {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.table-row-hover {
+  transition: all 0.2s ease;
+}
+
+.table-row-hover:hover {
+  background-color: rgba(16, 185, 129, 0.05);
+  transform: scale(1.01);
+}
+
+/* Animación para modales */
+.modal-overlay {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.modal-content {
+  animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animación para spinners/loaders */
+.spinner-animate {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes spin-smooth {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-smooth {
+  animation: spin-smooth 1s linear infinite;
+}
+
+/* Animación para chips/badges */
+.chip-animate {
+  animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip-hover {
+  transition: all 0.2s ease;
+}
+
+.chip-hover:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación para listas */
+.list-item-animate {
+  animation: fadeInLeft 0.4s ease-out;
+}
+
+.list-item-animate:nth-child(1) { animation-delay: 0ms; }
+.list-item-animate:nth-child(2) { animation-delay: 50ms; }
+.list-item-animate:nth-child(3) { animation-delay: 100ms; }
+.list-item-animate:nth-child(4) { animation-delay: 150ms; }
+.list-item-animate:nth-child(5) { animation-delay: 200ms; }
+.list-item-animate:nth-child(n+6) { animation-delay: 250ms; }
+
+/* Animación para iconos */
+.icon-animate {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon-animate:hover {
+  transform: rotate(10deg) scale(1.1);
+}
+
+/* Animación para texto */
+.text-gradient-animate {
+  background: linear-gradient(90deg, #10b981, #059669, #10b981);
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animación para bordes */
+.border-gradient {
+  border-image: linear-gradient(90deg, #10b981, #059669) 1;
+  transition: all 0.3s ease;
+}
+
+.border-gradient:hover {
+  border-image: linear-gradient(90deg, #059669, #10b981) 1;
+}
+
+/* Animaciones para transitions suave */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smooth-transition-fast {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smooth-transition-slow {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animación de presencia */
+.presence-animate {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Animación para skeleton loading */
+.skeleton-loading {
+  background: linear-gradient(90deg, #f1f5f9, #e2e8f0, #f1f5f9);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Animación para badges/estado */
+.status-badge {
+  animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-badge-success {
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-glow 2s infinite;
+}
+
+/* Animación para cajas flotantes */
+.float-animate {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Animación para links */
+.link-animate {
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.link-animate::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #10b981;
+  transition: width 0.3s ease;
+}
+
+.link-animate:hover::after {
+  width: 100%;
+}
+
+/* Animación para scroll */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.scroll-reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animación para dropdowns */
+.dropdown-animate {
+  animation: fadeInDown 0.2s ease-out;
+  transform-origin: top;
+}
+
+/* Animación para alerts */
+.alert-animate {
+  animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes slideOutUp {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.alert-exit {
+  animation: slideOutUp 0.3s ease-in forwards;
+}
+
