@@ -23,25 +23,40 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('cart');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
+  // Cargar carrito del localStorage solo en el cliente
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
+    try {
+      const saved = localStorage.getItem('cart');
+      if (saved) {
+        setItems(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Error al cargar el carrito:', error);
+    } finally {
+      setInitialized(true);
+    }
+  }, []);
+
+  // Guardar en localStorage cuando cambia, pero solo después de inicializar
+  useEffect(() => {
+    if (initialized) {
+      localStorage.setItem('cart', JSON.stringify(items));
+    }
+  }, [items, initialized]);
 
   const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.productId === item.productId);
-      
+
       if (existingIndex >= 0) {
         const newItems = [...prev];
         newItems[existingIndex].quantity += quantity;
         return newItems;
       }
-      
+
       return [...prev, { ...item, quantity }];
     });
   };
@@ -55,7 +70,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem(productId);
       return;
     }
-    
+
     setItems((prev) =>
       prev.map((item) =>
         item.productId === productId ? { ...item, quantity } : item

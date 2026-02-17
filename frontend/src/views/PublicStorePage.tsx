@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { FloatingCart } from '../components/FloatingCart';
 import { useCart } from '../contexts/CartContext';
@@ -25,7 +26,8 @@ interface Shop {
 }
 
 export function PublicStorePage() {
-  const { slug } = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>();
+  const slug = params.slug;
   const { addItem } = useCart();
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,10 +45,10 @@ export function PublicStorePage() {
         // Cargar productos (configurar el tenant-id temporalmente para esta llamada)
         const tempShop = { slug };
         localStorage.setItem('activeShop', JSON.stringify(tempShop));
-        
+
         const productsData = await productsService.getAll();
         setProducts(productsData);
-        
+
       } catch (error) {
         console.error('Error al cargar datos de la tienda:', error);
       } finally {
@@ -98,7 +100,7 @@ export function PublicStorePage() {
           </h2>
           <p className="text-slate-600 mb-8 text-lg">Lo sentimos, no pudimos encontrar la tienda que buscas</p>
           <Link
-            to="/"
+            href="/"
             className="inline-flex items-center px-6 py-3 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition-all button-animate"
           >
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,10 +122,10 @@ export function PublicStorePage() {
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full -mr-48 -mt-48"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
-        
+
         <div className="container mx-auto px-4 py-16 relative z-10">
           <Link
-            to="/"
+            href="/"
             className="inline-flex items-center text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors group button-animate"
           >
             <svg
@@ -147,18 +149,18 @@ export function PublicStorePage() {
             {shop.imageUrl && (
               <div className="flex-shrink-0">
                 <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl p-2 overflow-hidden">
-                  <img 
-                    src={shop.imageUrl} 
+                  <img
+                    src={shop.imageUrl}
                     alt={`Logo de ${shop.storeName}`}
                     className="w-full h-full object-cover rounded-xl"
                   />
                 </div>
               </div>
             )}
-            
+
             <div className="flex-1">
               <h1 className="text-5xl md:text-6xl font-bold mb-4 title-animate">{shop.storeName}</h1>
-              
+
               {shop.location && (
                 <div className="flex items-center text-white/90 mb-4 gap-2 description-animate">
                   <svg
@@ -183,7 +185,7 @@ export function PublicStorePage() {
                   <span className="text-lg">{shop.location}</span>
                 </div>
               )}
-              
+
               {shop.description && (
                 <p className="text-xl text-white/80 max-w-3xl description-animate">{shop.description}</p>
               )}
@@ -282,7 +284,7 @@ export function PublicStorePage() {
                           ${product.price.toLocaleString('es-AR')}
                         </span>
                       </div>
-                      
+
                       <div>
                         {product.stock > 0 ? (
                           <div className="flex items-center gap-2">
@@ -317,11 +319,10 @@ export function PublicStorePage() {
                         }
                       }}
                       disabled={product.stock === 0}
-                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-all cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 ${
-                        product.stock > 0
+                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-all cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 ${product.stock > 0
                           ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg'
                           : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       {product.stock > 0 ? (
                         <>

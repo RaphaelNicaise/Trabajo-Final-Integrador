@@ -42,7 +42,7 @@ services:
       - test_network
     command: npm test 
 
-  # 4. Frontend Tests (Opcional, si querés correr Vitest aquí)
+  # 4. Frontend Tests (Opcional, si querés correr Jest aquí)
   # frontend-tests:
   #   build: 
   #     context: ../
@@ -50,7 +50,7 @@ services:
   #   container_name: storehub-front-tests
   #   environment:
   #     NODE_ENV: test
-  #     VITE_API_URL: http://api-tests:4000
+  #     NEXT_PUBLIC_API_URL: http://api-tests:4000
   #   networks:
   #     - test_network
   #   command: npm run test:unit

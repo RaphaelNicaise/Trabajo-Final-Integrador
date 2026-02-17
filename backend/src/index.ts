@@ -21,7 +21,7 @@ const storageService = new StorageService();
 
 // Configurar CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite dev server
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'], // Next.js dev server + Vite legacy
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
@@ -32,7 +32,7 @@ app.use(express.json());
 app.get('/', (req, res) => res.send('Backend corriendo 🚀'));
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK'});
+  res.json({ status: 'OK' });
 });
 
 // Rutas públicas (sin autenticación)
@@ -48,7 +48,7 @@ const startServer = async () => {
   try {
     await connectToMongoDB();
     await storageService.initializeMainBucket();
-    app.listen(PORT, ()  => {
+    app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);
     });
 

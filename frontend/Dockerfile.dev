@@ -10,6 +10,6 @@ RUN pnpm install
 
 COPY frontend/ .
 
-EXPOSE 5173
+EXPOSE 3000
 
-CMD ["pnpm", "dev", "--host", "0.0.0.0", "--strictPort"]
+CMD ["pnpm", "dev", "--hostname", "0.0.0.0", "--port", "3000"]

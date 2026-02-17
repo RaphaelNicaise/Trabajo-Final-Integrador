@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { useCart } from '../contexts/CartContext';
 import { ordersService } from '../services/orders.service';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { ShoppingBag, CreditCard, User, MapPin, Phone, Mail } from 'lucide-react';
 
 export function CheckoutPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const params = useParams<{ slug: string }>();
+  const slug = params.slug;
+  const router = useRouter();
   const { items, clearCart } = useCart();
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -30,9 +31,9 @@ export function CheckoutPage() {
 
   useEffect(() => {
     if (shopItems.length === 0) {
-      navigate(`/tienda/${slug}`);
+      router.push(`/tienda/${slug}`);
     }
-  }, [shopItems.length, slug, navigate]);
+  }, [shopItems.length, slug, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,15 +62,15 @@ export function CheckoutPage() {
 
       // Crear la orden
       await ordersService.createOrder(slug!, orderData);
-      
+
       setSuccess(true);
       clearCart();
-      
+
       // Redirigir después de 3 segundos
       setTimeout(() => {
-        navigate(`/tienda/${slug}`);
+        router.push(`/tienda/${slug}`);
       }, 3000);
-      
+
     } catch (err: any) {
       console.error('Error al crear orden:', err);
       setError(err.response?.data?.message || 'Error al procesar la orden. Intenta de nuevo.');
@@ -102,7 +103,7 @@ export function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <PublicNavbar />
-      
+
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="mb-8 animate-fade-in-up">
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Finalizar Compra</h1>

@@ -38,3 +38,5 @@ docker-compose.override.yml
 *.swp
 
 TODO.md
+
+**/.next

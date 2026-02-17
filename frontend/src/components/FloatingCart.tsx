@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { ShoppingCart, X, Plus, Minus, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export function FloatingCart() {
   const { items, removeItem, updateQuantity, getTotal, getItemCount, clearCart } = useCart();
@@ -151,7 +151,7 @@ export function FloatingCart() {
 
                 {/* Boton Checkout */}
                 <Link
-                  to={`/checkout/${items[0]?.shopSlug}`}
+                  href={`/checkout/${items[0]?.shopSlug}`}
                   onClick={() => setIsOpen(false)}
                   className="block w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-lg text-center transition-all hover:shadow-lg cursor-pointer hover:-translate-y-0.5"
                 >

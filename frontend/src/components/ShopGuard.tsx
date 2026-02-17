@@ -1,5 +1,8 @@
-import { Navigate, useLocation } from 'react-router-dom';
+'use client';
+
 import { useAuth } from '../contexts/AuthContext';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 interface ShopGuardProps {
@@ -8,10 +11,17 @@ interface ShopGuardProps {
 
 export function ShopGuard({ children }: ShopGuardProps) {
   const { activeShop } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  if (!activeShop && location.pathname !== '/admin' && location.pathname !== '/admin/tiendas') {
-    return <Navigate to="/admin/tiendas" replace />;
+  useEffect(() => {
+    if (!activeShop && pathname !== '/admin' && pathname !== '/admin/tiendas') {
+      router.replace('/admin/tiendas');
+    }
+  }, [activeShop, pathname, router]);
+
+  if (!activeShop && pathname !== '/admin' && pathname !== '/admin/tiendas') {
+    return null;
   }
 
   return <>{children}</>;

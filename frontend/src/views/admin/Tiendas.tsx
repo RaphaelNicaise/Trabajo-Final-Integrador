@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopsService } from '../../services/shops.service';
 import { Store, Plus, X, ArrowRight, Trash2, MapPin, Image as ImageIcon } from 'lucide-react';
@@ -26,16 +26,16 @@ export const TiendasPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [shopToDelete, setShopToDelete] = useState<Shop | null>(null);
   const { user, selectShop, clearActiveShop } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     // Limpiar la tienda activa al entrar a esta página
     clearActiveShop();
     loadShops();
-    
+
     // Actualizar título del documento
     document.title = 'Mis Tiendas | StoreHub';
-    
+
     return () => {
       document.title = 'StoreHub';
     };
@@ -65,7 +65,7 @@ export const TiendasPage = () => {
       name: shop.name,
       role: shop.role,
     });
-    navigate('/admin/dashboard');
+    router.push('/admin/dashboard');
   };
 
   const handleCreateShop = () => {
@@ -113,29 +113,29 @@ export const TiendasPage = () => {
         )}
 
         {/* Error State */}
-         {error && (
-           <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6 w-full animate-fade-in-down">
-             <p className="text-red-600">{error}</p>
-             <button
-               onClick={loadShops}
-               className="mt-2 text-sm text-red-700 hover:text-red-800 font-medium cursor-pointer"
-             >
-               Reintentar
-             </button>
-           </div>
-         )}
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6 w-full animate-fade-in-down">
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={loadShops}
+              className="mt-2 text-sm text-red-700 hover:text-red-800 font-medium cursor-pointer"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
 
         {/* Lista de Tiendas */}
         {!loading && !error && (
-           <div className="w-full flex flex-col items-center gap-6">
-             {/* Tarjetas de Tiendas */}
-             <div className="w-full flex flex-col items-center gap-4">
-               {shops.map((shop, index) => (
-                 <div
-                   key={shop.id}
-                   className="w-full max-w-2xl bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 p-6 flex items-center justify-between gap-6 mx-auto group relative stagger-item hover-lift"
-                   style={{ minHeight: '110px', animationDelay: `${index * 0.05}s` }}
-                 >
+          <div className="w-full flex flex-col items-center gap-6">
+            {/* Tarjetas de Tiendas */}
+            <div className="w-full flex flex-col items-center gap-4">
+              {shops.map((shop, index) => (
+                <div
+                  key={shop.id}
+                  className="w-full max-w-2xl bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 p-6 flex items-center justify-between gap-6 mx-auto group relative stagger-item hover-lift"
+                  style={{ minHeight: '110px', animationDelay: `${index * 0.05}s` }}
+                >
                   <div className="flex items-center gap-5 flex-1">
                     <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-emerald-200 group-hover:border-emerald-400 transition-all">
                       <Store className="w-8 h-8 text-emerald-600" />
@@ -164,18 +164,18 @@ export const TiendasPage = () => {
                       </div>
                     </div>
                   </div>
-                   <div className="flex items-center gap-2">
-                     <button
-                       onClick={() => handleDeleteClick(shop)}
-                       className="p-2 text-red-500 hover:bg-red-100 rounded-md transition-all active:scale-95 border border-transparent hover:border-red-300 cursor-pointer interactive-btn"
-                       title="Eliminar tienda"
-                     >
-                       <Trash2 className="w-5 h-5" />
-                     </button>
-                     <button
-                       onClick={() => handleSelectShop(shop)}
-                       className="px-6 py-2.5 bg-emerald-500 text-white font-semibold rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0 shadow group-hover:shadow-md cursor-pointer interactive-btn"
-                     >
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDeleteClick(shop)}
+                      className="p-2 text-red-500 hover:bg-red-100 rounded-md transition-all active:scale-95 border border-transparent hover:border-red-300 cursor-pointer interactive-btn"
+                      title="Eliminar tienda"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleSelectShop(shop)}
+                      className="px-6 py-2.5 bg-emerald-500 text-white font-semibold rounded-md hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 flex-shrink-0 shadow group-hover:shadow-md cursor-pointer interactive-btn"
+                    >
                       Administrar
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -186,11 +186,11 @@ export const TiendasPage = () => {
               ))}
             </div>
             {/* Botón Crear Nueva Tienda */}
-             <div className="w-full flex items-center justify-center mt-6">
-               <button
-                 onClick={handleCreateShop}
-                 className="w-full max-w-2xl bg-white border-2 border-dashed border-slate-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all p-6 flex items-center justify-center gap-3 group cursor-pointer interactive-btn stagger-item"
-               >
+            <div className="w-full flex items-center justify-center mt-6">
+              <button
+                onClick={handleCreateShop}
+                className="w-full max-w-2xl bg-white border-2 border-dashed border-slate-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all p-6 flex items-center justify-center gap-3 group cursor-pointer interactive-btn stagger-item"
+              >
                 <div className="w-12 h-12 bg-slate-100 group-hover:bg-emerald-100 rounded-full flex items-center justify-center transition-colors">
                   <Plus className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                 </div>
@@ -324,7 +324,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
     } catch (err: any) {
       console.error('Error al crear tienda:', err);
       setError(
-        err.response?.data?.error || 
+        err.response?.data?.error ||
         'Error al crear la tienda. Intenta de nuevo.'
       );
     } finally {
@@ -358,7 +358,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               </div>
               <h3 className="text-lg font-semibold text-slate-900">Información Básica</h3>
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre de la Tienda *</label>
               <input
@@ -370,7 +370,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
                 placeholder="Mi Tienda Online"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">URL de la Tienda (Slug) *</label>
               <input
@@ -396,7 +396,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               </div>
               <h3 className="text-lg font-semibold text-slate-900">Detalles Adicionales</h3>
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Ubicación (Opcional)</label>
               <input
@@ -407,7 +407,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
                 placeholder="Ciudad, País"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Descripción (Opcional)</label>
               <textarea
@@ -428,7 +428,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               </div>
               <h3 className="text-lg font-semibold text-slate-900">Logo de la Tienda (Opcional)</h3>
             </div>
-            
+
             <div className="relative">
               <input
                 type="file"
