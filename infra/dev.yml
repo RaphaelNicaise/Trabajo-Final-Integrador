@@ -15,8 +15,8 @@ services:
 
   backend:
     build: 
-      context: ../backend
-      dockerfile: Dockerfile.dev
+      context: ../
+      dockerfile: backend/Dockerfile.dev
     container_name: backend
     ports:
       - "${PORT}:${PORT}"
@@ -43,8 +43,8 @@ services:
 
   frontend:
     build: 
-      context: ../frontend
-      dockerfile: Dockerfile.dev
+      context: ../
+      dockerfile: frontend/Dockerfile.dev
     container_name: frontend
     ports:
       - "5173:5173" # puerto por defecto de Vite
