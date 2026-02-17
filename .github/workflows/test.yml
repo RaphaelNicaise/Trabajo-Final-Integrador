@@ -20,5 +20,5 @@
 
 #      # 2. Ejecutamos los tests usando el Makefile para mantener consistencia con local
 #      # Este comando levanta Docker, corre Pytest/Vitest y cierra todo al terminar
-#      - name: Execute Tests via Makefile
-#        run: make test-local
+#      - name: Execute Tests
+#        run:

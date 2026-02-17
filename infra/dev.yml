@@ -5,6 +5,7 @@ services:
   mongo:
     image: mongo:8
     container_name: mongo_db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
     ports:
       - "27017:27017"   # opcional para host
     volumes:
@@ -14,14 +15,13 @@ services:
 
   backend:
     build: 
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile.dev
-
     container_name: backend
     ports:
       - "${PORT}:${PORT}"
     volumes:
-      - ./backend:/app:cached      # sincroniza código host ↔ contenedor
+      - ../backend:/app:cached      # sincroniza código host ↔ contenedor
       - /app/node_modules    # evita sobrescribir node_modules del contenedor
     environment:
       NODE_ENV: development
@@ -43,13 +43,13 @@ services:
 
   frontend:
     build: 
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile.dev
     container_name: frontend
     ports:
       - "5173:5173" # puerto por defecto de Vite
     volumes:
-      - ./frontend:/app:cached
+      - ../frontend:/app:cached
       - /app/node_modules
     environment:
       NODE_ENV: development
