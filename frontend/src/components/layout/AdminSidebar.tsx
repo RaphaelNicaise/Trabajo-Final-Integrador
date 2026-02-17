@@ -39,8 +39,8 @@ const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false }: Sid
         ${disabled 
           ? 'opacity-40 cursor-not-allowed text-slate-600' 
           : isActive 
-            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
-            : 'text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer'
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 cursor-pointer' 
+            : 'text-slate-400 hover:bg-slate-800 hover:text-white hover:shadow-md cursor-pointer'
         }
       `}
     >
@@ -98,7 +98,7 @@ export const AdminSidebar = () => {
           <div className="relative group">
             <button 
               onClick={() => setShowShopMenu(!showShopMenu)}
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg"
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg cursor-pointer hover:shadow-emerald-500/50 hover:-translate-y-0.5"
             >
               <Store size={20} className="text-white mb-1" strokeWidth={2} />
               <ChevronDown size={12} className="text-white" strokeWidth={2} />
@@ -118,7 +118,7 @@ export const AdminSidebar = () => {
                 </div>
                 <button
                   onClick={handleChangeShop}
-                  className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                  className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
                 >
                   Cambiar tienda
                 </button>
@@ -126,10 +126,10 @@ export const AdminSidebar = () => {
             )}
           </div>
         ) : (
-          <Link 
-            to="/admin/tiendas" 
-            className="flex items-center justify-center w-12 h-12 transition-transform hover:scale-110 group relative"
-          >
+           <Link 
+             to="/admin/tiendas" 
+             className="flex items-center justify-center w-12 h-12 transition-all hover:scale-110 group relative cursor-pointer hover:-translate-y-1 hover:shadow-lg"
+           >
             <Store size={28} className="text-emerald-500" />
             
             <div className="absolute left-16 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700 pointer-events-none whitespace-nowrap flex items-center">
@@ -199,10 +199,10 @@ export const AdminSidebar = () => {
         </div>
       </div>
 
-      <div className="flex flex-col items-center w-full pt-4 mt-auto border-t border-slate-800 gap-3 bg-[#0F172A] flex-shrink-0">
-        <div 
-          className="relative group flex items-center justify-center w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-200 hover:bg-indigo-600 hover:text-white transition-colors ring-2 ring-transparent hover:ring-indigo-500/30 cursor-pointer"
-        >
+       <div className="flex flex-col items-center w-full pt-4 mt-auto border-t border-slate-800 gap-3 bg-[#0F172A] flex-shrink-0">
+         <div 
+           className="relative group flex items-center justify-center w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-200 hover:bg-indigo-600 hover:text-white transition-all ring-2 ring-transparent hover:ring-indigo-500/30 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+         >
           <User size={20} strokeWidth={2} />
           
           <div className="absolute left-14 bottom-2 px-5 py-4 bg-slate-900 text-white text-sm font-medium rounded-lg shadow-xl opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 border border-slate-700 whitespace-nowrap z-50">
@@ -215,10 +215,10 @@ export const AdminSidebar = () => {
           </div>  
         </div>
         
-        <button 
-          onClick={handleLogout}
-          className="relative group flex items-center justify-center w-10 h-10 text-slate-500 hover:text-red-400 transition-colors rounded-lg hover:bg-slate-800"
-        >
+         <button 
+           onClick={handleLogout}
+           className="relative group flex items-center justify-center w-10 h-10 text-slate-500 hover:text-red-400 transition-all rounded-lg hover:bg-slate-800 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+         >
           <LogOut size={20} strokeWidth={2} />
           
           <div className="absolute left-14 bottom-0 px-5 py-3 bg-red-900/90 text-red-100 text-sm font-bold rounded-lg shadow-xl opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 border border-red-800 whitespace-nowrap z-50 flex items-center">

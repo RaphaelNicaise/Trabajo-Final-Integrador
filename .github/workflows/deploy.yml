@@ -1,0 +1,36 @@
+# name: CD - Deploy StoreHub to AWS
+# 
+# # Solo se dispara cuando hay un push confirmado en la rama main
+# on:
+#   push:
+#     branches: [ main ]
+# 
+# jobs:
+#   deploy:
+#     name: Continuous Deployment to EC2
+#     runs-on: ubuntu-latest
+#     # IMPORTANTE: Solo arranca si el job 'run-tests' del archivo anterior terminó con éxito
+#     needs: run-tests 
+# 
+#     steps:
+#       # Conexión segura vía SSH a la instancia de AWS
+#       - name: SSH and Deploy
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.AWS_HOST }}      # IP de tu EC2 guardada en Secrets
+#           username: ${{ secrets.AWS_USER }}  # Usuario (ej: ubuntu)
+#           key: ${{ secrets.AWS_SSH_KEY }}    # Tu llave .pem guardada en Secrets
+#           script: |
+#             # 1. Entrar al directorio donde clonaste el proyecto en AWS
+#             cd /home/ubuntu/Trabajo-Final-Integrador
+#             
+#             # 2. Actualizar el código local con lo que hay en el repo de GitHub
+#             git pull origin main
+#             
+#             # 3. Re-construir y levantar los contenedores en modo 'detached' (segundo plano)
+#             # Usamos el archivo de producción estándar de docker-compose
+#             docker compose up -d --build
+#             
+#             # 4. Mantenimiento: Borrar imágenes viejas que quedaron huérfanas
+#             # Esto evita que el disco de la EC2 se llene (crítico en capas gratuitas)
+#             docker image prune -f

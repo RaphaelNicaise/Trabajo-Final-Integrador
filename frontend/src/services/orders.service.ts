@@ -35,4 +35,13 @@ export const ordersService = {
     const response = await api.put(`/orders/${id}`, { status });
     return response.data;
   },
+
+  createOrder: async (slug: string, orderData: any) => {
+    const response = await api.post(`/orders`, orderData, {
+      headers: {
+        'x-tenant-id': slug
+      }
+    });
+    return response.data;
+  },
 };

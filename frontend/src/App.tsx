@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { CartProvider } from './contexts/CartContext'
 import { PrivateRoute } from './components/PrivateRoute'
 import { ShopGuard } from './components/ShopGuard'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -7,6 +8,7 @@ import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { PublicStoresPage } from './pages/PublicStoresPage'
 import { PublicStorePage } from './pages/PublicStorePage'
+import { CheckoutPage } from './pages/CheckoutPage'
 import { TiendasPage } from './pages/admin/Tiendas'
 import { DashboardPage } from './pages/admin/Dashboard'
 import { ProductosPage } from './pages/admin/Productos'
@@ -18,13 +20,15 @@ import { UsuariosPage } from './pages/admin/Usuarios'
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <CartProvider>
+        <Router>
         <Routes>
           {/* Rutas Publicas */}
           <Route path="/" element={<PublicStoresPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/tienda/:slug" element={<PublicStorePage />} />
+          <Route path="/checkout/:slug" element={<CheckoutPage />} />
 
           {/* Rutas Privadas (Panel de Administracion) */}
           <Route
@@ -91,7 +95,8 @@ function App() {
           </Route>
         </Routes>
       </Router>
-    </AuthProvider>
+    </CartProvider>
+  </AuthProvider>
   )
 }
 

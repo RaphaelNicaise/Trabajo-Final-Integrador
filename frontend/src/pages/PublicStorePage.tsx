@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
+import { FloatingCart } from '../components/FloatingCart';
+import { useCart } from '../contexts/CartContext';
 import { productsService } from '../services/products.service';
 import { shopsService } from '../services/shops.service';
 
@@ -19,14 +21,15 @@ interface Shop {
   storeName: string;
   location?: string;
   description?: string;
+  imageUrl?: string;
 }
 
 export function PublicStorePage() {
   const { slug } = useParams<{ slug: string }>();
+  const { addItem } = useCart();
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cartCount] = useState(0);
 
   useEffect(() => {
     const loadStoreData = async () => {
@@ -139,37 +142,52 @@ export function PublicStorePage() {
             Volver a tiendas
           </Link>
 
-          <div className="page-header-animate">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 title-animate">{shop.storeName}</h1>
-            
-            {shop.location && (
-              <div className="flex items-center text-white/90 mb-4 gap-2 description-animate">
-                <svg
-                  className="h-5 w-5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          <div className="page-header-animate flex items-start gap-6">
+            {/* Logo de la tienda */}
+            {shop.imageUrl && (
+              <div className="flex-shrink-0">
+                <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl p-2 overflow-hidden">
+                  <img 
+                    src={shop.imageUrl} 
+                    alt={`Logo de ${shop.storeName}`}
+                    className="w-full h-full object-cover rounded-xl"
                   />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <span className="text-lg">{shop.location}</span>
+                </div>
               </div>
             )}
-
-            {shop.description && (
-              <p className="text-white/90 max-w-3xl text-lg leading-relaxed description-animate">{shop.description}</p>
-            )}
+            
+            <div className="flex-1">
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 title-animate">{shop.storeName}</h1>
+              
+              {shop.location && (
+                <div className="flex items-center text-white/90 mb-4 gap-2 description-animate">
+                  <svg
+                    className="h-5 w-5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  <span className="text-lg">{shop.location}</span>
+                </div>
+              )}
+              
+              {shop.description && (
+                <p className="text-xl text-white/80 max-w-3xl description-animate">{shop.description}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -212,8 +230,8 @@ export function PublicStorePage() {
             {products.map((product, index) => (
               <div
                 key={product._id}
-                className="group card-animate card-hover-lift"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="group stagger-item hover-lift"
+                style={{ animationDelay: `${index * 0.03}s` }}
               >
                 <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 h-full flex flex-col">
                   {/* Imagen del producto */}
@@ -286,10 +304,22 @@ export function PublicStorePage() {
 
                     {/* Botón de Agregar al Carrito */}
                     <button
+                      onClick={() => {
+                        if (product.stock > 0 && shop) {
+                          addItem({
+                            productId: product._id,
+                            name: product.name,
+                            price: product.price,
+                            imageUrl: product.imageUrl,
+                            shopSlug: slug!,
+                            shopName: shop.storeName
+                          });
+                        }
+                      }}
                       disabled={product.stock === 0}
-                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-all button-animate flex items-center justify-center gap-2 ${
+                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-all cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 ${
                         product.stock > 0
-                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg hover:scale-105'
+                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg'
                           : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       }`}
                     >
@@ -322,27 +352,8 @@ export function PublicStorePage() {
         )}
       </main>
 
-      {/* Carrito flotante */}
-      <button className="fixed bottom-8 right-8 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 button-animate border-4 border-white/20 group z-40">
-        <svg
-          className="h-6 w-6 group-hover:scale-125 transition-transform"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-        {cartCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg chip-animate">
-            {cartCount}
-          </span>
-        )}
-      </button>
+      {/* Carrito Flotante */}
+      <FloatingCart />
     </div>
   );
 }

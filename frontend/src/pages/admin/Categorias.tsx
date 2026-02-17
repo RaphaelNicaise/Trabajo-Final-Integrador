@@ -19,7 +19,7 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
-import { Trash2, Edit, Plus } from 'lucide-react';
+import { Trash2, Edit, Plus, Tag } from 'lucide-react';
 
 export const CategoriasPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -164,15 +164,15 @@ export const CategoriasPage = () => {
 
       {/* Botón Agregar Categoría */}
       <div className="flex justify-end">
-        <Button
-          variant="contained"
-          startIcon={<Plus className="w-5 h-5" />}
-          onClick={() => setShowCreateModal(true)}
-          className="button-animate"
-          sx={{
-            backgroundColor: '#10b981',
-            '&:hover': {
-              backgroundColor: '#059669',
+         <Button
+           variant="contained"
+           startIcon={<Plus className="w-5 h-5" />}
+           onClick={() => setShowCreateModal(true)}
+           className="interactive-btn"
+           sx={{
+             backgroundColor: '#10b981',
+             '&:hover': {
+               backgroundColor: '#059669',
             },
           }}
         >
@@ -230,8 +230,8 @@ export const CategoriasPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                sortedCategories.map((category) => (
-                  <TableRow key={category._id} hover className="table-row-hover">
+               sortedCategories.map((category, index) => (
+                 <TableRow key={category._id} hover className="table-row-hover stagger-item" sx={{ animationDelay: `${index * 0.05}s` }}>
                     <TableCell sx={{ fontWeight: 500 }}>{category.name}</TableCell>
                     <TableCell sx={{ color: '#64748b' }}>{formatDate(category.createdAt)}</TableCell>
                     <TableCell sx={{ color: '#64748b' }}>{formatDate(category.updatedAt)}</TableCell>
@@ -240,7 +240,7 @@ export const CategoriasPage = () => {
                         onClick={() => openEditModal(category)}
                         color="primary"
                         size="small"
-                        className="icon-animate"
+                        className="interactive-btn"
                       >
                         <Edit className="w-5 h-5" />
                       </IconButton>
@@ -248,7 +248,7 @@ export const CategoriasPage = () => {
                         onClick={() => openDeleteModal(category)}
                         color="error"
                         size="small"
-                        className="icon-animate"
+                        className="interactive-btn"
                       >
                         <Trash2 className="w-5 h-5" />
                       </IconButton>
@@ -269,32 +269,71 @@ export const CategoriasPage = () => {
         fullWidth
         className="modal-overlay"
       >
-        <DialogTitle>Agregar Categoría</DialogTitle>
-        <DialogContent className="modal-content">
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre"
-            type="text"
-            fullWidth
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
+        <DialogTitle>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <Tag className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Agregar Categoría</h2>
+              <p className="text-sm text-slate-500 font-normal">Organiza tus productos</p>
+            </div>
+          </div>
+        </DialogTitle>
+        <DialogContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Tag className="w-4 h-4 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Detalles de la Categoría</h3>
+            </div>
+            
+            <TextField
+              autoFocus
+              label="Nombre de la categoría"
+              type="text"
+              fullWidth
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Ej: Electrónica, Ropa, Accesorios..."
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': { borderColor: '#9333ea' },
+                  '&.Mui-focused fieldset': { borderColor: '#9333ea' }
+                }
+              }}
+            />
+          </div>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowCreateModal(false); resetForm(); }}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleCreate} 
-            variant="contained" 
-            color="primary"
-            disabled={!formData.name.trim()}
-          >
-            Crear
-          </Button>
-        </DialogActions>
+         <DialogActions className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+           <Button 
+             onClick={() => { setShowCreateModal(false); resetForm(); }} 
+             className="interactive-btn"
+             sx={{ 
+               color: '#64748b',
+               '&:hover': { backgroundColor: '#f1f5f9' }
+             }}
+           >
+             Cancelar
+           </Button>
+           <Button 
+             onClick={handleCreate} 
+             variant="contained" 
+             disabled={!formData.name.trim()}
+             className="interactive-btn"
+             sx={{
+               backgroundColor: '#9333ea',
+               '&:hover': { backgroundColor: '#7e22ce' },
+               '&.Mui-disabled': { backgroundColor: '#e9d5ff', color: '#a855f7' },
+               fontWeight: 600,
+               px: 4
+             }}
+           >
+             Crear
+           </Button>
+         </DialogActions>
       </Dialog>
 
       {/* Modal Editar Categoría */}
@@ -304,29 +343,67 @@ export const CategoriasPage = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Editar Categoría</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre"
-            type="text"
-            fullWidth
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
+        <DialogTitle>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <Edit className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Editar Categoría</h2>
+              <p className="text-sm text-slate-500 font-normal">Actualiza el nombre de la categoría</p>
+            </div>
+          </div>
+        </DialogTitle>
+        <DialogContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Tag className="w-4 h-4 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Detalles de la Categoría</h3>
+            </div>
+            
+            <TextField
+              autoFocus
+              label="Nombre de la categoría"
+              type="text"
+              fullWidth
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': { borderColor: '#3b82f6' },
+                  '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                }
+              }}
+            />
+          </div>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowEditModal(false); resetForm(); }}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleEdit} 
-            variant="contained" 
-            color="primary"
-            disabled={!formData.name.trim()}
-          >
+         <DialogActions className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+           <Button 
+             onClick={() => { setShowEditModal(false); resetForm(); }} 
+             className="interactive-btn"
+             sx={{ 
+               color: '#64748b',
+               '&:hover': { backgroundColor: '#f1f5f9' }
+             }}
+           >
+             Cancelar
+           </Button>
+           <Button 
+             onClick={handleEdit} 
+             variant="contained" 
+             disabled={!formData.name.trim()}
+             className="interactive-btn"
+             sx={{
+               backgroundColor: '#3b82f6',
+               '&:hover': { backgroundColor: '#2563eb' },
+               '&.Mui-disabled': { backgroundColor: '#dbeafe', color: '#60a5fa' },
+               fontWeight: 600,
+               px: 4
+             }}
+           >
             Actualizar
           </Button>
         </DialogActions>
@@ -347,14 +424,14 @@ export const CategoriasPage = () => {
             Esta acción no se puede deshacer.
           </p>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowDeleteModal(false); setSelectedCategory(null); }}>
-            Cancelar
-          </Button>
-          <Button onClick={handleDelete} variant="contained" color="error">
-            Eliminar
-          </Button>
-        </DialogActions>
+         <DialogActions>
+           <Button onClick={() => { setShowDeleteModal(false); setSelectedCategory(null); }} className="interactive-btn">
+             Cancelar
+           </Button>
+           <Button onClick={handleDelete} variant="contained" color="error" className="interactive-btn">
+             Eliminar
+           </Button>
+         </DialogActions>
       </Dialog>
     </div>
   );

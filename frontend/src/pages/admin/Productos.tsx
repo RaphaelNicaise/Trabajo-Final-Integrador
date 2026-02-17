@@ -23,7 +23,7 @@ import {
   Chip,
   Autocomplete,
 } from '@mui/material';
-import { Trash2, Edit, Plus } from 'lucide-react';
+import { Trash2, Edit, Plus, Package, DollarSign, Box, Tag, Image as ImageIcon } from 'lucide-react';
 
 export const ProductosPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -231,7 +231,7 @@ export const ProductosPage = () => {
           variant="contained"
           startIcon={<Plus className="w-5 h-5" />}
           onClick={() => setShowCreateModal(true)}
-          className="button-animate"
+          className="interactive-btn"
           sx={{
             backgroundColor: '#10b981',
             '&:hover': {
@@ -301,8 +301,8 @@ export const ProductosPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedProducts.map((product) => (
-                <TableRow key={product._id} hover className="table-row-hover" sx={{ height: '100px' }}>
+               sortedProducts.map((product, index) => (
+                 <TableRow key={product._id} hover className="table-row-hover stagger-item" sx={{ height: '100px', animationDelay: `${index * 0.05}s` }}>
                   <TableCell>
                     {product.imageUrl ? (
                       <img
@@ -353,7 +353,7 @@ export const ProductosPage = () => {
                       onClick={() => openEditModal(product)}
                       color="primary"
                       size="small"
-                      className="icon-animate"
+                      className="interactive-btn"
                     >
                       <Edit className="w-5 h-5" />
                     </IconButton>
@@ -361,7 +361,7 @@ export const ProductosPage = () => {
                       onClick={() => openDeleteModal(product)}
                       color="error"
                       size="small"
-                      className="icon-animate"
+                      className="interactive-btn"
                     >
                       <Trash2 className="w-5 h-5" />
                     </IconButton>
@@ -375,196 +375,408 @@ export const ProductosPage = () => {
       </div>
 
       {/* Modal Crear Producto */}
-      <Dialog open={showCreateModal} onClose={() => { setShowCreateModal(false); resetForm(); }} maxWidth="sm" fullWidth className="modal-overlay">
-        <DialogTitle>Crear Producto</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre"
-            type="text"
-            fullWidth
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Descripción"
-            type="text"
-            fullWidth
-            multiline
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Precio"
-            type="number"
-            fullWidth
-            required
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-          />
-          <TextField
-            margin="dense"
-            label="Stock"
-            type="number"
-            fullWidth
-            required
-            value={formData.stock}
-            onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-          />
-          
-          {/* Selector de Categorías */}
-          <Autocomplete
-            multiple
-            options={categories}
-            getOptionLabel={(option) => option.name}
-            value={categories.filter(cat => formData.categories.includes(cat._id))}
-            onChange={(_, newValue) => {
-              setFormData({ ...formData, categories: newValue.map(cat => cat._id) });
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                margin="dense"
-                label="Categorías"
-                placeholder="Selecciona categorías"
-              />
-            )}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  label={option.name}
-                  {...getTagProps({ index })}
-                  size="small"
-                  sx={{
-                    backgroundColor: '#e0e7ff',
-                    color: '#4338ca',
-                  }}
-                />
-              ))
-            }
-            sx={{ mt: 2 }}
-          />
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Imagen del producto
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+      <Dialog open={showCreateModal} onClose={() => { setShowCreateModal(false); resetForm(); }} maxWidth="md" fullWidth className="modal-overlay">
+        <DialogTitle>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Crear Producto</h2>
+              <p className="text-sm text-slate-500 font-normal">Agrega un nuevo producto a tu catálogo</p>
+            </div>
+          </div>
+        </DialogTitle>
+        <DialogContent className="space-y-6 pt-4">
+          {/* Información Básica */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Package className="w-4 h-4 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Información Básica</h3>
+            </div>
+            
+            <TextField
+              autoFocus
+              label="Nombre del Producto"
+              type="text"
+              fullWidth
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Ej: Laptop HP Pavilion"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': { borderColor: '#10b981' },
+                  '&.Mui-focused fieldset': { borderColor: '#10b981' }
+                }
+              }}
+            />
+            
+            <TextField
+              label="Descripción"
+              type="text"
+              fullWidth
+              multiline
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe las características del producto..."
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': { borderColor: '#10b981' },
+                  '&.Mui-focused fieldset': { borderColor: '#10b981' }
+                }
+              }}
             />
           </div>
+
+          {/* Precio y Stock */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Precio y Stock</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <TextField
+                label="Precio"
+                type="number"
+                fullWidth
+                required
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                placeholder="0.00"
+                InputProps={{
+                  startAdornment: <span className="text-slate-500 mr-2">$</span>
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': { borderColor: '#10b981' },
+                    '&.Mui-focused fieldset': { borderColor: '#10b981' }
+                  }
+                }}
+              />
+              
+              <TextField
+                label="Stock"
+                type="number"
+                fullWidth
+                required
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+                placeholder="0"
+                InputProps={{
+                  startAdornment: <Box className="w-4 h-4 text-slate-500 mr-2" />
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': { borderColor: '#10b981' },
+                    '&.Mui-focused fieldset': { borderColor: '#10b981' }
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Categorías */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Tag className="w-4 h-4 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Categorías</h3>
+            </div>
+            
+            <Autocomplete
+              multiple
+              options={categories}
+              getOptionLabel={(option) => option.name}
+              value={categories.filter(cat => formData.categories.includes(cat._id))}
+              onChange={(_, newValue) => {
+                setFormData({ ...formData, categories: newValue.map(cat => cat._id) });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Selecciona categorías"
+                  placeholder="Buscar categorías..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': { borderColor: '#10b981' },
+                      '&.Mui-focused fieldset': { borderColor: '#10b981' }
+                    }
+                  }}
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    label={option.name}
+                    {...getTagProps({ index })}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#e0e7ff',
+                      color: '#4338ca',
+                      fontWeight: 500
+                    }}
+                  />
+                ))
+              }
+            />
+          </div>
+          
+          {/* Imagen */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <ImageIcon className="w-4 h-4 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Imagen del Producto</h3>
+            </div>
+            
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-slate-600 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-300 rounded-lg"
+              />
+              {imageFile && (
+                <p className="mt-2 text-sm text-emerald-600 font-medium">
+                  ✓ {imageFile.name}
+                </p>
+              )}
+            </div>
+          </div>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowCreateModal(false); resetForm(); }}>
-            Cancelar
-          </Button>
-          <Button onClick={handleCreate} variant="contained" color="primary">
-            Crear
-          </Button>
-        </DialogActions>
+         <DialogActions className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+           <Button 
+             onClick={() => { setShowCreateModal(false); resetForm(); }} 
+             className="interactive-btn"
+             sx={{ 
+               color: '#64748b',
+               '&:hover': { backgroundColor: '#f1f5f9' }
+             }}
+           >
+             Cancelar
+           </Button>
+           <Button 
+             onClick={handleCreate} 
+             variant="contained" 
+             className="interactive-btn"
+             sx={{
+               backgroundColor: '#10b981',
+               '&:hover': { backgroundColor: '#059669' },
+               fontWeight: 600,
+               px: 4
+             }}
+           >
+             Crear Producto
+           </Button>
+         </DialogActions>
       </Dialog>
 
       {/* Modal Editar Producto */}
-      <Dialog open={showEditModal} onClose={() => { setShowEditModal(false); resetForm(); }} maxWidth="sm" fullWidth>
-        <DialogTitle>Editar Producto</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre"
-            type="text"
-            fullWidth
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Descripción"
-            type="text"
-            fullWidth
-            multiline
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Precio"
-            type="number"
-            fullWidth
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-          />
-          <TextField
-            margin="dense"
-            label="Stock"
-            type="number"
-            fullWidth
-            value={formData.stock}
-            onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-          />
-          
-          {/* Selector de Categorías */}
-          <Autocomplete
-            multiple
-            options={categories}
-            getOptionLabel={(option) => option.name}
-            value={categories.filter(cat => formData.categories.includes(cat._id))}
-            onChange={(_, newValue) => {
-              setFormData({ ...formData, categories: newValue.map(cat => cat._id) });
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                margin="dense"
-                label="Categorías"
-                placeholder="Selecciona categorías"
-              />
-            )}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  label={option.name}
-                  {...getTagProps({ index })}
-                  size="small"
-                  sx={{
-                    backgroundColor: '#e0e7ff',
-                    color: '#4338ca',
-                  }}
-                />
-              ))
-            }
-            sx={{ mt: 2 }}
-          />
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Cambiar imagen del producto (opcional)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+      <Dialog open={showEditModal} onClose={() => { setShowEditModal(false); resetForm(); }} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <Edit className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Editar Producto</h2>
+              <p className="text-sm text-slate-500 font-normal">Actualiza la información del producto</p>
+            </div>
+          </div>
+        </DialogTitle>
+        <DialogContent className="space-y-6 pt-4">
+          {/* Información Básica */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Package className="w-4 h-4 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Información Básica</h3>
+            </div>
+            
+            <TextField
+              autoFocus
+              label="Nombre del Producto"
+              type="text"
+              fullWidth
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': { borderColor: '#3b82f6' },
+                  '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                }
+              }}
+            />
+            
+            <TextField
+              label="Descripción"
+              type="text"
+              fullWidth
+              multiline
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': { borderColor: '#3b82f6' },
+                  '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                }
+              }}
             />
           </div>
+
+          {/* Precio y Stock */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Precio y Stock</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <TextField
+                label="Precio"
+                type="number"
+                fullWidth
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                InputProps={{
+                  startAdornment: <span className="text-slate-500 mr-2">$</span>
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': { borderColor: '#3b82f6' },
+                    '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                  }
+                }}
+              />
+              
+              <TextField
+                label="Stock"
+                type="number"
+                fullWidth
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+                InputProps={{
+                  startAdornment: <Box className="w-4 h-4 text-slate-500 mr-2" />
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': { borderColor: '#3b82f6' },
+                    '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Categorías */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Tag className="w-4 h-4 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Categorías</h3>
+            </div>
+            
+            <Autocomplete
+              multiple
+              options={categories}
+              getOptionLabel={(option) => option.name}
+              value={categories.filter(cat => formData.categories.includes(cat._id))}
+              onChange={(_, newValue) => {
+                setFormData({ ...formData, categories: newValue.map(cat => cat._id) });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Selecciona categorías"
+                  placeholder="Buscar categorías..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': { borderColor: '#3b82f6' },
+                      '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
+                    }
+                  }}
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    label={option.name}
+                    {...getTagProps({ index })}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#e0e7ff',
+                      color: '#4338ca',
+                      fontWeight: 500
+                    }}
+                  />
+                ))
+              }
+            />
+          </div>
+          
+          {/* Imagen */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <ImageIcon className="w-4 h-4 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Cambiar Imagen</h3>
+            </div>
+            
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-slate-600 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-300 rounded-lg"
+              />
+              {imageFile && (
+                <p className="mt-2 text-sm text-blue-600 font-medium">
+                  ✓ {imageFile.name}
+                </p>
+              )}
+            </div>
+          </div>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowEditModal(false); resetForm(); }}>
-            Cancelar
-          </Button>
-          <Button onClick={handleEdit} variant="contained" color="primary">
-            Actualizar
-          </Button>
-        </DialogActions>
+         <DialogActions className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+           <Button 
+             onClick={() => { setShowEditModal(false); resetForm(); }} 
+             className="interactive-btn"
+             sx={{ 
+               color: '#64748b',
+               '&:hover': { backgroundColor: '#f1f5f9' }
+             }}
+           >
+             Cancelar
+           </Button>
+           <Button 
+             onClick={handleEdit} 
+             variant="contained" 
+             className="interactive-btn"
+             sx={{
+               backgroundColor: '#3b82f6',
+               '&:hover': { backgroundColor: '#2563eb' },
+               fontWeight: 600,
+               px: 4
+             }}
+           >
+             Actualizar
+           </Button>
+         </DialogActions>
       </Dialog>
 
       {/* Modal Confirmar Eliminación */}
@@ -579,14 +791,14 @@ export const ProductosPage = () => {
             Esta acción no se puede deshacer.
           </p>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setShowDeleteModal(false); setSelectedProduct(null); }}>
-            Cancelar
-          </Button>
-          <Button onClick={handleDelete} variant="contained" color="error">
-            Eliminar
-          </Button>
-        </DialogActions>
+         <DialogActions>
+           <Button onClick={() => { setShowDeleteModal(false); setSelectedProduct(null); }} className="interactive-btn">
+             Cancelar
+           </Button>
+           <Button onClick={handleDelete} variant="contained" color="error" className="interactive-btn">
+             Eliminar
+           </Button>
+         </DialogActions>
       </Dialog>
     </div>
   );

@@ -200,8 +200,8 @@ export const OrdenesPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                sortedOrders.map((orderItem) => (
-                  <TableRow key={orderItem._id} hover className="table-row-hover">
+               sortedOrders.map((orderItem, index) => (
+                 <TableRow key={orderItem._id} hover className="table-row-hover stagger-item" sx={{ animationDelay: `${index * 0.05}s` }}>
                     <TableCell>
                       <span className="text-xs font-mono text-slate-600">
                         {orderItem._id}

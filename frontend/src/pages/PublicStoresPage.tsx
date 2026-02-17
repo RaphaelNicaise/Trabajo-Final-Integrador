@@ -52,20 +52,20 @@ export function PublicStoresPage() {
       <PublicNavbar />
       
       <main className="container mx-auto px-4 py-16 max-w-6xl">
-        {/* Header Section */}
-        <div className="mb-16 page-header-animate text-center">
-          <div className="mb-6">
-            <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full mb-4 border border-emerald-200">
-              Marketplace de Tiendas
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4 title-animate">
-            Explora Nuestras <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">Tiendas</span>
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto description-animate">
-            Descubre una colección curada de tiendas con productos únicos y de alta calidad
-          </p>
-        </div>
+       {/* Header Section */}
+       <div className="mb-16 text-center animate-fade-in-up">
+         <div className="mb-6 animate-scale-in">
+           <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full mb-4 border border-emerald-200">
+             Marketplace de Tiendas
+           </span>
+         </div>
+         <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4 animate-fade-in-down">
+           Explora Nuestras <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">Tiendas</span>
+         </h1>
+         <p className="text-xl text-slate-600 max-w-2xl mx-auto animate-fade-in-down" style={{ animationDelay: '0.1s' }}>
+           Descubre una colección curada de tiendas con productos únicos y de alta calidad
+         </p>
+       </div>
 
         {shops.length === 0 ? (
           <div className="text-center py-20">
@@ -92,15 +92,15 @@ export function PublicStoresPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {shops.map((shop, index) => (
-              <Link
-                key={shop.id}
-                to={`/tienda/${shop.slug}`}
-                className="group relative h-full list-item-animate"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 card-animate card-hover-lift">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+             {shops.map((shop, index) => (
+               <Link
+                 key={shop.id}
+                 to={`/tienda/${shop.slug}`}
+                 className="group relative h-full stagger-item"
+                 style={{ animationDelay: `${index * 0.05}s` }}
+               >
+                 <div className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 hover-lift">
                   {/* Shop Header Image */}
                   <div className="relative h-48 bg-gradient-to-br from-emerald-400 via-cyan-400 to-cyan-500 overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -198,22 +198,22 @@ export function PublicStoresPage() {
         )}
 
         {/* Bottom CTA Section */}
-        {shops.length > 0 && (
-          <div className="mt-20 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-3xl p-12 border border-emerald-100 text-center card-animate">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">
-              ¿No encuentras lo que buscas?
-            </h2>
-            <p className="text-slate-600 mb-6 text-lg max-w-2xl mx-auto">
-              Descubre más productos visitando nuestras tiendas destacadas
-            </p>
-            <button className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 button-animate inline-flex items-center gap-2">
-              Explorar todas las tiendas
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
-          </div>
-        )}
+         {shops.length > 0 && (
+           <div className="mt-20 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-3xl p-12 border border-emerald-100 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+             <h2 className="text-3xl font-bold text-slate-900 mb-3">
+               ¿No encuentras lo que buscas?
+             </h2>
+             <p className="text-slate-600 mb-6 text-lg max-w-2xl mx-auto">
+               Descubre más productos visitando nuestras tiendas destacadas
+             </p>
+             <button className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer inline-flex items-center gap-2">
+               Explorar todas las tiendas
+               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+               </svg>
+             </button>
+           </div>
+         )}
       </main>
     </div>
   );

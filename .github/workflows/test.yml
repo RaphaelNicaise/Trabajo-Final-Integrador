@@ -1,0 +1,24 @@
+#name: CI - Testing StoreHub
+
+# Se ejecuta en cada push y pull request a las ramas principales
+# on:
+#   push:
+#     branches: [ develop, main ]
+#   pull_request:
+#     branches: [ develop, main ]
+
+#jobs:
+
+#  run-tests:
+#    name: Backend & Frontend Validation
+#    runs-on: ubuntu-latest
+
+#    steps:
+#      # 1. Bajamos el código del repositorio a la máquina virtual de GitHub
+#      - name: Checkout Code
+#        uses: actions/checkout@v4
+
+#      # 2. Ejecutamos los tests usando el Makefile para mantener consistencia con local
+#      # Este comando levanta Docker, corre Pytest/Vitest y cierra todo al terminar
+#      - name: Execute Tests via Makefile
+#        run: make test-local
