@@ -42,15 +42,17 @@ services:
       - test_network
     command: npm test 
 
-  # 4. Frontend Tests (Opcional, si querés correr Jest aquí)
-  # frontend-tests:
-  #   build: 
-  #     context: ../
-  #     dockerfile: frontend/Dockerfile.dev
-  #   container_name: storehub-front-tests
-  #   environment:
-  #     NODE_ENV: test
-  #     NEXT_PUBLIC_API_URL: http://api-tests:4000
-  #   networks:
-  #     - test_network
-  #   command: npm run test:unit
+  frontend-tests:
+    build: 
+      context: ../
+      dockerfile: frontend/Dockerfile.dev
+    container_name: storehub-front-tests
+    environment:
+      NODE_ENV: test
+      NEXT_PUBLIC_API_URL: http://api-tests:4000
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    networks:
+      - test_network
+    command: pnpm test
