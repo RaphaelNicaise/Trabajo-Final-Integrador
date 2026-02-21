@@ -23,6 +23,7 @@
     "mercadopago": "^2.9.0",
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
+    "redis": "^5.11.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

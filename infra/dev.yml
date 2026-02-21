@@ -37,8 +37,10 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       - mongo
+      - redis
     networks:
       - app_network
 
@@ -76,6 +78,17 @@ services:
     networks:
       - app_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+    volumes:
+      - redis_data:/data
+
 volumes:
   mongo_data:
   minio_data:
+  redis_data:
