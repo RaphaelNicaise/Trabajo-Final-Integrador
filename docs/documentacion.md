@@ -196,12 +196,17 @@ El bucket principal se inicializa automáticamente al levantar el backend con po
 
 ## Redis
 
-Le aplicaremos Redis para cachear datos al modulo de categorias, productos, configuraciones, shops para no tener que ir a la base de datos cada vez que se necesiten esos datos, y mejorar el rendimiento de la aplicación.
+StoreHub integra Redis como una capa de persistencia en memoria para optimizar el rendimiento mediante el patrón Cache-Aside en módulos de alta demanda como productos, categorías y configuraciones. Al interceptar las consultas GET en la capa de servicios, se reduce drásticamente la latencia de respuesta y la carga computacional sobre el clúster de MongoDB. La arquitectura respeta estrictamente el diseño Multi-Tenant, utilizando claves segmentadas por shopSlug para garantizar el aislamiento de datos entre tiendas. Finalmente, el sistema asegura la integridad de la información mediante una invalidación proactiva, eliminando las entradas de caché automáticamente ante cualquier operación de escritura (POST, PUT, DELETE) en la base de datos.
 
-A que acciones se les aplicara cacheo con Redis?
--
--
--
+
+El único riesgo es que los datos en caché queden desactualizados si se modifica la base de datos manualmente por fuera de la aplicación. Lo resolvemos usando TTLs (tiempos de expiración automáticos) que fuerzan el refresco de los datos cada cierto tiempo, garantizando la consistencia final.
+
+
+A que servicios se le aplicara el cacheo:
+- [Productos y Promociones](../backend/src/modules/products/services/product.service.ts)
+- [Categorías](../backend/src/modules/categories/services/category.service.ts)
+- [Configuraciones](../backend/src/modules/configuration/services/configuration.service.ts)
+- [Tiendas y Usuarios](../backend/src/modules/shops/services/shop.service.ts)
 
 Prueba a http://localhost:4000/api/categories, la primera consulta la hace a la base de datos, y las siguientes consultas las hace a Redis.
 

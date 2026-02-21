@@ -5,14 +5,28 @@ import { getModelByTenant } from "../../database/modelFactory";
 import { TenantSchema, ITenant } from "../../platform/models/tenant.schema";
 import { UserSchema, IUser } from "../../platform/models/user.schema";
 import { StorageService } from "../../storage/services/storage.service";
+import { CacheService } from "../../cache/services/cache.service";
 
 const storageService = new StorageService();
 
 export class ShopService {
+
+    private readonly PLATFORM_RESOURCE = 'platform:shop';
+    private readonly USER_SHOPS_RESOURCE = 'platform:user_shops';
+
+    private getShopCacheKey(slug: string): string {
+        return `${this.PLATFORM_RESOURCE}:${slug}`;
+    }
+
+    /**
+     * Helper para generar la key de las tiendas asociadas a un usuario
+     */
+    private getUserShopsCacheKey(userId: string): string {
+        return `${this.USER_SHOPS_RESOURCE}:${userId}`;
+    }
+
     /**
      * Crea una tienda (Tenant) en la plataforma.
-     * La base de datos física 'db_{slug}' se creará automáticamente
-     * cuando se agregue el primer producto o categoría.
      */
     async createShop(data: {
         userId: string;
@@ -24,24 +38,14 @@ export class ShopService {
         const { userId, slug, storeName, location, description } = data;
 
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        const UserModel = getModelByTenant<IUser>(
-            metaConnection,
-            "User",
-            UserSchema
-        );
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
 
-        // Obtener el email del usuario owner
         const user = await UserModel.findById(userId);
         if (!user) throw new Error("Usuario no encontrado");
 
         const ownerEmail = user.email;
 
-        // Validar slug
         const existingTenant = await TenantModel.findOne({ slug });
         if (existingTenant)
             throw new Error("El nombre de la tienda (slug) ya está en uso.");
@@ -68,32 +72,40 @@ export class ShopService {
             },
         });
 
+        // INVALIDACIÓN: El usuario ahora tiene una nueva tienda asociada
+        await CacheService.delete(this.getUserShopsCacheKey(userId));
+
         return newTenant;
     }
 
     /**
-     * Obtiene la lista de tiendas de un usuario.
+     * Obtiene la lista de tiendas de un usuario con enriquecimiento de imagen.
      */
     async getUserShops(userId: string) {
+        const cacheKey = this.getUserShopsCacheKey(userId);
+        
+        // 1. Intentar obtener lista enriquecida de caché
+        const cached = await CacheService.get<any[]>(cacheKey);
+        if (cached) return cached;
+
         const metaConnection = getMetaDB();
-        const UserModel = getModelByTenant<IUser>(
-            metaConnection,
-            "User",
-            UserSchema
-        );
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
 
         const user = await UserModel.findById(userId).select("associatedStores");
         if (!user) throw new Error("Usuario no encontrado");
 
-        // Enrich associatedStores with imageUrl from Tenant
         const enrichedStores = await Promise.all(
             user.associatedStores.map(async (store: any) => {
-                const tenant = await TenantModel.findById(store.tenantId).select("imageUrl");
+                // Buscamos la imagen del tenant (podría estar en su propia caché)
+                const shopCacheKey = this.getShopCacheKey(store.slug);
+                let tenant = await CacheService.get<ITenant>(shopCacheKey);
+
+                if (!tenant) {
+                    tenant = await TenantModel.findById(store.tenantId).select("imageUrl").lean();
+                    if (tenant) await CacheService.set(shopCacheKey, tenant, 86400);
+                }
+
                 return {
                     ...store.toObject(),
                     imageUrl: tenant?.imageUrl || null
@@ -101,10 +113,13 @@ export class ShopService {
             })
         );
 
+        await CacheService.set(cacheKey, enrichedStores, 3600); // 1 hora para esta lista
+
         return enrichedStores;
     }
+
     /**
-     * Actualiza los datos visuales de una tienda (no el slug ni el ownerEmail)
+     * Actualiza los datos visuales de una tienda.
      */
     async updateShop(
         shopSlug: string,
@@ -116,39 +131,33 @@ export class ShopService {
         }
     ) {
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        // Solo permitimos modificar datos visuales, NO el slug ni el ownerEmail
-        return await TenantModel.findOneAndUpdate({ slug: shopSlug }, updateData, {
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        
+        const updated = await TenantModel.findOneAndUpdate({ slug: shopSlug }, updateData, {
             new: true,
-        });
+        }).lean();
+
+        if (updated) {
+            // INVALIDACIÓN: Datos de la tienda y branding han cambiado
+            await CacheService.delete(this.getShopCacheKey(shopSlug));
+            // Invalidamos por patrón para forzar refresco de las listas de usuarios que la ven
+            await CacheService.deleteByPattern(`${this.USER_SHOPS_RESOURCE}:*`);
+        }
+
+        return updated;
     }
 
     /**
-     * Elimina una tienda (Tenant) de la plataforma y actualiza los usuarios asociados.
-     * Solo el propietario (owner) puede eliminar la tienda.
+     * Elimina una tienda, su DB, sus archivos y limpia Redis.
      */
     async deleteShop(shopSlug: string, requestingUserId?: string) {
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        const UserModel = getModelByTenant<IUser>(
-            metaConnection,
-            "User",
-            UserSchema
-        );
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
 
         const tenantToDelete = await TenantModel.findOne({ slug: shopSlug });
-
         if (!tenantToDelete) return null;
 
-        // Verificar permisos si se proporciona requestingUserId
         if (requestingUserId) {
             const requestingMember = tenantToDelete.members.find(
                 (m: any) => m.userId.toString() === requestingUserId
@@ -158,7 +167,6 @@ export class ShopService {
             }
         }
 
-        // eliminar la db fisica
         try {
             const dbName = `db_${shopSlug}`;
             const tenantConnection = getTenantDB(dbName);
@@ -168,62 +176,55 @@ export class ShopService {
             console.error(`Error al borrar DB física ${shopSlug}:`, error);
         }
 
-        await storageService.deleteShopFolder(shopSlug); // elimina imagenes del minio
+        await storageService.deleteShopFolder(shopSlug);
 
-        const memberIds = tenantToDelete.members.map(m => m.userId); // le eliminamos a cada usuario la referencia a esta tienda
+        const memberIds = tenantToDelete.members.map(m => m.userId);
         await UserModel.updateMany(
             { _id: { $in: memberIds } },
-            {
-                $pull: {
-                    associatedStores: { tenantId: tenantToDelete._id }
-                }
-            }
+            { $pull: { associatedStores: { tenantId: tenantToDelete._id } } }
         );
 
+        const deleted = await TenantModel.findByIdAndDelete(tenantToDelete._id);
 
-        return await TenantModel.findByIdAndDelete(tenantToDelete._id);// y por ultimo eliminamos el Tenant de la plataforma
+        // INVALIDACIÓN TOTAL: Borramos la tienda y TODA la caché del tenant
+        await CacheService.delete(this.getShopCacheKey(shopSlug));
+        await CacheService.deleteByPattern(`tenant:${shopSlug}:*`);
+        await CacheService.deleteByPattern(`${this.USER_SHOPS_RESOURCE}:*`);
+
+        return deleted;
     }
 
     async getAllShops() {
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        return await TenantModel.find();
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        return await TenantModel.find().lean();
     }
 
     async getShopBySlug(shopSlug: string) {
+        const cacheKey = this.getShopCacheKey(shopSlug);
+
+        const cached = await CacheService.get<ITenant>(cacheKey);
+        if (cached) return cached;
+
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        return await TenantModel.findOne({ slug: shopSlug });
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const shop = await TenantModel.findOne({ slug: shopSlug }).lean();
+
+        if (shop) {
+            await CacheService.set(cacheKey, shop, 86400);
+        }
+
+        return shop;
     }
 
-    /**
-     * Obtiene los miembros de una tienda con sus datos de usuario.
-     */
     async getMembers(shopSlug: string) {
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        const UserModel = getModelByTenant<IUser>(
-            metaConnection,
-            "User",
-            UserSchema
-        );
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
 
         const tenant = await TenantModel.findOne({ slug: shopSlug });
         if (!tenant) throw new Error("Tienda no encontrada");
 
-        // Enrich members with user data
         const enrichedMembers = await Promise.all(
             tenant.members.map(async (member: any) => {
                 const user = await UserModel.findById(member.userId).select("name email");
@@ -239,26 +240,14 @@ export class ShopService {
         return enrichedMembers;
     }
 
-    /**
-     * Agrega un miembro (admin) a una tienda por email.
-     */
     async addMember(shopSlug: string, email: string, requestingUserId: string) {
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        const UserModel = getModelByTenant<IUser>(
-            metaConnection,
-            "User",
-            UserSchema
-        );
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
 
         const tenant = await TenantModel.findOne({ slug: shopSlug });
         if (!tenant) throw new Error("Tienda no encontrada");
 
-        // Verificar que el que lo solicita es owner
         const requestingMember = tenant.members.find(
             (m: any) => m.userId.toString() === requestingUserId
         );
@@ -266,26 +255,20 @@ export class ShopService {
             throw new Error("Solo el propietario puede agregar miembros");
         }
 
-        // Buscar el usuario a agregar por email
         const userToAdd = await UserModel.findOne({ email: email.toLowerCase().trim() });
         if (!userToAdd) throw new Error("No se encontró un usuario con ese email");
 
         const userIdToAdd = (userToAdd as any)._id;
 
-        // Verificar que no sea ya miembro
         const alreadyMember = tenant.members.find(
             (m: any) => m.userId.toString() === userIdToAdd.toString()
         );
         if (alreadyMember) throw new Error("Este usuario ya es miembro de la tienda");
 
-        // Agregar al tenant.members
         await TenantModel.findByIdAndUpdate(tenant._id, {
-            $push: {
-                members: { userId: userIdToAdd, role: "admin" },
-            },
+            $push: { members: { userId: userIdToAdd, role: "admin" } },
         });
 
-        // Agregar a user.associatedStores
         await UserModel.findByIdAndUpdate(userIdToAdd, {
             $push: {
                 associatedStores: {
@@ -297,6 +280,9 @@ export class ShopService {
             },
         });
 
+        // INVALIDACIÓN: La lista de tiendas de este nuevo miembro cambió
+        await CacheService.delete(this.getUserShopsCacheKey(userIdToAdd.toString()));
+
         return {
             userId: userIdToAdd.toString(),
             name: userToAdd.name,
@@ -305,23 +291,10 @@ export class ShopService {
         };
     }
 
-    /**
-     * Elimina un miembro de una tienda.
-     * - El owner puede eliminar cualquier admin (pero no a sí mismo).
-     * - Un admin puede desasociarse a sí mismo.
-     */
     async removeMember(shopSlug: string, memberUserId: string, requestingUserId: string) {
         const metaConnection = getMetaDB();
-        const TenantModel = getModelByTenant<ITenant>(
-            metaConnection,
-            "Tenant",
-            TenantSchema
-        );
-        const UserModel = getModelByTenant<IUser>(
-            metaConnection,
-            "User",
-            UserSchema
-        );
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
 
         const tenant = await TenantModel.findOne({ slug: shopSlug });
         if (!tenant) throw new Error("Tienda no encontrada");
@@ -329,9 +302,7 @@ export class ShopService {
         const requestingMember = tenant.members.find(
             (m: any) => m.userId.toString() === requestingUserId
         );
-        if (!requestingMember) {
-            throw new Error("No eres miembro de esta tienda");
-        }
+        if (!requestingMember) throw new Error("No eres miembro de esta tienda");
 
         const memberToRemove = tenant.members.find(
             (m: any) => m.userId.toString() === memberUserId
@@ -341,35 +312,22 @@ export class ShopService {
         const isSelfRemoval = requestingUserId === memberUserId;
 
         if (isSelfRemoval) {
-            // El owner no puede eliminarse a sí mismo para evitar tiendas sin dueño
-            if (requestingMember.role === "owner") {
-                throw new Error("El propietario no puede eliminarse a sí mismo");
-            }
-            // Un admin puede desasociarse a sí mismo — continúa
+            if (requestingMember.role === "owner") throw new Error("El propietario no puede eliminarse a sí mismo");
         } else {
-            // Solo el owner puede eliminar a otros miembros
-            if (requestingMember.role !== "owner") {
-                throw new Error("Solo el propietario puede eliminar miembros");
-            }
-            // El owner no puede ser eliminado por nadie
-            if (memberToRemove.role === "owner") {
-                throw new Error("No se puede eliminar al propietario de la tienda");
-            }
+            if (requestingMember.role !== "owner") throw new Error("Solo el propietario puede eliminar miembros");
+            if (memberToRemove.role === "owner") throw new Error("No se puede eliminar al propietario de la tienda");
         }
 
-        // Eliminar del tenant.members
         await TenantModel.findByIdAndUpdate(tenant._id, {
-            $pull: {
-                members: { userId: new Types.ObjectId(memberUserId) },
-            },
+            $pull: { members: { userId: new Types.ObjectId(memberUserId) } },
         });
 
-        // Eliminar de user.associatedStores
         await UserModel.findByIdAndUpdate(memberUserId, {
-            $pull: {
-                associatedStores: { tenantId: tenant._id },
-            },
+            $pull: { associatedStores: { tenantId: tenant._id } },
         });
+
+        // INVALIDACIÓN: La lista de tiendas del usuario eliminado cambió
+        await CacheService.delete(this.getUserShopsCacheKey(memberUserId));
 
         return { message: "Miembro eliminado exitosamente" };
     }
