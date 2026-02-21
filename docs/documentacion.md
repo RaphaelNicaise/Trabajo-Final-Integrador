@@ -7,6 +7,7 @@
 - [Minio](#minio)
 - [Backend](#backend)
 - [Frontend](#frontend)
+- [Testing](#testing)
 
 ## Stack
 
@@ -145,7 +146,7 @@ StoreHub utiliza **MinIO** como servicio de almacenamiento de objetos compatible
 MinIO es un servidor de almacenamiento de objetos de alto rendimiento compatible con la API de AWS S3. Lo usamos para:
 - Almacenar **imágenes de productos**
 - Almacenar **logos de tiendas**
-- Mantener compatibilidad con S3 para migración futura a AWS
+- Mantener compatibilidad con S3 para migración a produccion en AWS
 
 ### Arquitectura Multi-Tenant
 
@@ -301,3 +302,5 @@ backend/src/
 ---
 
 ## Frontend -> [Guia de Frontend](docs.frontend.md)
+
+## Testing

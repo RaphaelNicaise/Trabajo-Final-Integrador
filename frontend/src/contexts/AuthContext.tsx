@@ -18,6 +18,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   activeShop: Shop | null;
+  authLoading: boolean;
   login: (userData: User, token: string) => void;
   logout: () => void;
   selectShop: (shop: Shop) => void;
@@ -43,19 +44,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [activeShop, setActiveShop] = useState<Shop | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    const storedShop = localStorage.getItem('activeShop');
+    try {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      const storedShop = localStorage.getItem('activeShop');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
 
-    if (storedShop) {
-      setActiveShop(JSON.parse(storedShop));
+      if (storedShop) {
+        setActiveShop(JSON.parse(storedShop));
+      }
+    } catch (error) {
+      console.error('Error al restaurar sesión:', error);
+    } finally {
+      setAuthLoading(false);
     }
   }, []);
 
@@ -89,6 +97,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     user,
     token,
     activeShop,
+    authLoading,
     login,
     logout,
     selectShop,

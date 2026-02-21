@@ -2,8 +2,13 @@ import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopsService } from '../../services/shops.service';
-import { Store, Image as ImageIcon, MapPin, FileText, Upload, Check } from 'lucide-react';
-import { Button, TextField, CircularProgress } from '@mui/material';
+import { configurationsService, Configuration } from '../../services/configurations.service';
+import { Store, Image as ImageIcon, MapPin, Upload, Check, Settings, X, AlertTriangle, CheckCircle, DollarSign, Truck } from 'lucide-react';
+
+const CONFIG_KEYS = {
+  MIN_PURCHASE_AMOUNT: 'minPurchaseAmount',
+  FREE_SHIPPING_THRESHOLD: 'freeShippingThreshold',
+};
 
 export const ConfiguracionPage = () => {
   const { activeShop } = useAuth();
@@ -11,307 +16,273 @@ export const ConfiguracionPage = () => {
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  
-  const [shopData, setShopData] = useState({
-    storeName: '',
-    location: '',
-    description: '',
-    imageUrl: ''
-  });
-  
+  const [shopData, setShopData] = useState({ storeName: '', location: '', description: '', imageUrl: '' });
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string>('');
+  const [logoPreview, setLogoPreview] = useState('');
+
+  const [systemConfigs, setSystemConfigs] = useState({
+    [CONFIG_KEYS.MIN_PURCHASE_AMOUNT]: '',
+    [CONFIG_KEYS.FREE_SHIPPING_THRESHOLD]: '',
+  });
 
   useEffect(() => {
     if (activeShop) {
       loadShopData();
+      loadSystemConfigs();
     }
   }, [activeShop]);
 
   const loadShopData = async () => {
+// ... existing code ...
     if (!activeShop) return;
-    
     setLoading(true);
     try {
       const data = await shopsService.getShopBySlug(activeShop.slug);
-      setShopData({
-        storeName: data.storeName || '',
-        location: data.location || '',
-        description: data.description || '',
-        imageUrl: data.imageUrl || ''
+      setShopData({ storeName: data.storeName || '', location: data.location || '', description: data.description || '', imageUrl: data.imageUrl || '' });
+    } catch { setError('Error al cargar la configuración'); }
+    finally { setLoading(false); }
+  };
+
+  const loadSystemConfigs = async () => {
+    setLoading(true);
+    try {
+      const configs = await configurationsService.getAll();
+      const newConfigs = { ...systemConfigs };
+      configs.forEach(c => {
+        if (Object.values(CONFIG_KEYS).includes(c.key)) {
+          newConfigs[c.key as keyof typeof newConfigs] = c.value.toString();
+        }
       });
-    } catch (err: any) {
-      console.error('Error al cargar datos:', err);
-      setError('Error al cargar la configuración');
+      setSystemConfigs(newConfigs);
+    } catch {
+      setError('Error al cargar las configuraciones del sistema.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleConfigChange = (key: string, value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    setSystemConfigs(prev => ({ ...prev, [key]: numericValue }));
+  };
+
+  const handleSaveSystemConfigs = async () => {
+    setLoading(true); setError(''); setSuccess('');
+    try {
+      const configsToUpdate = [
+        {
+          key: CONFIG_KEYS.MIN_PURCHASE_AMOUNT,
+          value: parseFloat(systemConfigs[CONFIG_KEYS.MIN_PURCHASE_AMOUNT] || '0') || 0,
+          description: 'Monto mínimo de compra para finalizar un pedido.',
+          isPublic: true
+        },
+        {
+          key: CONFIG_KEYS.FREE_SHIPPING_THRESHOLD,
+          value: parseFloat(systemConfigs[CONFIG_KEYS.FREE_SHIPPING_THRESHOLD] || '0') || 0,
+          description: 'Monto a partir del cual el envío es gratuito. 0 para deshabilitar.',
+          isPublic: true
+        }
+      ];
+      await configurationsService.upsert(configsToUpdate);
+      setSuccess('Configuraciones de sistema guardadas.');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch {
+      setError('Error al guardar las configuraciones del sistema.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setLogoFile(file);
-      // Crear preview
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
+      reader.onloadend = () => setLogoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
   const handleUploadLogo = async () => {
     if (!logoFile || !activeShop) return;
-
-    setUploading(true);
-    setError('');
-    setSuccess('');
-
+    setUploading(true); setError(''); setSuccess('');
     try {
       const result = await shopsService.uploadShopLogo(activeShop.slug, logoFile);
       setShopData({ ...shopData, imageUrl: result.imageUrl });
       setSuccess('Logo actualizado exitosamente');
-      setLogoFile(null);
-      setLogoPreview('');
-      
+      setLogoFile(null); setLogoPreview('');
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      console.error('Error al subir logo:', err);
-      setError('Error al subir el logo. Intenta de nuevo.');
-    } finally {
-      setUploading(false);
-    }
+    } catch { setError('Error al subir el logo'); }
+    finally { setUploading(false); }
   };
 
   const handleUpdateShop = async () => {
     if (!activeShop) return;
-
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
+    setLoading(true); setError(''); setSuccess('');
     try {
-      await shopsService.updateShop(activeShop.slug, {
-        storeName: shopData.storeName,
-        location: shopData.location,
-        description: shopData.description
-      });
+      await shopsService.updateShop(activeShop.slug, { storeName: shopData.storeName, location: shopData.location, description: shopData.description });
       setSuccess('Configuración actualizada exitosamente');
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      console.error('Error al actualizar:', err);
-      setError('Error al actualizar la configuración');
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError('Error al actualizar la configuración'); }
+    finally { setLoading(false); }
   };
 
   if (!activeShop) {
     return (
-      <div>
-        <PageHeader 
-          title="Configuración" 
-          description="Ajustes generales de la tienda"
-        />
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-          <p className="text-slate-600">Selecciona una tienda para configurar</p>
+      <div className="space-y-6">
+        <PageHeader title="Configuración" description="Ajustes generales de la tienda" />
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
+          <Settings className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-slate-500 text-sm">Selecciona una tienda para configurar</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Configuración" 
-        description="Ajustes generales de la tienda"
-      />
+    <div className="space-y-8 pb-12">
+      <PageHeader title="Configuración" description={`Administración de "${activeShop.name || 'Tienda'}"`} />
 
-      {/* Mensajes de éxito/error */}
       {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg alert-animate flex items-center gap-3">
-          <Check className="w-5 h-5 text-emerald-600" />
-          <p className="text-emerald-700 font-medium">{success}</p>
+        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
+          <CheckCircle className="w-4 h-4 flex-shrink-0" />{success}
+          <button onClick={() => setSuccess('')} className="ml-auto hover:bg-emerald-100 rounded p-1 cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
       )}
-
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg alert-animate">
-          <p className="text-red-600">{error}</p>
+        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />{error}
+          <button onClick={() => setError('')} className="ml-auto hover:bg-red-100 rounded p-1 cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
       )}
 
-      {/* Logo de la Tienda */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden card-animate">
-        <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <ImageIcon className="w-5 h-5 text-orange-600" />
+      {/* Logo */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-orange-50 to-white flex items-center gap-3">
+          <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center"><ImageIcon className="w-5 h-5 text-orange-600" /></div>
+          <div><h2 className="text-lg font-bold text-slate-900">Logo de la Tienda</h2><p className="text-sm text-slate-500">Imagen visible en tu storefront</p></div>
+        </div>
+        <div className="p-6 flex flex-col md:flex-row gap-8 items-center md:items-start">
+          <div className="w-40 h-40 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+            {logoPreview ? (
+              <img src={logoPreview} alt="Preview" className="w-full h-full object-cover" />
+            ) : shopData.imageUrl ? (
+              <img src={shopData.imageUrl} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-center p-4"><Store className="w-12 h-12 text-slate-300 mx-auto mb-2" /><span className="text-xs text-slate-400 font-medium">Sin logo</span></div>
+            )}
+          </div>
+          <div className="flex-1 space-y-4 w-full">
+            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 text-sm text-slate-600">
+              <p className="font-medium mb-1">Recomendaciones:</p>
+              <ul className="list-disc list-inside space-y-1 ml-1 text-slate-500">
+                <li>Formato cuadrado (1:1)</li>
+                <li>Mínimo 512x512 pixeles</li>
+                <li>Archivos PNG o JPG (máx 5MB)</li>
+              </ul>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Logo de la Tienda</h2>
-              <p className="text-sm text-slate-600">Personaliza la imagen de tu tienda</p>
+            <div className="flex items-center gap-3">
+              <label className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
+                <Upload className="w-4 h-4" />Seleccionar Archivo
+                <input type="file" className="hidden" accept="image/*" onChange={handleLogoChange} />
+              </label>
+              {logoFile && (
+                <button onClick={handleUploadLogo} disabled={uploading}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
+                  {uploading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Subiendo...</> : <><Check className="w-4 h-4" />Actualizar Logo</>}
+                </button>
+              )}
             </div>
+            {logoFile && <p className="text-sm text-emerald-600 font-medium">Archivo seleccionado: {logoFile.name}</p>}
           </div>
         </div>
-        
+      </div>
+
+      {/* Info General */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Store className="w-5 h-5 text-blue-600" /></div>
+          <div><h2 className="text-lg font-bold text-slate-900">Información General</h2><p className="text-sm text-slate-500">Detalles básicos de tu comercio</p></div>
+        </div>
         <div className="p-6 space-y-6">
-          {/* Preview del logo actual o nuevo */}
-          <div className="flex items-center gap-6">
-            <div className="flex-shrink-0">
-              <div className="w-32 h-32 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden">
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Preview" className="w-full h-full object-cover" />
-                ) : shopData.imageUrl ? (
-                  <img src={shopData.imageUrl} alt="Logo actual" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-center">
-                    <Store className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                    <span className="text-xs text-slate-500">Sin logo</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex-1 space-y-3">
-              <p className="text-sm text-slate-600">
-                Sube una imagen cuadrada (recomendado 512x512px) en formato PNG, JPG o WEBP
-              </p>
-              
-              <div className="flex items-center gap-3">
-                <label className="flex-1 cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  <div className="px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-all text-center">
-                    <Upload className="w-5 h-5 text-slate-500 mx-auto mb-1" />
-                    <span className="text-sm font-medium text-slate-700">
-                      {logoFile ? logoFile.name : 'Seleccionar imagen'}
-                    </span>
-                  </div>
-                </label>
-                
-                {logoFile && (
-                  <Button
-                    variant="contained"
-                    onClick={handleUploadLogo}
-                    disabled={uploading}
-                    startIcon={uploading ? <CircularProgress size={20} color="inherit" /> : <Upload />}
-                    sx={{
-                      backgroundColor: '#f97316',
-                      '&:hover': { backgroundColor: '#ea580c' },
-                      fontWeight: 600,
-                      px: 3
-                    }}
-                  >
-                    {uploading ? 'Subiendo...' : 'Subir'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Información de la Tienda */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden card-animate">
-        <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Store className="w-5 h-5 text-blue-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Nombre de la Tienda</label>
+              <input type="text" value={shopData.storeName} onChange={(e) => setShopData({ ...shopData, storeName: e.target.value })}
+                className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Información de la Tienda</h2>
-              <p className="text-sm text-slate-600">Actualiza los detalles principales</p>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Ubicación</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="text" value={shopData.location} onChange={(e) => setShopData({ ...shopData, location: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="p-6 space-y-4">
-          <TextField
-            label="Nombre de la Tienda"
-            fullWidth
-            value={shopData.storeName}
-            onChange={(e) => setShopData({ ...shopData, storeName: e.target.value })}
-            placeholder="Mi Tienda"
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '&:hover fieldset': { borderColor: '#3b82f6' },
-                '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
-              }
-            }}
-          />
-          
-          <TextField
-            label="Ubicación"
-            fullWidth
-            value={shopData.location}
-            onChange={(e) => setShopData({ ...shopData, location: e.target.value })}
-            placeholder="Ciudad, País"
-            InputProps={{
-              startAdornment: <MapPin className="w-4 h-4 text-slate-500 mr-2" />
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '&:hover fieldset': { borderColor: '#3b82f6' },
-                '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
-              }
-            }}
-          />
-          
-          <TextField
-            label="Descripción"
-            fullWidth
-            multiline
-            rows={3}
-            value={shopData.description}
-            onChange={(e) => setShopData({ ...shopData, description: e.target.value })}
-            placeholder="Describe tu tienda..."
-            InputProps={{
-              startAdornment: <FileText className="w-4 h-4 text-slate-500 mr-2 self-start mt-3" />
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '&:hover fieldset': { borderColor: '#3b82f6' },
-                '&.Mui-focused fieldset': { borderColor: '#3b82f6' }
-              }
-            }}
-          />
-          
-          <div className="pt-4 flex justify-end">
-            <Button
-              variant="contained"
-              onClick={handleUpdateShop}
-              disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Check />}
-              sx={{
-                backgroundColor: '#3b82f6',
-                '&:hover': { backgroundColor: '#2563eb' },
-                fontWeight: 600,
-                px: 4
-              }}
-            >
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
-            </Button>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Descripción</label>
+            <textarea rows={3} value={shopData.description} onChange={(e) => setShopData({ ...shopData, description: e.target.value })} placeholder="Describe tu negocio..."
+              className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none" />
+          </div>
+          <div className="pt-2 flex justify-end">
+            <button onClick={handleUpdateShop} disabled={loading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
+              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Cambios</>}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Información del Slug (solo lectura) */}
-      <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl shadow-sm border border-slate-200 p-6 card-animate">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center">
-            <Store className="w-4 h-4 text-slate-600" />
-          </div>
-          <h3 className="text-sm font-semibold text-slate-700">URL de tu tienda</h3>
+      {/* Config Sistema */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center gap-3">
+          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center"><Settings className="w-5 h-5 text-slate-600" /></div>
+          <div><h2 className="text-lg font-bold text-slate-900">Configuraciones</h2><p className="text-sm text-slate-500">Variables de sistema y parámetros</p></div>
         </div>
-        <p className="text-slate-900 font-mono text-sm">
-          storehub.com/<span className="font-bold text-blue-600">{activeShop.slug}</span>
-        </p>
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor={CONFIG_KEYS.MIN_PURCHASE_AMOUNT} className="block text-sm font-medium text-slate-700 mb-1.5">Monto Mínimo de Compra</label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  id={CONFIG_KEYS.MIN_PURCHASE_AMOUNT}
+                  type="text"
+                  inputMode="decimal"
+                  value={systemConfigs.MIN_PURCHASE_AMOUNT}
+                  onChange={(e) => handleConfigChange(CONFIG_KEYS.MIN_PURCHASE_AMOUNT, e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-1.5">El valor que el carrito debe superar para finalizar la compra. 0 para desactivar.</p>
+            </div>
+            <div>
+              <label htmlFor={CONFIG_KEYS.FREE_SHIPPING_THRESHOLD} className="block text-sm font-medium text-slate-700 mb-1.5">Envío Gratis a partir de</label>
+              <div className="relative">
+                <Truck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  id={CONFIG_KEYS.FREE_SHIPPING_THRESHOLD}
+                  type="text"
+                  inputMode="decimal"
+                  value={systemConfigs.FREE_SHIPPING_THRESHOLD}
+                  onChange={(e) => handleConfigChange(CONFIG_KEYS.FREE_SHIPPING_THRESHOLD, e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-1.5">El total del carrito para ofrecer envío gratis. 0 para desactivar.</p>
+            </div>
+          </div>
+          <div className="pt-2 flex justify-end">
+            <button onClick={handleSaveSystemConfigs} disabled={loading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
+              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Configuraciones</>}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

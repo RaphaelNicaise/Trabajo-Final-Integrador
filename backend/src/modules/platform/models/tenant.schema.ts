@@ -1,13 +1,14 @@
 import { Schema, Document, Types } from 'mongoose';
 
 export interface ITenant extends Document {
-  slug: string;        
-  dbName: string;      
-  storeName: string;   
+  slug: string;
+  dbName: string;
+  storeName: string;
   ownerEmail: string;
-  location?: string;    // <--- Movido aquí desde ShopConfig
-  description?: string; // <--- Movido aquí desde ShopConfig
-  
+  location?: string;
+  description?: string;
+  imageUrl?: string;
+
   members: Array<{
     userId: Types.ObjectId;
     role: 'owner' | 'admin';
@@ -19,20 +20,21 @@ export interface ITenant extends Document {
 }
 
 export const TenantSchema = new Schema<ITenant>({
-  slug: { 
-    type: String, 
-    required: true, 
-    unique: true, 
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
     trim: true,
     lowercase: true,
-    immutable: true 
+    immutable: true
   },
   dbName: { type: String, required: true },
   storeName: { type: String, required: true },
   ownerEmail: { type: String, required: true, lowercase: true, trim: true },
-  location: { type: String },     // Nuevo
-  description: { type: String },  // Nuevo
-  
+  location: { type: String },
+  description: { type: String },
+  imageUrl: { type: String },
+
   members: [{
     _id: false,
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -40,6 +42,6 @@ export const TenantSchema = new Schema<ITenant>({
   }],
 
   isActive: { type: Boolean, default: true }
-}, { 
-  timestamps: true 
+}, {
+  timestamps: true
 });

@@ -8,12 +8,14 @@ import {
   LogOut,
   User,
   Users,
-  ChevronDown
+  Eye,
+  Percent,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ordersService } from '../../services/orders.service';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -64,17 +66,30 @@ const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false }: Sid
 export const AdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, activeShop, logout, clearActiveShop } = useAuth();
-  const [showShopMenu, setShowShopMenu] = useState(false);
+  const { user, activeShop, logout } = useAuth();
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+
+  useEffect(() => {
+    if (activeShop) {
+      loadPendingOrders();
+    } else {
+      setPendingOrdersCount(0);
+    }
+  }, [activeShop]);
+
+  const loadPendingOrders = async () => {
+    try {
+      const orders = await ordersService.getAll();
+      const pending = orders.filter((o: any) => o.status === 'Pendiente').length;
+      setPendingOrdersCount(pending);
+    } catch (error) {
+      console.error('Error al cargar órdenes para badge:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
     router.push('/login');
-  };
-
-  const handleChangeShop = () => {
-    clearActiveShop();
-    router.push('/admin/tiendas');
   };
 
   const getActiveRoute = () => {
@@ -82,6 +97,7 @@ export const AdminSidebar = () => {
     if (path.includes('/tiendas')) return 'tiendas';
     if (path.includes('/dashboard')) return 'dashboard';
     if (path.includes('/productos')) return 'productos';
+    if (path.includes('/promociones')) return 'promociones';
     if (path.includes('/ordenes')) return 'ordenes';
     if (path.includes('/categorias')) return 'categorias';
     if (path.includes('/configuracion')) return 'configuracion';
@@ -92,53 +108,18 @@ export const AdminSidebar = () => {
   const activeRoute = getActiveRoute();
 
   return (
-    <aside className="flex flex-col items-center w-20 min-h-screen py-6 bg-[#0F172A] border-r border-slate-800 z-50">
+    <aside className="flex flex-col items-center w-20 h-screen sticky top-0 py-6 bg-[#0F172A] border-r border-slate-800 z-50">
 
+      {/* Logo → web principal */}
       <div className="flex flex-col items-center w-full mb-6 flex-shrink-0">
-        {activeShop ? (
-          <div className="relative group">
-            <button
-              onClick={() => setShowShopMenu(!showShopMenu)}
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg cursor-pointer hover:shadow-emerald-500/50 hover:-translate-y-0.5"
-            >
-              <Store size={20} className="text-white mb-1" strokeWidth={2} />
-              <ChevronDown size={12} className="text-white" strokeWidth={2} />
-            </button>
-
-            <div className="absolute left-16 px-4 py-3 bg-slate-900 text-white text-xs font-medium rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700 pointer-events-none whitespace-nowrap flex flex-col">
-              <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-3 h-3 bg-slate-900 border-l border-b border-slate-700 transform rotate-45"></div>
-              <span className="relative z-10 text-slate-400">Tienda activa:</span>
-              <span className="relative z-10 font-bold text-white">{activeShop.name}</span>
-            </div>
-
-            {showShopMenu && (
-              <div className="absolute left-16 top-0 bg-slate-900 rounded-lg shadow-xl border border-slate-700 py-2 w-48 z-50">
-                <div className="px-4 py-2 border-b border-slate-700">
-                  <p className="text-xs text-slate-400">Tienda actual</p>
-                  <p className="text-sm font-bold text-white truncate">{activeShop.name}</p>
-                </div>
-                <button
-                  onClick={handleChangeShop}
-                  className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
-                >
-                  Cambiar tienda
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <Link
-            href="/admin/tiendas"
-            className="flex items-center justify-center w-12 h-12 transition-all hover:scale-110 group relative cursor-pointer hover:-translate-y-1 hover:shadow-lg"
-          >
-            <Store size={28} className="text-emerald-500" />
-
-            <div className="absolute left-16 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700 pointer-events-none whitespace-nowrap flex items-center">
-              <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-3 h-3 bg-slate-900 border-l border-b border-slate-700 transform rotate-45 z-10"></div>
-              <span className="relative z-20 ml-2">Seleccionar Tienda</span>
-            </div>
-          </Link>
-        )}
+        <Link
+          href="/"
+          className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-slate-800 transition-all cursor-pointer group"
+          title="Ir a StoreHub"
+        >
+          <span className="text-lg font-bold text-white leading-none">Store</span>
+          <span className="text-lg font-bold text-emerald-400 leading-none">Hub</span>
+        </Link>
       </div>
 
       <div className="flex-1 w-full flex flex-col items-center gap-2">
@@ -166,10 +147,17 @@ export const AdminSidebar = () => {
             disabled={!activeShop}
           />
           <SidebarItem
+            icon={<Percent size={24} strokeWidth={1.5} />}
+            label="Promociones"
+            isActive={activeRoute === 'promociones'}
+            to="/admin/promociones"
+            disabled={!activeShop}
+          />
+          <SidebarItem
             icon={<ShoppingCart size={24} strokeWidth={1.5} />}
             label="Ordenes"
             isActive={activeRoute === 'ordenes'}
-            badge={3}
+            badge={pendingOrdersCount}
             to="/admin/ordenes"
             disabled={!activeShop}
           />
@@ -201,6 +189,22 @@ export const AdminSidebar = () => {
       </div>
 
       <div className="flex flex-col items-center w-full pt-4 mt-auto border-t border-slate-800 gap-3 bg-[#0F172A] flex-shrink-0">
+        {/* Botón: Ver página pública de la tienda */}
+        {activeShop && (
+          <Link
+            href={`/tienda/${activeShop.slug}`}
+            target="_blank"
+            className="relative group flex items-center justify-center w-10 h-10 rounded-full bg-emerald-900/50 text-emerald-200 hover:bg-emerald-600 hover:text-white transition-all ring-2 ring-transparent hover:ring-emerald-500/30 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+          >
+            <Eye size={20} strokeWidth={2} />
+
+            <div className="absolute left-14 bottom-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg shadow-xl opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 border border-slate-700 whitespace-nowrap z-50 flex items-center">
+              <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-3 h-3 bg-slate-900 border-l border-b border-slate-700 transform rotate-45 z-0"></div>
+              <span className="relative z-10 ml-1">Ver tienda pública</span>
+            </div>
+          </Link>
+        )}
+
         <div
           className="relative group flex items-center justify-center w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-200 hover:bg-indigo-600 hover:text-white transition-all ring-2 ring-transparent hover:ring-indigo-500/30 cursor-pointer hover:shadow-md hover:-translate-y-0.5"
         >
