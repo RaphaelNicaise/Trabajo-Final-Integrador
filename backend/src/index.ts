@@ -5,12 +5,14 @@ import dotenv from 'dotenv';
 import { connectToMongoDB } from './modules/database/tenantConnection';
 import { StorageService } from './modules/storage/services/storage.service';
 import { authMiddleware, tenantMiddleware } from './middleware/auth.middleware';
+import { apiKeyGuard } from './middleware/apiKeyGuard';
 
 import paymentsRoutes from "./modules/payments/routes/payments";
 import productRoutes from './modules/products/routes/product.routes';
 import shopRoutes from './modules/shops/routes/shop.routes';
 import categoryRoutes from './modules/categories/routes/category.routes';
 import orderRoutes from './modules/orders/routes/order.routes';
+import configurationRoutes from './modules/configuration/routes/configuration.routes';
 import authRoutes from './modules/auth/routes/auth.routes';
 
 dotenv.config();
@@ -24,7 +26,7 @@ app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'], // Next.js dev server + Vite legacy
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-api-key'],
 }));
 
 app.use(express.json());
@@ -35,14 +37,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-// Rutas públicas (sin autenticación)
+// Rutas públicas (sin autenticación, sin API Key)
 app.use('/api/auth', authRoutes);
+
+// Protección global con API Key para todas las demás rutas
+app.use('/api/', apiKeyGuard);
 
 // Rutas con protección selectiva (definen middlewares a nivel de ruta individual)
 app.use('/api/shops', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/configurations', configurationRoutes);
 
 const startServer = async () => {
   try {

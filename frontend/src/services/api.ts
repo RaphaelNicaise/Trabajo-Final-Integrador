@@ -9,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor de Request: Inyecta JWT y x-tenant-id
+// Interceptor de Request: Inyecta JWT, x-tenant-id y x-api-key
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -27,6 +27,12 @@ api.interceptors.request.use(
       } catch (error) {
         console.error('Error al parsear activeShop:', error);
       }
+    }
+
+    // Agregar API Key a todas las solicitudes
+    const apiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+    if (apiKey) {
+      config.headers['x-api-key'] = apiKey;
     }
 
     return config;

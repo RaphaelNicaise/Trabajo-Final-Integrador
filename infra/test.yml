@@ -35,6 +35,7 @@ services:
       MINIO_ROOT_PASSWORD: testpassword
       JWT_SECRET: test_secret_key_123
       PORT: 4000
+      NEXT_PUBLIC_INTERNAL_API_KEY: ${INTERNAL_API_KEY}
     depends_on:
       - test_db
       - test_minio
@@ -50,6 +51,7 @@ services:
     environment:
       NODE_ENV: test
       NEXT_PUBLIC_API_URL: http://api-tests:4000
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
     volumes:
       - ../frontend:/app
       - /app/node_modules
