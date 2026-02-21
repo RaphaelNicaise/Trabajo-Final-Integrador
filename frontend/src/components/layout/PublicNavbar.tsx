@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -13,20 +13,6 @@ export const PublicNavbar = () => {
         <Link href="/" className="flex-shrink-0 flex items-center cursor-pointer">
           <span className="text-2xl font-bold text-white">Store<span className="text-emerald-400">Hub</span></span>
         </Link>
-
-        {/* Buscador (Centro) */}
-        <div className="hidden md:flex flex-1 justify-center px-10">
-          <div className="relative w-full max-w-xl">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-slate-400" strokeWidth={2} />
-            </div>
-            <input
-              type="text"
-              placeholder="Buscar tiendas..."
-              className="block w-full pl-12 pr-4 py-3 text-base border border-slate-600 rounded-full bg-slate-800/50 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-            />
-          </div>
-        </div>
 
         {/* Acciones (Derecha) */}
         <div className="hidden md:flex items-center gap-6 flex-shrink-0">
@@ -52,22 +38,11 @@ export const PublicNavbar = () => {
             Vende en StoreHub
           </Link>
 
-          <div className="pl-4 ml-2 border-l border-slate-700 flex items-center">
-            <button className="relative p-2 group" aria-label="Carrito">
-              <ShoppingCart className="h-7 w-7 text-slate-200 group-hover:text-emerald-400 transition-colors" strokeWidth={2} />
-              <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-[#1E1B4B]">
-                3
-              </span>
-            </button>
-          </div>
+
         </div>
 
         {/* Menu Movil */}
         <div className="md:hidden flex items-center gap-4">
-          <button className="relative">
-            <ShoppingCart className="h-7 w-7 text-slate-200" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">3</span>
-          </button>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 text-slate-200 hover:bg-slate-800 rounded-lg"

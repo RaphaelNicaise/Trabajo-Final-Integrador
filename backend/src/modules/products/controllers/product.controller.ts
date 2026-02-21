@@ -187,4 +187,93 @@ export class ProductController {
     
     return [];
   }
+
+  // ── Promociones ───────────────────────────────────────────────────
+
+  async setPromotion(req: Request, res: Response) {
+    try {
+      const shopSlug = req.headers['x-tenant-id'] as string;
+      const { id } = req.params;
+
+      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+      if (!id) return res.status(400).json({ error: 'Falta el ID del producto' });
+
+      const { tipo, valor, valor_secundario, activa } = req.body;
+
+      if (!tipo || !['porcentaje', 'fijo', 'nxm'].includes(tipo)) {
+        return res.status(400).json({ error: 'El tipo de promoción es inválido. Debe ser: porcentaje, fijo o nxm' });
+      }
+      if (valor === undefined || valor === null || valor < 0) {
+        return res.status(400).json({ error: 'El valor de la promoción es obligatorio y debe ser >= 0' });
+      }
+      if (tipo === 'nxm' && (!valor_secundario || valor_secundario < 1)) {
+        return res.status(400).json({ error: 'Para promociones NxM debe indicar valor_secundario (cantidad a pagar)' });
+      }
+      if (tipo === 'porcentaje' && (valor <= 0 || valor > 100)) {
+        return res.status(400).json({ error: 'El porcentaje debe ser entre 1 y 100' });
+      }
+
+      const product = await productService.getProductById(shopSlug, id);
+      if (!product) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+
+      const promotion = {
+        tipo,
+        valor: Number(valor),
+        valor_secundario: tipo === 'nxm' ? Number(valor_secundario) : null,
+        activa: activa !== undefined ? activa : true,
+      };
+
+      const updatedProduct = await productService.setPromotion(shopSlug, id, promotion);
+
+      res.json({
+        message: 'Promoción aplicada correctamente',
+        data: updatedProduct
+      });
+
+    } catch (error: any) {
+      console.error('Error al aplicar promoción:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async removePromotion(req: Request, res: Response) {
+    try {
+      const shopSlug = req.headers['x-tenant-id'] as string;
+      const { id } = req.params;
+
+      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+      if (!id) return res.status(400).json({ error: 'Falta el ID del producto' });
+
+      const product = await productService.getProductById(shopSlug, id);
+      if (!product) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+      }
+
+      const updatedProduct = await productService.removePromotion(shopSlug, id);
+
+      res.json({
+        message: 'Promoción eliminada correctamente',
+        data: updatedProduct
+      });
+
+    } catch (error: any) {
+      console.error('Error al eliminar promoción:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getPromotions(req: Request, res: Response) {
+    try {
+      const shopSlug = req.headers['x-tenant-id'] as string;
+      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+
+      const products = await productService.getProductsWithActivePromotions(shopSlug);
+      res.json(products);
+
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }

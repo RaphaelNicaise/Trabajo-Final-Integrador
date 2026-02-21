@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
+export interface CartItemPromotion {
+  tipo: 'porcentaje' | 'fijo' | 'nxm';
+  valor: number;
+  valor_secundario?: number | null;
+  activa: boolean;
+}
+
 export interface CartItem {
   productId: string;
   name: string;
@@ -8,6 +15,44 @@ export interface CartItem {
   imageUrl?: string;
   shopSlug: string;
   shopName: string;
+  promotion?: CartItemPromotion;
+}
+
+/** Calcula el total de un item aplicando la promoción */
+export function calculateItemTotal(item: CartItem): number {
+  const promo = item.promotion;
+  if (!promo || !promo.activa) return item.price * item.quantity;
+
+  switch (promo.tipo) {
+    case 'porcentaje':
+      return item.price * item.quantity * (1 - promo.valor / 100);
+    case 'fijo':
+      return Math.max(0, item.price - promo.valor) * item.quantity;
+    case 'nxm': {
+      const llevas = promo.valor;           // ej: 3
+      const pagas = promo.valor_secundario || llevas; // ej: 2
+      const groups = Math.floor(item.quantity / llevas);
+      const remainder = item.quantity % llevas;
+      return (groups * pagas + remainder) * item.price;
+    }
+    default:
+      return item.price * item.quantity;
+  }
+}
+
+/** Calcula el precio unitario final (sin multiplicar por cantidad) */
+export function calculateUnitPrice(price: number, promo?: CartItemPromotion | null): number {
+  if (!promo || !promo.activa) return price;
+  switch (promo.tipo) {
+    case 'porcentaje':
+      return price * (1 - promo.valor / 100);
+    case 'fijo':
+      return Math.max(0, price - promo.valor);
+    case 'nxm':
+      return price;
+    default:
+      return price;
+  }
 }
 
 interface CartContextType {
@@ -83,7 +128,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getTotal = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
+    return items.reduce((total, item) => total + calculateItemTotal(item), 0);
   };
 
   const getItemCount = () => {

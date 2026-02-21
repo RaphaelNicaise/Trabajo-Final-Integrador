@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useCart } from '../contexts/CartContext';
-import { ShoppingCart, X, Plus, Minus, Trash2 } from 'lucide-react';
+import { useCart, calculateItemTotal, calculateUnitPrice } from '../contexts/CartContext';
+import { ShoppingCart, X, Plus, Minus, Trash2, Tag } from 'lucide-react';
 import Link from 'next/link';
 
 export function FloatingCart() {
@@ -96,7 +96,27 @@ export function FloatingCart() {
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-slate-900 truncate">{item.name}</h3>
                           <p className="text-xs text-slate-500 mt-1">{item.shopName}</p>
-                          <p className="text-emerald-600 font-bold mt-2">${item.price.toFixed(2)}</p>
+
+                          {/* Promoción badge + precio */}
+                          {item.promotion?.activa ? (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1 bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full mb-1">
+                                <Tag className="w-3 h-3" />
+                                {item.promotion.tipo === 'porcentaje' && `${item.promotion.valor}% OFF`}
+                                {item.promotion.tipo === 'fijo' && `-$${item.promotion.valor}`}
+                                {item.promotion.tipo === 'nxm' && `${item.promotion.valor}x${item.promotion.valor_secundario}`}
+                              </span>
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-emerald-600 font-bold">${calculateUnitPrice(item.price, item.promotion).toFixed(2)}</span>
+                                <span className="text-xs text-slate-400 line-through">${item.price.toFixed(2)}</span>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                Subtotal: <span className="font-semibold text-slate-700">${calculateItemTotal(item).toFixed(2)}</span>
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-emerald-600 font-bold mt-2">${item.price.toFixed(2)}</p>
+                          )}
 
                           {/* Controles de cantidad */}
                           <div className="flex items-center gap-2 mt-3">

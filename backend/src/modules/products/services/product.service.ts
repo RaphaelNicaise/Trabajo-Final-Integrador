@@ -1,6 +1,6 @@
-import { getTenantDB } from '../../database/tenantConnection'; // Ajusta la ruta si es necesario
+import { getTenantDB } from '../../database/tenantConnection';
 import { getModelByTenant } from '../../database/modelFactory';
-import { ProductSchema, IProduct } from '../models/product.schema';
+import { ProductSchema, IProduct, IPromotion } from '../models/product.schema';
 
 export class ProductService {
 
@@ -28,9 +28,6 @@ export class ProductService {
   
   async updateProduct(shopSlug: string, productId: string, updateData: Partial<IProduct>) {
     const ProductModel = this.getModel(shopSlug);
-    
-    // { new: true } devuelve el documento YA actualizado
-    // { runValidators: true } asegura que no guarden precios negativos o datos raros al editar
     return await ProductModel.findByIdAndUpdate(productId, updateData, { 
       new: true, 
       runValidators: true 
@@ -42,5 +39,27 @@ export class ProductService {
     return await ProductModel.findByIdAndDelete(productId);
   }
 
+  // ── Promociones ───────────────────────────────────────────────────
+  async setPromotion(shopSlug: string, productId: string, promotion: IPromotion) {
+    const ProductModel = this.getModel(shopSlug);
+    return await ProductModel.findByIdAndUpdate(
+      productId,
+      { $set: { promotion } },
+      { new: true, runValidators: true }
+    );
+  }
 
+  async removePromotion(shopSlug: string, productId: string) {
+    const ProductModel = this.getModel(shopSlug);
+    return await ProductModel.findByIdAndUpdate(
+      productId,
+      { $set: { promotion: null } },
+      { new: true }
+    );
+  }
+
+  async getProductsWithActivePromotions(shopSlug: string) {
+    const ProductModel = this.getModel(shopSlug);
+    return await ProductModel.find({ 'promotion.activa': true }).sort({ updatedAt: -1 });
+  }
 }

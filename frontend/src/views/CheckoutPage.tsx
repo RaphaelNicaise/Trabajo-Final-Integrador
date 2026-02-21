@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCart } from '../contexts/CartContext';
+import { useCart, calculateItemTotal } from '../contexts/CartContext';
 import { ordersService } from '../services/orders.service';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { ShoppingBag, CreditCard, User, MapPin, Phone, Mail } from 'lucide-react';
+import { type Configuration } from '../services/configurations.service';
 
 export function CheckoutPage() {
   const params = useParams<{ slug: string }>();
@@ -14,6 +15,9 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const [minPurchaseAmount, setMinPurchaseAmount] = useState<number | null>(null);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -27,18 +31,44 @@ export function CheckoutPage() {
 
   // Filtrar items de la tienda actual
   const shopItems = items.filter(item => item.shopSlug === slug);
-  const total = shopItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = shopItems.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+
+  const meetsMinPurchase = !minPurchaseAmount || total >= minPurchaseAmount;
+  const freeShippingApplied = !freeShippingThreshold || total >= freeShippingThreshold;
 
   useEffect(() => {
-    if (shopItems.length === 0) {
+    if (!success && shopItems.length === 0) {
       router.push(`/tienda/${slug}`);
     }
-  }, [shopItems.length, slug, router]);
+  }, [shopItems.length, slug, router, success]);
+
+  useEffect(() => {
+    if (!slug) return;
+    try {
+      const stored = localStorage.getItem(`shopConfigs_${slug}`);
+      if (stored) {
+        const configs: Configuration[] = JSON.parse(stored);
+        const minCfg = configs.find((c) => c.key === 'minPurchaseAmount');
+        const freeCfg = configs.find((c) => c.key === 'freeShippingThreshold');
+        setMinPurchaseAmount(minCfg ? Number(minCfg.value) || 0 : 0);
+        setFreeShippingThreshold(freeCfg ? Number(freeCfg.value) || 0 : 0);
+      }
+    } catch (err) {
+      console.error('Error al cargar configuraciones de la tienda en checkout:', err);
+    }
+  }, [slug]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    const minAmount = minPurchaseAmount || 0;
+    if (minAmount > 0 && total < minAmount) {
+      setError(`El monto mínimo de compra es $${minAmount.toFixed(2)}`);
+      setLoading(false);
+      return;
+    }
 
     try {
       // Preparar datos de la orden
@@ -52,12 +82,9 @@ export function CheckoutPage() {
           postalCode: formData.postalCode
         },
         products: shopItems.map(item => ({
-          product: item.productId,
+          productId: item.productId,
           quantity: item.quantity,
-          price: item.price
         })),
-        totalAmount: total,
-        notes: formData.notes
       };
 
       // Crear la orden
@@ -65,11 +92,6 @@ export function CheckoutPage() {
 
       setSuccess(true);
       clearCart();
-
-      // Redirigir después de 3 segundos
-      setTimeout(() => {
-        router.push(`/tienda/${slug}`);
-      }, 3000);
 
     } catch (err: any) {
       console.error('Error al crear orden:', err);
@@ -93,7 +115,13 @@ export function CheckoutPage() {
             <h2 className="text-3xl font-bold text-slate-900 mb-4">¡Orden Confirmada!</h2>
             <p className="text-slate-600 mb-2">Tu orden ha sido procesada exitosamente.</p>
             <p className="text-sm text-slate-500">Recibirás un email de confirmación pronto.</p>
-            <div className="mt-8 text-sm text-slate-500">Redirigiendo a la tienda...</div>
+            <button
+              onClick={() => router.push(`/tienda/${slug}`)}
+              className="mt-8 inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all cursor-pointer shadow-sm hover:shadow-md"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              Volver a la tienda
+            </button>
           </div>
         </div>
       </div>
@@ -310,8 +338,19 @@ export function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Envío</span>
-                  <span className="text-emerald-600 font-semibold">GRATIS</span>
+                  <span className={freeShippingApplied ? 'text-emerald-600 font-semibold' : 'text-slate-600 font-semibold'}>
+                    {freeShippingApplied ? 'GRATIS' : 'A cargo del comprador'}
+                  </span>
                 </div>
+                {freeShippingThreshold && freeShippingThreshold > 0 && total < freeShippingThreshold && (
+                  <p className="text-xs text-slate-500">
+                    Te faltan{' '}
+                    <span className="font-semibold text-slate-700">
+                      ${ (freeShippingThreshold - total).toFixed(2) }
+                    </span>{' '}
+                    para envío gratis.
+                  </p>
+                )}
                 <div className="flex justify-between text-xl font-bold text-slate-900 pt-3 border-t border-slate-200">
                   <span>Total</span>
                   <span className="text-emerald-600">${total.toFixed(2)}</span>

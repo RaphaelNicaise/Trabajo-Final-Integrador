@@ -5,6 +5,7 @@ import { shopsService } from '../../services/shops.service';
 import { productsService } from '../../services/products.service';
 import { ordersService } from '../../services/orders.service';
 import { Store, Package, ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 export const DashboardPage = () => {
   const { activeShop } = useAuth();
@@ -55,8 +56,8 @@ export const DashboardPage = () => {
   if (!activeShop) {
     return (
       <div>
-        <PageHeader 
-          title="Dashboard" 
+        <PageHeader
+          title="Dashboard"
           description="Resumen y métricas de tu tienda"
         />
         <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
@@ -68,8 +69,8 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Dashboard" 
+      <PageHeader
+        title="Dashboard"
         description="Resumen y métricas de tu tienda"
       />
 
@@ -79,8 +80,8 @@ export const DashboardPage = () => {
           {shopData?.imageUrl ? (
             <div className="flex-shrink-0">
               <div className="w-24 h-24 bg-white rounded-2xl shadow-xl p-2 overflow-hidden">
-                <img 
-                  src={shopData.imageUrl} 
+                <img
+                  src={shopData.imageUrl}
                   alt={`Logo de ${activeShop.name}`}
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -91,7 +92,7 @@ export const DashboardPage = () => {
               <Store className="w-12 h-12 text-white" />
             </div>
           )}
-          
+
           <div className="flex-1">
             <h1 className="text-4xl font-bold mb-2">{activeShop.name}</h1>
             {shopData?.location && (
@@ -175,7 +176,7 @@ export const DashboardPage = () => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 card-animate">
         <h3 className="text-xl font-bold text-slate-900 mb-4">Acciones Rápidas</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
+          <Link
             href="/admin/productos"
             className="flex items-center gap-4 p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group"
           >
@@ -186,9 +187,9 @@ export const DashboardPage = () => {
               <p className="font-semibold text-slate-900 group-hover:text-blue-700">Gestionar Productos</p>
               <p className="text-sm text-slate-600">Ver y editar catálogo</p>
             </div>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/ordenes"
             className="flex items-center gap-4 p-4 border-2 border-slate-200 rounded-lg hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer group"
           >
@@ -199,9 +200,9 @@ export const DashboardPage = () => {
               <p className="font-semibold text-slate-900 group-hover:text-emerald-700">Ver Órdenes</p>
               <p className="text-sm text-slate-600">Gestionar pedidos</p>
             </div>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/configuracion"
             className="flex items-center gap-4 p-4 border-2 border-slate-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all cursor-pointer group"
           >
@@ -212,7 +213,7 @@ export const DashboardPage = () => {
               <p className="font-semibold text-slate-900 group-hover:text-purple-700">Configuración</p>
               <p className="text-sm text-slate-600">Ajustes de tienda</p>
             </div>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

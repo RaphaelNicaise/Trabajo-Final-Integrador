@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { shopsService } from '../services/shops.service';
 
@@ -9,11 +10,13 @@ interface Shop {
   name: string;
   location?: string;
   description?: string;
+  imageUrl?: string;
 }
 
 export function PublicStoresPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const loadShops = async () => {
@@ -29,6 +32,16 @@ export function PublicStoresPage() {
 
     loadShops();
   }, []);
+
+  const filteredShops = useMemo(() => {
+    if (!searchQuery.trim()) return shops;
+    const q = searchQuery.toLowerCase();
+    return shops.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      (s.location && s.location.toLowerCase().includes(q)) ||
+      (s.description && s.description.toLowerCase().includes(q))
+    );
+  }, [shops, searchQuery]);
 
   if (loading) {
     return (
@@ -65,9 +78,23 @@ export function PublicStoresPage() {
           <p className="text-xl text-slate-600 max-w-2xl mx-auto animate-fade-in-down" style={{ animationDelay: '0.1s' }}>
             Descubre una colección curada de tiendas con productos únicos y de alta calidad
           </p>
+
+          {/* Search Bar */}
+          <div className="mt-8 max-w-xl mx-auto animate-fade-in-down" style={{ animationDelay: '0.15s' }}>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar tiendas por nombre, ubicación o descripción..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 text-base border border-slate-200 rounded-2xl bg-white text-slate-800 placeholder-slate-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+              />
+            </div>
+          </div>
         </div>
 
-        {shops.length === 0 ? (
+        {filteredShops.length === 0 && !loading ? (
           <div className="text-center py-20">
             <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
               <svg
@@ -85,15 +112,15 @@ export function PublicStoresPage() {
               </svg>
             </div>
             <h3 className="mt-4 text-2xl font-bold text-slate-900">
-              No hay tiendas disponibles
+              {searchQuery ? 'Sin resultados' : 'No hay tiendas disponibles'}
             </h3>
             <p className="mt-2 text-slate-500 text-lg">
-              Vuelve más tarde para descubrir nuevas tiendas increíbles
+              {searchQuery ? `No encontramos tiendas para "${searchQuery}"` : 'Vuelve más tarde para descubrir nuevas tiendas increíbles'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {shops.map((shop, index) => (
+            {filteredShops.map((shop, index) => (
               <Link
                 key={shop.id}
                 href={`/tienda/${shop.slug}`}
@@ -103,24 +130,35 @@ export function PublicStoresPage() {
                 <div className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 hover-lift">
                   {/* Shop Header Image */}
                   <div className="relative h-48 bg-gradient-to-br from-emerald-400 via-cyan-400 to-cyan-500 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="relative">
-                        <svg
-                          className="h-24 w-24 text-white opacity-80 group-hover:scale-110 transition-transform duration-300"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                    {shop.imageUrl ? (
+                      <>
+                        <img
+                          src={shop.imageUrl}
+                          alt={`Logo de ${shop.name}`}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="relative">
+                          <svg
+                            className="h-24 w-24 text-white opacity-80 group-hover:scale-110 transition-transform duration-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                     {/* Decorative elements */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300"></div>
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full -ml-8 -mb-8"></div>
@@ -198,7 +236,7 @@ export function PublicStoresPage() {
         )}
 
         {/* Bottom CTA Section */}
-        {shops.length > 0 && (
+        {filteredShops.length > 0 && (
           <div className="mt-20 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-3xl p-12 border border-emerald-100 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <h2 className="text-3xl font-bold text-slate-900 mb-3">
               ¿No encuentras lo que buscas?

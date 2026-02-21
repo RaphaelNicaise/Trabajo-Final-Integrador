@@ -46,7 +46,14 @@ export const shopsService = {
 
   getAllShops: async () => {
     const response = await api.get('/shops');
-    return response.data;
+    return response.data.map((shop: any) => ({
+      id: shop.tenantId || shop._id,
+      slug: shop.slug,
+      name: shop.storeName,
+      location: shop.location,
+      description: shop.description,
+      imageUrl: shop.imageUrl,
+    }));
   },
 
   uploadShopLogo: async (slug: string, file: File): Promise<{ imageUrl: string }> => {
@@ -55,6 +62,22 @@ export const shopsService = {
     const response = await api.post(`/shops/${slug}/logo`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
+    return response.data;
+  },
+
+  // Member management
+  getMembers: async (slug: string) => {
+    const response = await api.get(`/shops/${slug}/members`);
+    return response.data;
+  },
+
+  addMember: async (slug: string, email: string) => {
+    const response = await api.post(`/shops/${slug}/members`, { email });
+    return response.data;
+  },
+
+  removeMember: async (slug: string, userId: string) => {
+    const response = await api.delete(`/shops/${slug}/members/${userId}`);
     return response.data;
   },
 };
