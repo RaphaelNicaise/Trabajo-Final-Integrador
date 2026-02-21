@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 import { connectToMongoDB } from './modules/database/tenantConnection';
 import { StorageService } from './modules/storage/services/storage.service';
+import { redisClient } from './config/redis'
 import { authMiddleware, tenantMiddleware } from './middleware/auth.middleware';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 
@@ -52,8 +53,10 @@ app.use('/api/configurations', configurationRoutes);
 
 const startServer = async () => {
   try {
+    await redisClient.connect();
     await connectToMongoDB();
     await storageService.initializeMainBucket();
+    
     app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);
     });

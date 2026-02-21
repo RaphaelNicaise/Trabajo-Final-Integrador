@@ -5,13 +5,14 @@
 - [API](#api---documentacion-api)
 - [MongoDB Multi-Tenant](#mongodb-multi-tenant)
 - [Minio](#minio)
+- [Redis](#redis)
 - [Backend](#backend)
 - [Frontend](#frontend)
 - [Testing](#testing)
 
 ## Stack
 
-[![My Skills](https://skillicons.dev/icons?i=css,react,nodejs,express,tailwind,vite,ts,mongo,docker,postman,git,nginx,)](https://skillicons.dev) & Minio
+[![My Skills](https://skillicons.dev/icons?i=css,react,nodejs,express,tailwind,vite,ts,mongo,docker,postman,git,nginx,redis)](https://skillicons.dev) & Minio
 ## Deploy
 Levantar Proyecto:
 
@@ -190,6 +191,27 @@ Cuando se elimina una tienda completa, se borran automáticamente:
 **API S3:** `http://localhost:9000`
 
 El bucket principal se inicializa automáticamente al levantar el backend con política pública de lectura para que las imágenes sean accesibles desde el navegador.
+
+---
+
+## Redis
+
+Le aplicaremos Redis para cachear datos al modulo de categorias, productos, configuraciones, shops para no tener que ir a la base de datos cada vez que se necesiten esos datos, y mejorar el rendimiento de la aplicación.
+
+A que acciones se les aplicara cacheo con Redis?
+-
+-
+-
+
+Prueba a http://localhost:4000/api/categories, la primera consulta la hace a la base de datos, y las siguientes consultas las hace a Redis.
+
+Consulta a la DB
+
+![A_DB](assets/antes_de_cachear.png)
+
+Se cachea en Redis -> Consulta al Cache
+
+![A_REDIS](assets/despues_de_cachear.png)
 
 ---
 
