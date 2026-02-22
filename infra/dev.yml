@@ -38,6 +38,11 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       REDIS_URL: ${REDIS_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      
     depends_on:
       - mongo
       - redis

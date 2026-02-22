@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 import { connectToMongoDB } from './modules/database/tenantConnection';
 import { StorageService } from './modules/storage/services/storage.service';
 import { redisClient } from './config/redis'
-import { authMiddleware, tenantMiddleware } from './middleware/auth.middleware';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
+import { verifyMailConnection } from './config/mail';
 
 import paymentsRoutes from "./modules/payments/routes/payments";
 import productRoutes from './modules/products/routes/product.routes';
@@ -32,16 +32,13 @@ app.use(cors({
 
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('Backend corriendo 🚀'));
+app.get('/', (req, res) => res.send('Backend corriendo'));
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-// Rutas públicas (sin autenticación, sin API Key)
 app.use('/api/auth', authRoutes);
-
-// Protección global con API Key para todas las demás rutas
 app.use('/api/', apiKeyGuard);
 
 // Rutas con protección selectiva (definen middlewares a nivel de ruta individual)
@@ -56,6 +53,7 @@ const startServer = async () => {
     await redisClient.connect();
     await connectToMongoDB();
     await storageService.initializeMainBucket();
+    await verifyMailConnection();
     
     app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);

@@ -2,6 +2,7 @@ import { getTenantDB } from '../../database/tenantConnection';
 import { getModelByTenant } from '../../database/modelFactory';
 import { OrderSchema, IOrder } from '../models/order.schema';
 import { ProductSchema, IProduct } from '../../products/models/product.schema';
+import { MailService } from '../../mail/services/mail.service';
 
 export class OrderService {
 
@@ -71,7 +72,14 @@ export class OrderService {
         status: 'Pendiente'
     });
 
-    return await newOrder.save();
+    const savedOrder = await newOrder.save();
+
+    // Notificar al dueño de la tienda por email (sin bloquear la respuesta)
+    MailService.notifyNewOrder(shopSlug, savedOrder).catch((err) =>
+      console.error('Error enviando notificación de nueva orden:', err)
+    );
+
+    return savedOrder;
 }
 
   async getOrders(shopSlug: string) {
