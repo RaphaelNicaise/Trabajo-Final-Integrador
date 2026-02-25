@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { ConfigurationController } from '../controllers/configuration.controller';
-import { authMiddleware, tenantMiddleware } from '../../../middleware/auth.middleware';
+import { ConfigurationController } from '@/modules/configuration/controllers/configuration.controller';
+import { authMiddleware, tenantMiddleware } from '@/middleware/auth.middleware';
 
 const router = Router();
 const controller = new ConfigurationController();

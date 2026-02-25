@@ -27,6 +27,7 @@ interface Product {
   description: string;
   price: number;
   stock: number;
+  status?: 'Disponible' | 'No disponible' | 'Agotado';
   imageUrl?: string;
   categories?: string[];
   promotion?: ProductPromotion | null;
@@ -85,17 +86,19 @@ function ProductCard({ product, shopSlug, shopName }: {
 
   const cartItem = items.find((i) => i.productId === product._id);
   const quantity = cartItem?.quantity || 0;
+  const isAtStockLimit = product.stock > 0 && quantity >= product.stock;
 
   const promo = product.promotion?.activa ? product.promotion : null;
   const finalPrice = promo ? calculateFinalPrice(product.price, promo) : product.price;
 
   const handleAdd = () => {
-    if (product.stock <= 0) return;
+    if (product.stock <= 0 || isAtStockLimit) return;
     setIsAdding(true);
     addItem({
       productId: product._id,
       name: product.name,
       price: product.price,
+      stock: product.stock,
       imageUrl: product.imageUrl,
       shopSlug,
       shopName,
@@ -174,15 +177,15 @@ function ProductCard({ product, shopSlug, shopName }: {
             {quantity === 0 ? (
               <button
                 onClick={handleAdd}
-                disabled={product.stock <= 0}
+                disabled={product.stock <= 0 || isAtStockLimit}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  product.stock <= 0
+                  product.stock <= 0 || isAtStockLimit
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     : `bg-emerald-500 hover:bg-emerald-600 text-white ${isAdding ? 'scale-95' : ''}`
                 } w-full justify-center`}
               >
                 <ShoppingCart className="h-4 w-4" />
-                <span>Agregar</span>
+                <span>{product.stock <= 0 ? 'Sin stock' : 'Agregar'}</span>
               </button>
             ) : (
               <div className="flex items-center gap-2 w-full justify-end">
@@ -195,7 +198,8 @@ function ProductCard({ product, shopSlug, shopName }: {
                 <span className="min-w-[28px] text-center font-semibold text-sm">{quantity}</span>
                 <button
                   onClick={() => updateQuantity(product._id, quantity + 1)}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer"
+                  disabled={isAtStockLimit}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -357,7 +361,7 @@ export function PublicStorePage() {
           Category[],
           Configuration[]
         ]>([
-          productsService.getAll(),
+          productsService.getPublicAll(),
           categoriesService.getAll(),
           configurationsService.getPublic(),
         ]);

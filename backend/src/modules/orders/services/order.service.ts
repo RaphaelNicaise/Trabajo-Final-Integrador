@@ -1,8 +1,8 @@
-import { getTenantDB } from '../../database/tenantConnection';
-import { getModelByTenant } from '../../database/modelFactory';
-import { OrderSchema, IOrder } from '../models/order.schema';
-import { ProductSchema, IProduct } from '../../products/models/product.schema';
-import { MailService } from '../../mail/services/mail.service';
+import { getTenantDB } from '@/modules/database/tenantConnection';
+import { getModelByTenant } from '@/modules/database/modelFactory';
+import { OrderSchema, IOrder } from '@/modules/orders/models/order.schema';
+import { ProductSchema, IProduct } from '@/modules/products/models/product.schema';
+import { MailService } from '@/modules/mail/services/mail.service';
 
 export class OrderService {
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useCart, calculateItemTotal, calculateUnitPrice } from '../contexts/CartContext';
-import { ShoppingCart, X, Plus, Minus, Trash2, Tag } from 'lucide-react';
+import { ShoppingCart, X, Plus, Minus, Trash2, Tag, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 export function FloatingCart() {
-  const { items, removeItem, updateQuantity, getTotal, getItemCount, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, getTotal, getItemCount, clearCart, stockWarnings, clearStockWarnings } = useCart();
   const [isOpen, setIsOpen] = useState(false);
 
   const itemCount = getItemCount();
@@ -58,6 +58,27 @@ export function FloatingCart() {
                 </button>
               </div>
             </div>
+
+            {/* Banner de advertencias de stock */}
+            {stockWarnings.length > 0 && (
+              <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg animate-fade-in-down">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 text-xs text-amber-800 space-y-1">
+                    {stockWarnings.map((w, i) => (
+                      <p key={i}>
+                        {w.removed
+                          ? <><strong>{w.name}</strong> fue eliminado (sin stock).</>  
+                          : <><strong>{w.name}</strong> se redujo a {w.available} unidad{w.available !== 1 ? 'es' : ''}.</>}
+                      </p>
+                    ))}
+                  </div>
+                  <button onClick={clearStockWarnings} className="text-amber-500 hover:text-amber-700 cursor-pointer flex-shrink-0">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Items */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin">
@@ -129,7 +150,8 @@ export function FloatingCart() {
                             <span className="w-8 text-center font-semibold">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                              className="w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-md flex items-center justify-center transition-colors cursor-pointer"
+                              disabled={item.stock !== undefined && item.quantity >= item.stock}
+                              className="w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-md flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                               <Plus className="w-4 h-4" />
                             </button>

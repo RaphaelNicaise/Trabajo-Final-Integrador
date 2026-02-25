@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ConfigurationService } from '../services/configuration.service';
+import { ConfigurationService } from '@/modules/configuration/services/configuration.service';
 
 const configService = new ConfigurationService();
 

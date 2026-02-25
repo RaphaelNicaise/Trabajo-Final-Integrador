@@ -95,7 +95,7 @@ export function CheckoutPage() {
 
     } catch (err: any) {
       console.error('Error al crear orden:', err);
-      setError(err.response?.data?.message || 'Error al procesar la orden. Intenta de nuevo.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Error al procesar la orden. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }

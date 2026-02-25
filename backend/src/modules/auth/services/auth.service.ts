@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
-import { getMetaDB } from '../../database/tenantConnection';
-import { getModelByTenant } from '../../database/modelFactory';
-import { UserSchema, IUser } from '../../platform/models/user.schema';
+import { getMetaDB } from '@/modules/database/tenantConnection';
+import { getModelByTenant } from '@/modules/database/modelFactory';
+import { UserSchema, IUser } from '@/modules/platform/models/user.schema';
 
 export class AuthService {
 

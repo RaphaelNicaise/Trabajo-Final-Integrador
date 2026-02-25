@@ -1,8 +1,8 @@
-import { getTenantDB } from '../../database/tenantConnection'; 
-import { getModelByTenant } from '../../database/modelFactory';
-import { CategorySchema, ICategory } from '../models/category.schema';
-import { ProductSchema, IProduct } from '../../products/models/product.schema';
-import { CacheService } from '../../cache/services/cache.service'; // Importamos tu nuevo servicio
+import { getTenantDB } from '@/modules/database/tenantConnection';
+import { getModelByTenant } from '@/modules/database/modelFactory';
+import { CategorySchema, ICategory } from '@/modules/categories/models/category.schema';
+import { ProductSchema, IProduct } from '@/modules/products/models/product.schema';
+import { CacheService } from '@/modules/cache/services/cache.service';
 
 export class CategoryService {
   private readonly RESOURCE = 'categories';

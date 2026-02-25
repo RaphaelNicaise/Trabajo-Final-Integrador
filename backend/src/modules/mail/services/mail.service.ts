@@ -1,9 +1,9 @@
-import { transporter } from '../../../config/mail';
-import { getMetaDB } from '../../database/tenantConnection';
-import { getModelByTenant } from '../../database/modelFactory';
-import { TenantSchema, ITenant } from '../../platform/models/tenant.schema';
-import { IOrder } from '../../orders/models/order.schema';
-import { newOrderTemplate } from '../templates/newOrder.template';
+import { transporter } from '@/config/mail';
+import { getMetaDB } from '@/modules/database/tenantConnection';
+import { getModelByTenant } from '@/modules/database/modelFactory';
+import { TenantSchema, ITenant } from '@/modules/platform/models/tenant.schema';
+import { IOrder } from '@/modules/orders/models/order.schema';
+import { newOrderTemplate } from '@/modules/mail/templates/newOrder.template';
 
 export class MailService {
   /**

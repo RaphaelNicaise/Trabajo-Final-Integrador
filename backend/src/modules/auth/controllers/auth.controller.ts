@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '@/modules/auth/services/auth.service';
 
 const authService = new AuthService();
 

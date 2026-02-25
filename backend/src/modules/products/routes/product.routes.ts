@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { ProductController } from '../controllers/product.controller';
-import { authMiddleware, tenantMiddleware } from '../../../middleware/auth.middleware';
+import { ProductController } from '@/modules/products/controllers/product.controller';
+import { authMiddleware, tenantMiddleware } from '@/middleware/auth.middleware';
 
 const router = Router();
 const productController = new ProductController();

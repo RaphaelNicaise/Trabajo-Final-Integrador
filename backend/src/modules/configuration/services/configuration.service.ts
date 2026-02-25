@@ -1,7 +1,7 @@
-import { getTenantDB } from '../../database/tenantConnection';
-import { getModelByTenant } from '../../database/modelFactory';
-import { ConfigurationSchema, IConfiguration } from '../models/configuration.schema';
-import { CacheService } from '../../cache/services/cache.service'; // Importamos el servicio de caché
+import { getTenantDB } from '@/modules/database/tenantConnection';
+import { getModelByTenant } from '@/modules/database/modelFactory';
+import { ConfigurationSchema, IConfiguration } from '@/modules/configuration/models/configuration.schema';
+import { CacheService } from '@/modules/cache/services/cache.service';
 
 export class ConfigurationService {
     private readonly RESOURCE = 'configurations';

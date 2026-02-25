@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from 'react';
+import axios from 'axios';
 
 export interface CartItemPromotion {
   tipo: 'porcentaje' | 'fijo' | 'nxm';
@@ -12,10 +20,20 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  /** Stock disponible en el servidor (límite máximo de cantidad) */
+  stock?: number;
   imageUrl?: string;
   shopSlug: string;
   shopName: string;
   promotion?: CartItemPromotion;
+}
+
+export interface StockWarning {
+  productId: string;
+  name: string;
+  /** true = eliminado del carrito (stock 0), false = cantidad reducida */
+  removed: boolean;
+  available: number;
 }
 
 /** Calcula el total de un item aplicando la promoción */
@@ -57,6 +75,8 @@ export function calculateUnitPrice(price: number, promo?: CartItemPromotion | nu
 
 interface CartContextType {
   items: CartItem[];
+  stockWarnings: StockWarning[];
+  clearStockWarnings: () => void;
   addItem: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -70,39 +90,111 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [initialized, setInitialized] = useState(false);
+  const [stockWarnings, setStockWarnings] = useState<StockWarning[]>([]);
 
-  // Cargar carrito del localStorage solo en el cliente
+  // Ref para acceder a los items actuales dentro del polling sin crear closures viejas
+  const itemsRef = useRef<CartItem[]>([]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+
+  // ── Persistencia ──────────────────────────────────────────────────
   useEffect(() => {
     try {
       const saved = localStorage.getItem('cart');
-      if (saved) {
-        setItems(JSON.parse(saved));
-      }
-    } catch (error) {
-      console.error('Error al cargar el carrito:', error);
-    } finally {
-      setInitialized(true);
-    }
+      if (saved) setItems(JSON.parse(saved));
+    } catch { /* noop */ }
+    finally { setInitialized(true); }
   }, []);
 
-  // Guardar en localStorage cuando cambia, pero solo después de inicializar
   useEffect(() => {
-    if (initialized) {
-      localStorage.setItem('cart', JSON.stringify(items));
-    }
+    if (initialized) localStorage.setItem('cart', JSON.stringify(items));
   }, [items, initialized]);
+
+  // ── Polling de stock cada 30 segundos ────────────────────────────
+  useEffect(() => {
+    if (!initialized) return;
+
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000/api';
+    const API_KEY  = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+
+    const pollStock = async () => {
+      const current = itemsRef.current;
+      if (current.length === 0) return;
+
+      const shopSlugs = [...new Set(current.map((i) => i.shopSlug))];
+      const newWarnings: StockWarning[] = [];
+
+      for (const slug of shopSlugs) {
+        try {
+          const { data: products } = await axios.get(`${API_BASE}/products?public=true`, {
+            headers: {
+              'x-tenant-id': slug,
+              ...(API_KEY ? { 'x-api-key': API_KEY } : {}),
+            },
+          });
+
+          setItems((prev) => {
+            let updated = [...prev];
+            let changed  = false;
+
+            for (let i = 0; i < updated.length; i++) {
+              const item    = updated[i];
+              if (item.shopSlug !== slug) continue;
+
+              const product = (products as any[]).find((p: any) => p._id === item.productId);
+
+              if (!product || product.status !== 'Disponible' || product.stock <= 0) {
+                // Producto sin stock o no disponible → eliminar del carrito
+                newWarnings.push({ productId: item.productId, name: item.name, removed: true, available: 0 });
+                updated.splice(i, 1);
+                i--;
+                changed = true;
+              } else if (item.quantity > product.stock) {
+                // Cantidad supera el stock → reducir
+                newWarnings.push({ productId: item.productId, name: item.name, removed: false, available: product.stock });
+                updated[i] = { ...item, quantity: product.stock, stock: product.stock };
+                changed = true;
+              } else if (item.stock !== product.stock) {
+                // Actualizar límite silenciosamente
+                updated[i] = { ...item, stock: product.stock };
+                changed = true;
+              }
+            }
+
+            return changed ? updated : prev;
+          });
+        } catch { /* Si falla la poll, no hacemos nada */ }
+      }
+
+      if (newWarnings.length > 0) {
+        setStockWarnings((prev) => [...prev, ...newWarnings]);
+      }
+    };
+
+    const initialTimer = setTimeout(pollStock, 5_000);
+    const interval     = setInterval(pollStock, 30_000);
+    return () => { clearTimeout(initialTimer); clearInterval(interval); };
+  }, [initialized]);
+
+  // ── Acciones ──────────────────────────────────────────────────────
 
   const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.productId === item.productId);
+      const maxStock = item.stock ?? Infinity;
 
       if (existingIndex >= 0) {
+        const existing = prev[existingIndex];
+        const limit    = item.stock ?? existing.stock ?? Infinity;
+        const newQty   = Math.min(existing.quantity + quantity, limit);
+        if (newQty === existing.quantity) return prev; // ya al máximo
         const newItems = [...prev];
-        newItems[existingIndex].quantity += quantity;
+        newItems[existingIndex] = { ...existing, quantity: newQty, stock: item.stock ?? existing.stock };
         return newItems;
       }
 
-      return [...prev, { ...item, quantity }];
+      const cappedQty = Math.min(quantity, maxStock);
+      if (cappedQty <= 0) return prev;
+      return [...prev, { ...item, quantity: cappedQty }];
     });
   };
 
@@ -111,34 +203,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-
+    if (quantity <= 0) { removeItem(productId); return; }
     setItems((prev) =>
-      prev.map((item) =>
-        item.productId === productId ? { ...item, quantity } : item
-      )
+      prev.map((item) => {
+        if (item.productId !== productId) return item;
+        const maxStock = item.stock ?? Infinity;
+        return { ...item, quantity: Math.min(quantity, maxStock) };
+      })
     );
   };
 
-  const clearCart = () => {
-    setItems([]);
-  };
-
-  const getTotal = () => {
-    return items.reduce((total, item) => total + calculateItemTotal(item), 0);
-  };
-
-  const getItemCount = () => {
-    return items.reduce((count, item) => count + item.quantity, 0);
-  };
+  const clearCart          = () => setItems([]);
+  const clearStockWarnings = () => setStockWarnings([]);
+  const getTotal           = () => items.reduce((t, i) => t + calculateItemTotal(i), 0);
+  const getItemCount       = () => items.reduce((c, i) => c + i.quantity, 0);
 
   return (
     <CartContext.Provider
       value={{
         items,
+        stockWarnings,
+        clearStockWarnings,
         addItem,
         removeItem,
         updateQuantity,
@@ -154,8 +239,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within CartProvider');
-  }
+  if (!context) throw new Error('useCart must be used within CartProvider');
   return context;
 }

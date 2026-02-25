@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import { ProductService } from '../services/product.service';
-import { StorageService } from '../../storage/services/storage.service';
+import { ProductService } from '@/modules/products/services/product.service';
+import { StorageService } from '@/modules/storage/services/storage.service';
 
 const storageService = new StorageService();
 const productService = new ProductService();
@@ -62,7 +62,7 @@ export class ProductController {
   }
 
 
-  async getAll(req: Request, res: Response) {   // Listar productos
+  async getAll(req: Request, res: Response) {
     try {
       const shopId = req.headers['x-tenant-id'] as string;
 
@@ -70,7 +70,10 @@ export class ProductController {
         return res.status(400).json({ error: 'Falta el header x-tenant-id.' });
       }
 
-      const products = await productService.getProducts(shopId);
+      const isPublic = req.query.public === 'true';
+      const products = isPublic
+        ? await productService.getPublicProducts(shopId)
+        : await productService.getProducts(shopId);
       
       res.json(products);
 

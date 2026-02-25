@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { CategoryController } from '../controllers/category.controller';
-import { authMiddleware, tenantMiddleware } from '../../../middleware/auth.middleware';
+import { CategoryController } from '@/modules/categories/controllers/category.controller';
+import { authMiddleware, tenantMiddleware } from '@/middleware/auth.middleware';
 
 const router = Router();
 const categoryController = new CategoryController();

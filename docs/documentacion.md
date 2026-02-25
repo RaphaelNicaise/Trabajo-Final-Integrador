@@ -39,13 +39,14 @@ git checkout -b nombre-rama
 
 Levantar contenedores en local:
 ```bash
-docker compose up --build
+  docker compose -f infra/dev.yml --env-file .env up --build
+
 ```
 
 Reiniciar Contenedores y volumenes (db):
 ```bash
-docker compose down -v
-docker compose up --build
+docker compose -f infra/dev.yml --env-file .env down -v
+docker compose -f infra/dev.yml --env-file .envup --build
 ```
 
 #### Prod: (todavia no)

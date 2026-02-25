@@ -2,19 +2,19 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import { connectToMongoDB } from './modules/database/tenantConnection';
-import { StorageService } from './modules/storage/services/storage.service';
-import { redisClient } from './config/redis'
-import { apiKeyGuard } from './middleware/apiKeyGuard';
-import { verifyMailConnection } from './config/mail';
+import { connectToMongoDB } from '@/modules/database/tenantConnection';
+import { StorageService } from '@/modules/storage/services/storage.service';
+import { redisClient } from '@/config/redis'
+import { apiKeyGuard } from '@/middleware/apiKeyGuard';
+import { verifyMailConnection } from '@/config/mail';
 
-import paymentsRoutes from "./modules/payments/routes/payments";
-import productRoutes from './modules/products/routes/product.routes';
-import shopRoutes from './modules/shops/routes/shop.routes';
-import categoryRoutes from './modules/categories/routes/category.routes';
-import orderRoutes from './modules/orders/routes/order.routes';
-import configurationRoutes from './modules/configuration/routes/configuration.routes';
-import authRoutes from './modules/auth/routes/auth.routes';
+import paymentsRoutes from "@/modules/payments/routes/payments";
+import productRoutes from '@/modules/products/routes/product.routes';
+import shopRoutes from '@/modules/shops/routes/shop.routes';
+import categoryRoutes from '@/modules/categories/routes/category.routes';
+import orderRoutes from '@/modules/orders/routes/order.routes';
+import configurationRoutes from '@/modules/configuration/routes/configuration.routes';
+import authRoutes from '@/modules/auth/routes/auth.routes';
 
 dotenv.config();
 

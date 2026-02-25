@@ -7,11 +7,14 @@ export interface IPromotion {
   activa: boolean;
 }
 
+export type ProductStatus = 'Disponible' | 'No disponible' | 'Agotado';
+
 export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
   stock: number;
+  status: ProductStatus;
   imageUrl?: string;
   categories?: Schema.Types.ObjectId[];
   promotion?: IPromotion;
@@ -60,6 +63,11 @@ export const ProductSchema = new Schema<IProduct>({
     type: Number, 
     default: 0,
     min: [0, 'El stock no puede ser negativo']
+  },
+  status: {
+    type: String,
+    enum: ['Disponible', 'No disponible', 'Agotado'],
+    default: 'Disponible'
   },
   imageUrl: { 
     type: String,

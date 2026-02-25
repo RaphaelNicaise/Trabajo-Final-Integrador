@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { productsService } from '../../services/products.service';
-import type { Product } from '../../services/products.service';
+import type { Product, ProductStatus } from '../../services/products.service';
 import { categoriesService } from '../../services/categories.service';
 import type { Category } from '../../services/categories.service';
 import {
   Trash2, Edit, Plus, Package, DollarSign, Box, Tag, Image as ImageIcon,
   Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, Filter
 } from 'lucide-react';
+import { Select } from '../../components/ui/Select';
 
 const ROWS_PER_PAGE = 8;
 
@@ -34,6 +35,7 @@ export const ProductosPage = () => {
     price: '',
     stock: '',
     categories: [] as string[],
+    status: 'Disponible' as ProductStatus,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -135,6 +137,7 @@ export const ProductosPage = () => {
       if (formData.description !== selectedProduct.description) fd.append('description', formData.description);
       if (parseFloat(formData.price) !== selectedProduct.price) fd.append('price', (parseFloat(formData.price) || 0).toString());
       if (parseInt(formData.stock) !== selectedProduct.stock) fd.append('stock', (parseInt(formData.stock) || 0).toString());
+      if (formData.status !== (selectedProduct.status ?? 'Disponible')) fd.append('status', formData.status);
       fd.append('categories', JSON.stringify(formData.categories));
       if (imageFile) fd.append('image', imageFile);
       await productsService.update(selectedProduct._id, fd);
@@ -156,6 +159,7 @@ export const ProductosPage = () => {
       name: product.name, description: product.description,
       price: product.price.toString(), stock: product.stock.toString(),
       categories: product.categories || [],
+      status: product.status ?? 'Disponible',
     });
     setCatInput(''); setShowEditModal(true);
   };
@@ -163,7 +167,7 @@ export const ProductosPage = () => {
   const openDeleteModal = (product: Product) => { setSelectedProduct(product); setShowDeleteModal(true); };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', price: '', stock: '', categories: [] });
+    setFormData({ name: '', description: '', price: '', stock: '', categories: [], status: 'Disponible' });
     setImageFile(null); setSelectedProduct(null); setCatInput('');
   };
 
@@ -200,15 +204,16 @@ export const ProductosPage = () => {
   const totalPages = Math.max(1, Math.ceil(sortedProducts.length / ROWS_PER_PAGE));
   const paginatedProducts = sortedProducts.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
 
-  const getStatusInfo = (product: Product) => {
-    if (product.stock <= 0) return { label: 'Agotado', color: 'bg-red-50 text-red-700 border-red-200' };
-    return { label: 'Disponible', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  const STATUS_CONFIG: Record<ProductStatus, { label: string; selectClass: string; badgeClass: string }> = {
+    'Disponible':    { label: 'Disponible',    selectClass: 'text-emerald-700 bg-emerald-50 border-emerald-300', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    'No disponible': { label: 'No disponible', selectClass: 'text-slate-600   bg-slate-100  border-slate-300',   badgeClass: 'bg-slate-100  text-slate-600  border-slate-200'   },
+    'Agotado':       { label: 'Agotado',       selectClass: 'text-red-700    bg-red-50     border-red-300',     badgeClass: 'bg-red-50    text-red-700   border-red-200'     },
   };
 
-  const toggleProductStatus = async (product: Product) => {
+  const handleStatusChange = async (product: Product, newStatus: ProductStatus) => {
     try {
       const fd = new FormData();
-      fd.append('stock', product.stock > 0 ? '0' : '1');
+      fd.append('status', newStatus);
       await productsService.update(product._id, fd);
       loadProducts();
     } catch { setError('Error al cambiar el estado'); }
@@ -289,6 +294,38 @@ export const ProductosPage = () => {
             <span className="absolute -top-2.5 left-2 text-[10px] font-medium text-slate-400 bg-white px-1">Stock</span>
           </div>
         </div>
+
+        {/* Status selector — solo en edición (en creación el default es Disponible) */}
+        {selectedProduct && (
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-500">Estado del producto</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(Object.keys(STATUS_CONFIG) as ProductStatus[]).map((s) => {
+                const cfg = STATUS_CONFIG[s];
+                const isSelected = formData.status === s;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: s })}
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                      isSelected
+                        ? `${cfg.badgeClass} ring-2 ring-offset-1 ${s === 'Disponible' ? 'ring-emerald-400' : s === 'Agotado' ? 'ring-red-400' : 'ring-slate-400'}`
+                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {cfg.label}
+                  </button>
+                );
+              })}
+            </div>
+            {formData.status !== 'Disponible' && (
+              <p className="text-[11px] text-slate-400">
+                {formData.status === 'Agotado' ? 'El producto no aparecerá en la tienda pública.' : 'El producto no aparecerá en la tienda pública.'}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -332,14 +369,16 @@ export const ProductosPage = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
           </div>
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-              className="pl-10 pr-8 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none cursor-pointer">
-              <option value="todos">Todas las categorías</option>
-              {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-            </select>
-          </div>
+          <Select
+            value={filterCategory}
+            onChange={setFilterCategory}
+            icon={<Filter className="w-4 h-4 text-slate-400" />}
+            placeholder="Todas las categorías"
+            options={[
+              { value: 'todos', label: 'Todas las categorías' },
+              ...categories.map(c => ({ value: c._id, label: c.name }))
+            ]}
+          />
         </div>
         <button onClick={() => { resetForm(); setShowCreateModal(true); }}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer">
@@ -389,7 +428,6 @@ export const ProductosPage = () => {
                   <p className="text-slate-500 text-sm">{filteredProducts.length === 0 && products.length > 0 ? 'Sin resultados' : 'No hay productos'}</p>
                 </td></tr>
               ) : paginatedProducts.map((product) => {
-                const status = getStatusInfo(product);
                 return (
                   <tr key={product._id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
@@ -414,8 +452,16 @@ export const ProductosPage = () => {
                       <span className={`font-medium text-sm ${product.stock <= 0 ? 'text-red-600' : product.stock < 5 ? 'text-amber-600' : 'text-slate-700'}`}>{product.stock}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button onClick={() => toggleProductStatus(product)} title="Click para cambiar estado"
-                        className={`inline-flex items-center px-2.5 py-1 text-[11px] font-semibold rounded-full border cursor-pointer hover:opacity-80 transition-all ${status.color}`}>{status.label}</button>
+                      <Select
+                        value={product.status ?? 'Disponible'}
+                        onChange={(v) => handleStatusChange(product, v as ProductStatus)}
+                        size="sm"
+                        options={(Object.keys(STATUS_CONFIG) as ProductStatus[]).map(s => ({
+                          value: s,
+                          label: STATUS_CONFIG[s].label,
+                          className: STATUS_CONFIG[s].selectClass,
+                        }))}
+                      />
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="inline-flex items-center gap-1">

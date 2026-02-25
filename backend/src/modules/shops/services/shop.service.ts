@@ -1,11 +1,11 @@
 import { Types } from "mongoose";
-import { getMetaDB, getTenantDB } from "../../database/tenantConnection";
-import { getModelByTenant } from "../../database/modelFactory";
+import { getMetaDB, getTenantDB } from "@/modules/database/tenantConnection";
+import { getModelByTenant } from "@/modules/database/modelFactory";
 
-import { TenantSchema, ITenant } from "../../platform/models/tenant.schema";
-import { UserSchema, IUser } from "../../platform/models/user.schema";
-import { StorageService } from "../../storage/services/storage.service";
-import { CacheService } from "../../cache/services/cache.service";
+import { TenantSchema, ITenant } from "@/modules/platform/models/tenant.schema";
+import { UserSchema, IUser } from "@/modules/platform/models/user.schema";
+import { StorageService } from "@/modules/storage/services/storage.service";
+import { CacheService } from "@/modules/cache/services/cache.service";
 
 const storageService = new StorageService();
 

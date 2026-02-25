@@ -5,6 +5,7 @@ import type { Order } from '../../services/orders.service';
 import {
   Eye, ShoppingBag, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, User, MapPin, Mail, Hash
 } from 'lucide-react';
+import { Select } from '../../components/ui/Select';
 
 const ROWS_PER_PAGE = 8;
 
@@ -95,11 +96,15 @@ export const OrdenesPage = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all" />
           </div>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer">
-            <option value="">Todos los estados</option>
-            {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            placeholder="Todos los estados"
+            options={[
+              { value: '', label: 'Todos los estados' },
+              ...STATUSES.map(s => ({ value: s, label: s, className: STATUS_STYLES[s] }))
+            ]}
+          />
         </div>
       </div>
 
@@ -163,10 +168,12 @@ export const OrdenesPage = () => {
                     {item.status === 'Cancelado' ? (
                       <span className={`inline-block px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_STYLES['Cancelado']}`}>Cancelado</span>
                     ) : (
-                      <select value={item.status} onChange={(e) => handleStatusChange(item._id, e.target.value)}
-                        className={`text-xs font-semibold rounded-full px-2.5 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${STATUS_STYLES[item.status] || 'bg-slate-100 text-slate-700'}`}>
-                        {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
+                      <Select
+                        value={item.status}
+                        onChange={(v) => handleStatusChange(item._id, v)}
+                        size="sm"
+                        options={STATUSES.map(s => ({ value: s, label: s, className: STATUS_STYLES[s] }))}
+                      />
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-500">{formatDate(item.createdAt)}</td>

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CategoryService } from '../services/category.service';
+import { CategoryService } from '@/modules/categories/services/category.service';
 
 const categoryService = new CategoryService();
 

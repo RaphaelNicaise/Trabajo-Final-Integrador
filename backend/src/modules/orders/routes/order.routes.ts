@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { OrderController } from '../controllers/order.controller';
-import { authMiddleware, tenantMiddleware } from '../../../middleware/auth.middleware';
+import { OrderController } from '@/modules/orders/controllers/order.controller';
+import { authMiddleware, tenantMiddleware } from '@/middleware/auth.middleware';
 
 const router = Router();
 const orderController = new OrderController();

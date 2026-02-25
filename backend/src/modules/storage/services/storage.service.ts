@@ -9,7 +9,7 @@ import {
 
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
-import { s3Client, BUCKET_NAME, PUBLIC_ENDPOINT } from '../../../config/s3';
+import { s3Client, BUCKET_NAME, PUBLIC_ENDPOINT } from '@/config/s3';
 
 export class StorageService {
 

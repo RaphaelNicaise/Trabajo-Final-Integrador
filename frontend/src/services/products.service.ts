@@ -7,12 +7,15 @@ export interface ProductPromotion {
   activa: boolean;
 }
 
+export type ProductStatus = 'Disponible' | 'No disponible' | 'Agotado';
+
 export interface Product {
   _id: string;
   name: string;
   description: string;
   price: number;
   stock: number;
+  status: ProductStatus;
   imageUrl?: string;
   categories?: string[];
   promotion?: ProductPromotion | null;
@@ -23,6 +26,11 @@ export interface Product {
 export const productsService = {
   getAll: async () => {
     const response = await api.get('/products');
+    return response.data;
+  },
+
+  getPublicAll: async () => {
+    const response = await api.get('/products?public=true');
     return response.data;
   },
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { ShopService } from '../services/shop.service';
-import { StorageService } from '../../storage/services/storage.service';
+import { ShopService } from '@/modules/shops/services/shop.service';
+import { StorageService } from '@/modules/storage/services/storage.service';
 
 const shopService = new ShopService();
 const storageService = new StorageService();
