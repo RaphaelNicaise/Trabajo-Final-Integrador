@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/PageHeader';
+import { useAuth } from '../../contexts/AuthContext';
 import { productsService } from '../../services/products.service';
 import type { Product, ProductPromotion } from '../../services/products.service';
 import {
@@ -44,6 +45,7 @@ function calculateFinalPrice(price: number, promo: ProductPromotion, quantity: n
 }
 
 export const PromocionesPage = () => {
+  const { activeShop } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,7 +59,7 @@ export const PromocionesPage = () => {
   const [formData, setFormData] = useState<PromoFormData>(defaultForm);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { loadProducts(); }, []);
+  useEffect(() => { if (activeShop) loadProducts(); }, [activeShop]);
   useEffect(() => { setCurrentPage(1); }, [searchQuery, tab]);
 
   const loadProducts = async () => {

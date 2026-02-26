@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { PageHeader } from '../../components/PageHeader';
+import { useAuth } from '../../contexts/AuthContext';
 import { productsService } from '../../services/products.service';
 import type { Product, ProductStatus } from '../../services/products.service';
 import { categoriesService } from '../../services/categories.service';
@@ -13,6 +14,7 @@ import { Select } from '../../components/ui/Select';
 const ROWS_PER_PAGE = 8;
 
 export const ProductosPage = () => {
+  const { activeShop } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export const ProductosPage = () => {
   const [showCatDropdown, setShowCatDropdown] = useState(false);
   const catRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { loadProducts(); loadCategories(); }, []);
+  useEffect(() => { if (activeShop) { loadProducts(); loadCategories(); } }, [activeShop]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

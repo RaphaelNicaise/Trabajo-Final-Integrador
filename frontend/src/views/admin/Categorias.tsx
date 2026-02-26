@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/PageHeader';
+import { useAuth } from '../../contexts/AuthContext';
 import { categoriesService } from '../../services/categories.service';
 import type { Category } from '../../services/categories.service';
 import {
@@ -9,6 +10,7 @@ import {
 const ROWS_PER_PAGE = 8;
 
 export const CategoriasPage = () => {
+  const { activeShop } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,7 +26,7 @@ export const CategoriasPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({ name: '' });
 
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => { if (activeShop) loadCategories(); }, [activeShop]);
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
   const loadCategories = async () => {

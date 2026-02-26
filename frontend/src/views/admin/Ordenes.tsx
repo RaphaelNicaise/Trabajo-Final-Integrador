@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/PageHeader';
+import { useAuth } from '../../contexts/AuthContext';
 import { ordersService } from '../../services/orders.service';
 import type { Order } from '../../services/orders.service';
 import {
@@ -19,6 +20,7 @@ const STATUS_STYLES: Record<string, string> = {
 const STATUSES = ['Pendiente', 'Confirmado', 'Enviado', 'Cancelado'];
 
 export const OrdenesPage = () => {
+  const { activeShop } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,7 +35,7 @@ export const OrdenesPage = () => {
   const [showProductsModal, setShowProductsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => { if (activeShop) loadOrders(); }, [activeShop]);
   useEffect(() => { setCurrentPage(1); }, [searchQuery, statusFilter]);
 
   const loadOrders = async () => {
@@ -82,6 +84,17 @@ export const OrdenesPage = () => {
   const paginated = sorted.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  if (!activeShop) {
+    return (
+      <div>
+        <PageHeader title="Órdenes" description="Administra los pedidos de tus clientes" />
+        <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
+          <p className="text-slate-600">Selecciona una tienda para ver las órdenes</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
