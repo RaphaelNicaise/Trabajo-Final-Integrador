@@ -12,7 +12,7 @@
 
 ## Stack
 
-[![My Skills](https://skillicons.dev/icons?i=css,react,nodejs,express,tailwind,vite,ts,mongo,docker,postman,git,nginx,redis)](https://skillicons.dev) & Minio
+[![My Skills](https://skillicons.dev/icons?i=css,react,nodejs,express,tailwind,next,ts,mongo,docker,postman,git,nginx,redis)](https://skillicons.dev) & Minio
 ## Deploy
 Levantar Proyecto:
 
@@ -236,6 +236,7 @@ backend/src/
 └── modules/
     ├── admin/          # Gestión de usuarios y permisos (A IMPLEMENTAR)
     ├── auth/           # Autenticación y registro
+    ├── cache/ 
     ├── categories/     # CRUD de categorías por tienda
     ├── dashboard/      # Estadísticas y métricas (A IMPLEMENTAR)
     ├── database/       # Conexiones multi-tenant y factory de modelos

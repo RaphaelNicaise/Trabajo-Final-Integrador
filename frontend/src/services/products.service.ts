@@ -34,8 +34,9 @@ export const productsService = {
     return response.data;
   },
 
-  getById: async (id: string) => {
-    const response = await api.get(`/products/${id}`);
+  getById: async (id: string, shopSlug?: string) => {
+    const config = shopSlug ? { params: { shop: shopSlug } } : undefined;
+    const response = await api.get(`/products/${id}`, config);
     return response.data;
   },
 

@@ -22,6 +22,7 @@ export const ProductosPage = () => {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('todos');
+  const [filterStatus, setFilterStatus] = useState('todos');
   const [currentPage, setCurrentPage] = useState(1);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -53,7 +54,7 @@ export const ProductosPage = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, filterCategory]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, filterCategory, filterStatus]);
 
   const loadProducts = async () => {
     setLoading(true); setError('');
@@ -187,9 +188,10 @@ export const ProductosPage = () => {
     return products.filter(p => {
       const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchCat = filterCategory === 'todos' || (p.categories && p.categories.includes(filterCategory));
-      return matchSearch && matchCat;
+      const matchStatus = filterStatus === 'todos' || (p.status ?? 'Disponible') === filterStatus;
+      return matchSearch && matchCat && matchStatus;
     });
-  }, [products, searchQuery, filterCategory]);
+  }, [products, searchQuery, filterCategory, filterStatus]);
 
   const sortedProducts = useMemo(() => {
     return [...filteredProducts].sort((a, b) => {
@@ -377,6 +379,17 @@ export const ProductosPage = () => {
             options={[
               { value: 'todos', label: 'Todas las categorías' },
               ...categories.map(c => ({ value: c._id, label: c.name }))
+            ]}
+          />
+          <Select
+            value={filterStatus}
+            onChange={setFilterStatus}
+            placeholder="Todos los estados"
+            options={[
+              { value: 'todos', label: 'Todos los estados' },
+              { value: 'Disponible', label: 'Disponible', className: 'text-emerald-700 bg-emerald-50 border-emerald-300' },
+              { value: 'No disponible', label: 'No disponible', className: 'text-slate-600 bg-slate-100 border-slate-300' },
+              { value: 'Agotado', label: 'Agotado', className: 'text-red-700 bg-red-50 border-red-300' },
             ]}
           />
         </div>

@@ -265,10 +265,11 @@ function CategoryCarousel({ section, shopSlug, shopName }: {
         {/* Left arrow */}
         {canScrollLeft && (
           <>
+            {/* always visible on touch, hover on desktop */}
             <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-[5] pointer-events-none" />
             <button
               onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center text-slate-700 hover:text-emerald-600 transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center text-slate-700 hover:text-emerald-600 transition-all opacity-100 sm:opacity-0 sm:group-hover/carousel:opacity-100 cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -297,7 +298,7 @@ function CategoryCarousel({ section, shopSlug, shopName }: {
             <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-[5] pointer-events-none" />
             <button
               onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center text-slate-700 hover:text-emerald-600 transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center text-slate-700 hover:text-emerald-600 transition-all opacity-100 sm:opacity-0 sm:group-hover/carousel:opacity-100 cursor-pointer"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

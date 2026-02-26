@@ -24,12 +24,15 @@ interface SidebarItemProps {
   to: string;
   badge?: number;
   disabled?: boolean;
+  onNavigate?: () => void;
 }
 
-const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false }: SidebarItemProps) => {
+const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false, onNavigate }: SidebarItemProps) => {
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) {
       e.preventDefault();
+    } else if (onNavigate) {
+      onNavigate();
     }
   };
 
@@ -63,7 +66,7 @@ const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false }: Sid
   );
 };
 
-export const AdminSidebar = () => {
+export const AdminSidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, activeShop, logout } = useAuth();
@@ -131,6 +134,7 @@ export const AdminSidebar = () => {
             label="Mis Tiendas"
             isActive={activeRoute === 'tiendas'}
             to="/admin/tiendas"
+            onNavigate={onNavigate}
           />
           <SidebarItem
             icon={<LayoutDashboard size={24} strokeWidth={1.5} />}
@@ -138,6 +142,7 @@ export const AdminSidebar = () => {
             isActive={activeRoute === 'dashboard'}
             to="/admin/dashboard"
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
           <SidebarItem
             icon={<Package size={24} strokeWidth={1.5} />}
@@ -145,6 +150,7 @@ export const AdminSidebar = () => {
             isActive={activeRoute === 'productos'}
             to="/admin/productos"
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
           <SidebarItem
             icon={<Percent size={24} strokeWidth={1.5} />}
@@ -152,6 +158,7 @@ export const AdminSidebar = () => {
             isActive={activeRoute === 'promociones'}
             to="/admin/promociones"
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
           <SidebarItem
             icon={<ShoppingCart size={24} strokeWidth={1.5} />}
@@ -160,6 +167,7 @@ export const AdminSidebar = () => {
             badge={pendingOrdersCount}
             to="/admin/ordenes"
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
         </div>
 
@@ -170,6 +178,7 @@ export const AdminSidebar = () => {
             to="/admin/categorias"
             isActive={activeRoute === 'categorias'}
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
           <SidebarItem
             icon={<Users size={24} strokeWidth={1.5} />}
@@ -177,6 +186,7 @@ export const AdminSidebar = () => {
             isActive={activeRoute === 'usuarios'}
             to="/admin/usuarios"
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
           <SidebarItem
             icon={<Settings size={24} strokeWidth={1.5} />}
@@ -184,6 +194,7 @@ export const AdminSidebar = () => {
             isActive={activeRoute === 'configuracion'}
             to="/admin/configuracion"
             disabled={!activeShop}
+            onNavigate={onNavigate}
           />
         </div>
       </div>

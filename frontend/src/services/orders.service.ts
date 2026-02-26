@@ -5,8 +5,13 @@ export interface Order {
   buyer: {
     name: string;
     email: string;
+    phone: string;
     address: string;
+    streetNumber: string;
+    city: string;
+    province: string;
     postalCode: string;
+    notes?: string;
   };
   products: {
     productId: string;
@@ -14,10 +19,27 @@ export interface Order {
     price: number;
     quantity: number;
   }[];
+  shipping: {
+    cost: number;
+    estimatedDays: number;
+    method: string;
+  };
+  payment: {
+    method: string;
+    cardLastFour: string;
+    cardHolder: string;
+    status: string;
+  };
   total: number;
-  status: 'Pendiente' | 'Pagado' | 'Enviado' | 'Cancelado';
+  status: 'Pendiente' | 'Confirmado' | 'Enviado' | 'Cancelado';
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ShippingQuote {
+  cost: number;
+  estimatedDays: number;
+  method: string;
 }
 
 export const ordersService = {
@@ -43,5 +65,28 @@ export const ordersService = {
       }
     });
     return response.data;
+  },
+
+  getShippingQuote: async (slug: string, postalCode: string, province: string): Promise<ShippingQuote> => {
+    const response = await api.post(`/orders/shipping-quote`, { postalCode, province }, {
+      headers: {
+        'x-tenant-id': slug
+      }
+    });
+    return response.data;
+  },
+
+  downloadPDF: async (id: string) => {
+    const response = await api.get(`/orders/${id}/pdf`, {
+      responseType: 'blob'
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `orden-${id.slice(-8)}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   },
 };

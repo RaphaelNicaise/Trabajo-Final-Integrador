@@ -3,7 +3,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { ordersService } from '../../services/orders.service';
 import type { Order } from '../../services/orders.service';
 import {
-  Eye, ShoppingBag, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, User, MapPin, Mail, Hash
+  Eye, ShoppingBag, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, User, MapPin, Mail, Hash, Download
 } from 'lucide-react';
 import { Select } from '../../components/ui/Select';
 
@@ -11,12 +11,12 @@ const ROWS_PER_PAGE = 8;
 
 const STATUS_STYLES: Record<string, string> = {
   Pendiente: 'bg-amber-100 text-amber-800',
-  Pagado: 'bg-emerald-100 text-emerald-800',
+  Confirmado: 'bg-emerald-100 text-emerald-800',
   Enviado: 'bg-blue-100 text-blue-800',
   Cancelado: 'bg-red-100 text-red-800',
 };
 
-const STATUSES = ['Pendiente', 'Pagado', 'Enviado', 'Cancelado'];
+const STATUSES = ['Pendiente', 'Confirmado', 'Enviado', 'Cancelado'];
 
 export const OrdenesPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -129,11 +129,9 @@ export const OrdenesPage = () => {
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-700" onClick={() => handleSort('createdAt')}>
-                  <span className="inline-flex items-center gap-1">Creado <SortIcon field="createdAt" /></span>
+                  <span className="inline-flex items-center gap-1">Fecha <SortIcon field="createdAt" /></span>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-700" onClick={() => handleSort('updatedAt')}>
-                  <span className="inline-flex items-center gap-1">Actualizado <SortIcon field="updatedAt" /></span>
-                </th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -177,7 +175,15 @@ export const OrdenesPage = () => {
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-500">{formatDate(item.createdAt)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-500">{formatDate(item.updatedAt)}</td>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => ordersService.downloadPDF(item._id)}
+                      title="Descargar PDF"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 hover:text-white hover:bg-purple-600 border border-purple-200 hover:border-purple-600 rounded-lg transition-all cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" /> PDF
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -224,7 +230,15 @@ export const OrdenesPage = () => {
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
-                <div><p className="text-xs font-medium text-slate-500">Dirección</p><p className="text-sm text-slate-900">{selectedOrder.buyer.address}</p></div>
+                <div><p className="text-xs font-medium text-slate-500">Provincia</p><p className="text-sm text-slate-900">{selectedOrder.buyer.province || '—'}</p></div>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
+                <div><p className="text-xs font-medium text-slate-500">Localidad</p><p className="text-sm text-slate-900">{selectedOrder.buyer.city || '—'}</p></div>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
+                <div><p className="text-xs font-medium text-slate-500">Dirección</p><p className="text-sm text-slate-900">{selectedOrder.buyer.address} {selectedOrder.buyer.streetNumber}</p></div>
               </div>
               <div className="flex items-start gap-3">
                 <Hash className="w-4 h-4 text-slate-400 mt-0.5" />

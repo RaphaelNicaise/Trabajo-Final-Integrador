@@ -35,11 +35,7 @@ export function LoginPage() {
       // Redirigir al panel de administración
       router.push('/admin');
     } catch (err: any) {
-      console.error('Error al iniciar sesión:', err);
-      setError(
-        err.response?.data?.message ||
-        'Error al iniciar sesión. Verifica tus credenciales.'
-      );
+      setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -160,6 +156,16 @@ export function LoginPage() {
                 </>
               )}
             </button>
+
+            {/* Forgot password link */}
+            <div className="text-center">
+              <Link
+                href="/recuperar-contrasena"
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors cursor-pointer"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </form>
 
           {/* Divider */}
