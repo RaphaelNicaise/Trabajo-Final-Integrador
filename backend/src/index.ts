@@ -15,6 +15,7 @@ import categoryRoutes from '@/modules/categories/routes/category.routes';
 import orderRoutes from '@/modules/orders/routes/order.routes';
 import configurationRoutes from '@/modules/configuration/routes/configuration.routes';
 import authRoutes from '@/modules/auth/routes/auth.routes';
+import { runSeed } from '@/seed';
 
 dotenv.config();
 
@@ -54,6 +55,8 @@ const startServer = async () => {
     await connectToMongoDB();
     await storageService.initializeMainBucket();
     await verifyMailConnection();
+
+    await runSeed();
     
     app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);

@@ -50,7 +50,7 @@ export const UsuariosPage = () => {
     setAddingMember(true); setAddError('');
     try {
       await shopsService.addMember(activeShop.slug, newMemberEmail);
-      setSuccess('Usuario agregado exitosamente');
+      setSuccess('Invitación enviada exitosamente');
       setShowAddModal(false); setNewMemberEmail(''); loadMembers();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {

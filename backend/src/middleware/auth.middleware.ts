@@ -63,3 +63,21 @@ export const tenantMiddleware = (req: Request, res: Response, next: NextFunction
   req.tenantId = tenantId;
   next();
 };
+
+/**
+ * Middleware de multitenancy permisivo
+ * Acepta x-tenant-id del header O el parámetro ?shop= en la query
+ */
+export const softTenantMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  const tenantId = (req.headers['x-tenant-id'] as string) || (req.query.shop as string);
+
+  if (!tenantId) {
+    res.status(400).json({ message: 'Se requiere x-tenant-id (header) o shop (query param)' });
+    return;
+  }
+
+  req.tenantId = tenantId;
+  // normalise header so downstream code reads it uniformly
+  req.headers['x-tenant-id'] = tenantId;
+  next();
+};

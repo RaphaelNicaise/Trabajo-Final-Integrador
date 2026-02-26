@@ -1,0 +1,99 @@
+networks:
+  app_network:
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: mongo_db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ../
+      dockerfile: backend/Dockerfile.prod
+    container_name: backend
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT}
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      REDIS_URL: ${REDIS_URL}
+      TEST_MP_ACCESS_TOKEN: ${TEST_MP_ACCESS_TOKEN}
+      TEST_MP_PUBLIC_KEY: ${TEST_MP_PUBLIC_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ../
+      dockerfile: frontend/Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - app_network
+
+volumes:
+  mongo_data:
+  redis_data:

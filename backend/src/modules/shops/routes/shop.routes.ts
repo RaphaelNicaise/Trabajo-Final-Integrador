@@ -34,4 +34,7 @@ router.get('/:slug/members', authMiddleware, (req, res) => shopController.getMem
 router.post('/:slug/members', authMiddleware, (req, res) => shopController.addMember(req, res));
 router.delete('/:slug/members/:userId', authMiddleware, (req, res) => shopController.removeMember(req, res));
 
+// Aceptar invitación (pública, el token valida la identidad)
+router.post('/invitations/:token/accept', (req, res) => shopController.acceptInvitation(req, res));
+
 export default router;

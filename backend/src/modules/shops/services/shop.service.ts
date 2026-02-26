@@ -1,13 +1,18 @@
 import { Types } from "mongoose";
+import crypto from "crypto";
 import { getMetaDB, getTenantDB } from "@/modules/database/tenantConnection";
 import { getModelByTenant } from "@/modules/database/modelFactory";
 
 import { TenantSchema, ITenant } from "@/modules/platform/models/tenant.schema";
 import { UserSchema, IUser } from "@/modules/platform/models/user.schema";
+import { InvitationSchema, IInvitation } from "@/modules/platform/models/invitation.schema";
 import { StorageService } from "@/modules/storage/services/storage.service";
 import { CacheService } from "@/modules/cache/services/cache.service";
+import { MailService } from "@/modules/mail/services/mail.service";
+import { shopInvitationTemplate } from "@/modules/mail/templates/shopInvitation.template";
 
 const storageService = new StorageService();
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 export class ShopService {
 
@@ -244,6 +249,7 @@ export class ShopService {
         const metaConnection = getMetaDB();
         const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
         const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
+        const InvitationModel = getModelByTenant<IInvitation>(metaConnection, "Invitation", InvitationSchema);
 
         const tenant = await TenantModel.findOne({ slug: shopSlug });
         if (!tenant) throw new Error("Tienda no encontrada");
@@ -265,29 +271,112 @@ export class ShopService {
         );
         if (alreadyMember) throw new Error("Este usuario ya es miembro de la tienda");
 
-        await TenantModel.findByIdAndUpdate(tenant._id, {
-            $push: { members: { userId: userIdToAdd, role: "admin" } },
+        // Verificar si ya existe una invitación pendiente
+        const existingInvitation = await InvitationModel.findOne({
+            shopSlug,
+            email: email.toLowerCase().trim(),
+            status: 'pending',
+            expiresAt: { $gt: new Date() },
+        });
+        if (existingInvitation) throw new Error("Ya existe una invitación pendiente para este usuario");
+
+        // Crear invitación
+        const invitationToken = crypto.randomBytes(32).toString('hex');
+        const invitation = new InvitationModel({
+            shopSlug,
+            tenantId: tenant._id,
+            email: email.toLowerCase().trim(),
+            token: invitationToken,
+            invitedBy: new Types.ObjectId(requestingUserId),
+            status: 'pending',
+            expiresAt: new Date(Date.now() + 7 * 24 * 3600000), // 7 días
+        });
+        await invitation.save();
+
+        // Obtener datos del owner para el email
+        const owner = await UserModel.findById(requestingUserId).select("name");
+
+        // Enviar email de invitación
+        const acceptLink = `${FRONTEND_URL}/aceptar-invitacion/${invitationToken}`;
+        const template = shopInvitationTemplate({
+            userName: userToAdd.name,
+            shopName: tenant.storeName,
+            ownerName: owner?.name || 'El propietario',
+            acceptLink,
         });
 
-        await UserModel.findByIdAndUpdate(userIdToAdd, {
+        try {
+            await MailService.sendEmail(userToAdd.email, template);
+        } catch (error) {
+            console.error('Error al enviar email de invitación:', error);
+        }
+
+        return {
+            message: "Invitación enviada exitosamente",
+            email: userToAdd.email,
+        };
+    }
+
+    async acceptInvitation(token: string) {
+        const metaConnection = getMetaDB();
+        const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
+        const UserModel = getModelByTenant<IUser>(metaConnection, "User", UserSchema);
+        const InvitationModel = getModelByTenant<IInvitation>(metaConnection, "Invitation", InvitationSchema);
+
+        const invitation = await InvitationModel.findOne({
+            token,
+            status: 'pending',
+            expiresAt: { $gt: new Date() },
+        });
+
+        if (!invitation) {
+            throw new Error("Invitación inválida o expirada.");
+        }
+
+        const tenant = await TenantModel.findById(invitation.tenantId);
+        if (!tenant) throw new Error("La tienda ya no existe.");
+
+        const user = await UserModel.findOne({ email: invitation.email });
+        if (!user) throw new Error("Usuario no encontrado.");
+
+        const userId = (user as any)._id;
+
+        // Verificar que no sea ya miembro
+        const alreadyMember = tenant.members.find(
+            (m: any) => m.userId.toString() === userId.toString()
+        );
+        if (alreadyMember) {
+            invitation.status = 'accepted';
+            await invitation.save();
+            throw new Error("Ya sos miembro de esta tienda.");
+        }
+
+        // Agregar como miembro
+        await TenantModel.findByIdAndUpdate(tenant._id, {
+            $push: { members: { userId, role: "admin" } },
+        });
+
+        await UserModel.findByIdAndUpdate(userId, {
             $push: {
                 associatedStores: {
                     tenantId: tenant._id,
-                    slug: shopSlug,
+                    slug: invitation.shopSlug,
                     storeName: tenant.storeName,
                     role: "admin",
                 },
             },
         });
 
-        // INVALIDACIÓN: La lista de tiendas de este nuevo miembro cambió
-        await CacheService.delete(this.getUserShopsCacheKey(userIdToAdd.toString()));
+        invitation.status = 'accepted';
+        await invitation.save();
+
+        // Invalidar caché
+        await CacheService.delete(this.getUserShopsCacheKey(userId.toString()));
 
         return {
-            userId: userIdToAdd.toString(),
-            name: userToAdd.name,
-            email: userToAdd.email,
-            role: "admin",
+            message: "Invitación aceptada. Ya podés acceder a la tienda.",
+            shopName: tenant.storeName,
+            shopSlug: invitation.shopSlug,
         };
     }
 

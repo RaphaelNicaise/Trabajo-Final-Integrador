@@ -6,6 +6,14 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string; 
   
+  // Confirmación de cuenta
+  isConfirmed: boolean;
+  confirmationToken?: string;
+
+  // Recuperar contraseña
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+
   // Relación N:N - Tiendas a las que este usuario tiene acceso
   // Vital para el Dashboard "Mis Tiendas" al iniciar sesión
   associatedStores: Array<{
@@ -35,6 +43,23 @@ const UserSchema = new Schema<IUser>({
   passwordHash: { 
     type: String, 
     required: true 
+  },
+
+  isConfirmed: {
+    type: Boolean,
+    default: false
+  },
+  confirmationToken: {
+    type: String,
+    default: null
+  },
+  resetPasswordToken: {
+    type: String,
+    default: null
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null
   },
   
   // Lista de permisos sobre tiendas (a modificar)

@@ -95,4 +95,71 @@ export class AuthController {
           res.status(500).json({ error: error.message });
       }
   }
+
+  async confirmAccount(req: Request, res: Response) {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).json({ error: 'Token de confirmación requerido.' });
+      }
+
+      await authService.confirmAccount(token);
+
+      res.status(200).json({ message: 'Cuenta confirmada exitosamente. Ya podés iniciar sesión.' });
+    } catch (error: any) {
+      console.error('Error en confirmación:', error.message);
+
+      if (error.message.includes('inválido') || error.message.includes('ya fue confirmada')) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      res.status(500).json({ error: error.message || 'Error interno del servidor' });
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: 'El email es obligatorio.' });
+      }
+
+      await authService.forgotPassword(email);
+
+      // Siempre responder éxito (no revelar si el email existe)
+      res.status(200).json({ message: 'Si el email existe, recibirás un correo para restablecer tu contraseña.' });
+    } catch (error: any) {
+      console.error('Error en forgot password:', error.message);
+      res.status(500).json({ error: 'Error al procesar la solicitud.' });
+    }
+  }
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { token } = req.params;
+      const { password } = req.body;
+
+      if (!token || !password) {
+        return res.status(400).json({ error: 'Token y nueva contraseña son obligatorios.' });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
+      }
+
+      await authService.resetPassword(token, password);
+
+      res.status(200).json({ message: 'Contraseña restablecida exitosamente.' });
+    } catch (error: any) {
+      console.error('Error en reset password:', error.message);
+
+      if (error.message.includes('inválido') || error.message.includes('expirado')) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      res.status(500).json({ error: error.message || 'Error interno del servidor' });
+    }
+  }
 }

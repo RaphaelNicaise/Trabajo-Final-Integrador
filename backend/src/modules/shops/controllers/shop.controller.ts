@@ -159,14 +159,32 @@ export class ShopController {
         return res.status(401).json({ error: 'No autenticado' });
       }
 
-      const member = await shopService.addMember(slug, email, requestingUserId);
-      res.status(201).json(member);
+      const result = await shopService.addMember(slug, email, requestingUserId);
+      res.status(200).json(result);
     } catch (error: any) {
-      if (error.message.includes('Solo el propietario') || error.message.includes('ya es miembro')) {
+      if (error.message.includes('Solo el propietario') || error.message.includes('ya es miembro') || error.message.includes('invitación pendiente')) {
         return res.status(403).json({ error: error.message });
       }
       if (error.message.includes('No se encontró')) {
         return res.status(404).json({ error: error.message });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async acceptInvitation(req: Request, res: Response) {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).json({ error: 'Token de invitación requerido.' });
+      }
+
+      const result = await shopService.acceptInvitation(token);
+      res.status(200).json(result);
+    } catch (error: any) {
+      if (error.message.includes('inválida') || error.message.includes('expirada') || error.message.includes('Ya sos miembro')) {
+        return res.status(400).json({ error: error.message });
       }
       res.status(500).json({ error: error.message });
     }

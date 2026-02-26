@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth.service';
 
 export function RegisterPage() {
@@ -14,8 +12,7 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login } = useAuth();
-  const router = useRouter();
+  const [registered, setRegistered] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -35,26 +32,11 @@ export function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await authService.register(name, email, password);
-
-      // Login automático después del registro
-      login(
-        {
-          id: response.user._id,
-          name: response.user.name,
-          email: response.user.email,
-        },
-        response.token
-      );
-
-      // Redirigir al panel de administración
-      router.push('/admin');
+      await authService.register(name, email, password);
+      setRegistered(true);
     } catch (err: any) {
       console.error('Error al registrarse:', err);
-      setError(
-        err.response?.data?.message ||
-        'Error al crear la cuenta. Intenta de nuevo.'
-      );
+      setError(err.message || 'Error al crear la cuenta. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -80,6 +62,26 @@ export function RegisterPage() {
 
         {/* Register Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-100 animate-scale-in backdrop-blur-sm" style={{ animationDelay: '0.2s' }}>
+          {registered ? (
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+                <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">¡Verificá tu email!</h2>
+              <p className="text-slate-600 text-sm">
+                Te enviamos un correo a <strong>{email}</strong> con un enlace para confirmar tu cuenta. Revisá también tu carpeta de spam.
+              </p>
+              <Link
+                href="/login"
+                className="inline-flex items-center px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all cursor-pointer mt-4"
+              >
+                Ir al Login
+              </Link>
+            </div>
+          ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Nombre */}
             <div className="space-y-2 stagger-item">
@@ -272,6 +274,8 @@ export function RegisterPage() {
               Volver al inicio
             </Link>
           </div>
+          </>
+          )}
         </div>
 
         {/* Footer */}

@@ -4,11 +4,9 @@ import { getModelByTenant } from '@/modules/database/modelFactory';
 import { TenantSchema, ITenant } from '@/modules/platform/models/tenant.schema';
 import { IOrder } from '@/modules/orders/models/order.schema';
 import { newOrderTemplate } from '@/modules/mail/templates/newOrder.template';
+import { orderConfirmationTemplate } from '@/modules/mail/templates/orderConfirmation.template';
 
 export class MailService {
-  /**
-   * Envía un correo electrónico utilizando un template predefinido
-   */
   static async sendEmail(to: string, template: { subject: string; html: string }) {
     try {
       const info = await transporter.sendMail({
@@ -26,9 +24,6 @@ export class MailService {
     }
   }
 
-  /**
-   * Notifica al dueño de la tienda que se recibió una nueva orden
-   */
   static async notifyNewOrder(shopSlug: string, order: IOrder) {
     const metaConnection = getMetaDB();
     const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
@@ -47,5 +42,39 @@ export class MailService {
     });
 
     await MailService.sendEmail(tenant.ownerEmail, template);
+  }
+
+  static async sendOrderConfirmationToBuyer(shopSlug: string, order: IOrder) {
+    if (!order.buyer?.email) return;
+
+    const metaConnection = getMetaDB();
+    const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
+    const tenant = await TenantModel.findOne({ slug: shopSlug }).lean();
+
+    const storeName = tenant?.storeName || shopSlug;
+    const subtotal = order.products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+
+    const template = orderConfirmationTemplate({
+      orderId: (order._id as any).toString(),
+      storeName,
+      buyerName: order.buyer.name ?? 'Cliente',
+      products: order.products.map((p) => ({
+        name: p.name,
+        price: p.price,
+        quantity: p.quantity,
+      })),
+      subtotal,
+      shippingCost: order.shipping?.cost || 0,
+      total: order.total,
+      address: order.buyer.address || '',
+      streetNumber: order.buyer.streetNumber || '',
+      city: order.buyer.city || '',
+      province: order.buyer.province || '',
+      postalCode: order.buyer.postalCode || '',
+      estimatedDays: order.shipping?.estimatedDays || 0,
+      createdAt: order.createdAt || new Date(),
+    });
+
+    await MailService.sendEmail(order.buyer.email, template);
   }
 }
