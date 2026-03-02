@@ -8,12 +8,12 @@ const storageService = new StorageService();
 export class ShopController {
   async create(req: Request, res: Response) {
     try {
-      const { userId, slug, storeName, location, description } = req.body;
+      const { userId, slug, storeName, location, description, categoria } = req.body;
       if (!userId || !slug || !storeName) {
         return res.status(400).json({ error: 'Faltan datos obligatorios (userId, slug, storeName)' });
       }
       const shop = await shopService.createShop({
-        userId, slug, storeName, location, description
+        userId, slug, storeName, location, description, categoria
       });
       res.status(201).json(shop);
     } catch (error: any) {
@@ -24,11 +24,11 @@ export class ShopController {
   async update(req: Request, res: Response) {
     try {
       const { slug } = req.params;
-      const { storeName, location, description } = req.body;
+      const { storeName, location, description, categoria } = req.body;
       if (!slug) {
         return res.status(400).json({ error: 'Falta el slug de la tienda' });
       }
-      const updatedShop = await shopService.updateShop(slug, { storeName, location, description });
+      const updatedShop = await shopService.updateShop(slug, { storeName, location, description, categoria });
       if (!updatedShop) {
         return res.status(404).json({ error: 'Tienda no encontrada' });
       }
