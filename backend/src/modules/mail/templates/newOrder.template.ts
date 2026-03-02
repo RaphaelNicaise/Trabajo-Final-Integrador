@@ -1,3 +1,4 @@
+
 interface NewOrderTemplateData {
   orderId: string;
   storeName: string;
@@ -20,87 +21,81 @@ export const newOrderTemplate = (data: NewOrderTemplateData) => {
   }).format(data.createdAt);
 
   return {
-    subject: ` Nueva orden recibida en ${data.storeName}`,
+    subject: `Nueva orden recibida en ${data.storeName}`,
     html: `
       <!DOCTYPE html>
       <html lang="es">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body { background: #f4f4f4; font-family: 'Segoe UI', Arial, sans-serif; }
+          .main { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); max-width: 600px; margin: 40px auto; overflow: hidden; }
+          .header { background: linear-gradient(90deg, #059669 60%, #34d399 100%); padding: 32px 40px; text-align: left; }
+          .header h1 { color: #fff; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 1px; }
+          .header p { color: #d1fae5; font-size: 15px; margin: 8px 0 0; }
+          .content { padding: 40px; }
+          .title { color: #059669; font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+          .subtitle { color: #1e293b; font-size: 16px; margin-bottom: 24px; }
+          .summary { background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 32px; }
+          .summary p { margin: 0 0 8px; color: #64748b; font-size: 15px; }
+          .order-id { font-family: monospace; color: #059669; font-size: 16px; font-weight: 700; }
+          .info-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+          .info-table th { background: #f1f5f9; color: #059669; font-size: 13px; padding: 10px; text-align: left; }
+          .info-table td { color: #1e293b; font-size: 14px; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+          .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 40px; text-align: center; }
+          .footer p { color: #94a3b8; font-size: 13px; margin: 0; }
+          .footer a { color: #059669; text-decoration: underline; }
+        </style>
       </head>
-      <body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4; padding:30px 0;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                
-                <!-- Header -->
+      <body>
+        <div class="main">
+          <div class="header">
+            <h1>StoreHub</h1>
+            <p>Panel de vendedor</p>
+          </div>
+          <div class="content">
+            <div class="title">¡Nueva orden recibida!</div>
+            <div class="subtitle">Has recibido una nueva orden en <strong>${data.storeName}</strong>.</div>
+            <div class="summary">
+              <p>Fecha: <strong>${formattedDate}</strong></p>
+              <p>Número de orden: <span class="order-id">#${data.orderId}</span></p>
+            </div>
+            <h3 style="color:#059669; font-size:18px; margin-bottom:12px;">Detalle de la orden</h3>
+            <table class="info-table">
+              <tbody>
                 <tr>
-                  <td style="background-color:#2563eb; padding:28px 32px;">
-                    <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:700;">StoreHub</h1>
-                    <p style="margin:4px 0 0; color:#bfdbfe; font-size:13px;">Panel de vendedor</p>
-                  </td>
+                  <td style="color:#64748b; font-size:13px; width:140px;">Tienda</td>
+                  <td style="color:#1e293b; font-size:13px; font-weight:600;">${data.storeName}</td>
                 </tr>
-
-                <!-- Body -->
                 <tr>
-                  <td style="padding:32px;">
-                    <h2 style="margin:0 0 8px; color:#1e293b; font-size:20px;">🛒 ¡Nueva orden recibida!</h2>
-                    <p style="margin:0 0 24px; color:#64748b; font-size:14px;">${formattedDate}</p>
-
-                    <!-- Order info card -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:24px;">
-                      <tr>
-                        <td style="padding:20px;">
-                          <table width="100%" cellpadding="6" cellspacing="0">
-                            <tr>
-                              <td style="color:#64748b; font-size:13px; width:140px;">ID de orden</td>
-                              <td style="color:#1e293b; font-size:13px; font-family:monospace; font-weight:600;">#${data.orderId}</td>
-                            </tr>
-                            <tr>
-                              <td style="color:#64748b; font-size:13px;">Tienda</td>
-                              <td style="color:#1e293b; font-size:13px; font-weight:600;">${data.storeName}</td>
-                            </tr>
-                            <tr>
-                              <td style="color:#64748b; font-size:13px;">Comprador</td>
-                              <td style="color:#1e293b; font-size:13px;">${data.buyerName}</td>
-                            </tr>
-                            <tr>
-                              <td style="color:#64748b; font-size:13px;">Email comprador</td>
-                              <td style="color:#1e293b; font-size:13px;">${data.buyerEmail}</td>
-                            </tr>
-                            <tr>
-                              <td style="color:#64748b; font-size:13px;">Productos</td>
-                              <td style="color:#1e293b; font-size:13px;">${data.itemCount} ${data.itemCount === 1 ? 'artículo' : 'artículos'}</td>
-                            </tr>
-                            <tr>
-                              <td style="color:#64748b; font-size:13px;">Total</td>
-                              <td style="color:#16a34a; font-size:16px; font-weight:700;">${formattedTotal}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <p style="margin:0; color:#64748b; font-size:13px; line-height:1.6;">
-                      Ingresá al panel de administración para ver el detalle completo y gestionar el estado de la orden.
-                    </p>
-                  </td>
+                  <td style="color:#64748b; font-size:13px;">Comprador</td>
+                  <td style="color:#1e293b; font-size:13px;">${data.buyerName}</td>
                 </tr>
-
-                <!-- Footer -->
                 <tr>
-                  <td style="background-color:#f8fafc; border-top:1px solid #e2e8f0; padding:16px 32px;">
-                    <p style="margin:0; color:#94a3b8; font-size:12px; text-align:center;">
-                      Este correo fue generado automáticamente por StoreHub · No respondas a este mensaje
-                    </p>
-                  </td>
+                  <td style="color:#64748b; font-size:13px;">Email comprador</td>
+                  <td style="color:#1e293b; font-size:13px;">${data.buyerEmail}</td>
                 </tr>
-
-              </table>
-            </td>
-          </tr>
-        </table>
+                <tr>
+                  <td style="color:#64748b; font-size:13px;">Productos</td>
+                  <td style="color:#1e293b; font-size:13px;">${data.itemCount} ${data.itemCount === 1 ? 'artículo' : 'artículos'}</td>
+                </tr>
+                <tr>
+                  <td style="color:#64748b; font-size:13px;">Total</td>
+                  <td style="color:#059669; font-size:16px; font-weight:700;">${formattedTotal}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="color:#64748b; font-size:15px; margin-bottom:18px;">
+              Ingresá al panel de administración para ver el detalle completo y gestionar el estado de la orden.
+            </div>
+          </div>
+          <div class="footer">
+            <p>Este correo fue generado automáticamente por StoreHub.<br>
+            Si tienes dudas, visita nuestro <a href="https://storehub.com/soporte">Centro de Ayuda</a>.<br>
+            No respondas a este mensaje.</p>
+          </div>
+        </div>
       </body>
       </html>
     `,
