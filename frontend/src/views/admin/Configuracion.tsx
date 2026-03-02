@@ -13,6 +13,8 @@ const CONFIG_KEYS = {
 export const ConfiguracionPage = () => {
   const { activeShop } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [savingShop, setSavingShop] = useState(false);
+  const [savingConfigs, setSavingConfigs] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -72,7 +74,7 @@ export const ConfiguracionPage = () => {
   };
 
   const handleSaveSystemConfigs = async () => {
-    setLoading(true); setError(''); setSuccess('');
+    setSavingConfigs(true); setError(''); setSuccess('');
     try {
       const configsToUpdate = [
         {
@@ -94,7 +96,7 @@ export const ConfiguracionPage = () => {
     } catch {
       setError('Error al guardar las configuraciones del sistema.');
     } finally {
-      setLoading(false);
+      setSavingConfigs(false);
     }
   };
 
@@ -124,7 +126,7 @@ export const ConfiguracionPage = () => {
 
   const handleUpdateShop = async () => {
     if (!activeShop) return;
-    setLoading(true); setError(''); setSuccess('');
+    setSavingShop(true); setError(''); setSuccess('');
     try {
       await shopsService.updateShop(activeShop.slug, {
         storeName: shopData.storeName,
@@ -135,7 +137,7 @@ export const ConfiguracionPage = () => {
       setSuccess('Configuración actualizada exitosamente');
       setTimeout(() => setSuccess(''), 3000);
     } catch { setError('Error al actualizar la configuración'); }
-    finally { setLoading(false); }
+    finally { setSavingShop(false); }
   };
 
   if (!activeShop) {
@@ -155,15 +157,17 @@ export const ConfiguracionPage = () => {
       <PageHeader title="Configuración" description={`Administración de "${activeShop.name || 'Tienda'}"`} />
 
       {success && (
-        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
-          <CheckCircle className="w-4 h-4 flex-shrink-0" />{success}
-          <button onClick={() => setSuccess('')} className="ml-auto hover:bg-emerald-100 rounded p-1 cursor-pointer"><X className="w-4 h-4" /></button>
+        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm animate-fade-in-down shadow-sm">
+          <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium">{success}</span>
+          <button onClick={() => setSuccess('')} className="ml-auto hover:bg-emerald-100 rounded p-1 cursor-pointer transition-colors"><X className="w-4 h-4" /></button>
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />{error}
-          <button onClick={() => setError('')} className="ml-auto hover:bg-red-100 rounded p-1 cursor-pointer"><X className="w-4 h-4" /></button>
+        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-fade-in-down shadow-sm">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium">{error}</span>
+          <button onClick={() => setError('')} className="ml-auto hover:bg-red-100 rounded p-1 cursor-pointer transition-colors"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -257,9 +261,9 @@ export const ConfiguracionPage = () => {
               className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none" />
           </div>
           <div className="pt-2 flex justify-end">
-            <button onClick={handleUpdateShop} disabled={loading}
+            <button onClick={handleUpdateShop} disabled={savingShop}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
-              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Cambios</>}
+              {savingShop ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Cambios</>}
             </button>
           </div>
         </div>
@@ -307,9 +311,9 @@ export const ConfiguracionPage = () => {
             </div>
           </div>
           <div className="pt-2 flex justify-end">
-            <button onClick={handleSaveSystemConfigs} disabled={loading}
+            <button onClick={handleSaveSystemConfigs} disabled={savingConfigs}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
-              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Configuraciones</>}
+              {savingConfigs ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Configuraciones</>}
             </button>
           </div>
         </div>

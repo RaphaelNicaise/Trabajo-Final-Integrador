@@ -6,6 +6,7 @@ import { connectToMongoDB } from '@/modules/database/tenantConnection';
 import { StorageService } from '@/modules/storage/services/storage.service';
 import { redisClient } from '@/config/redis'
 import { apiKeyGuard } from '@/middleware/apiKeyGuard';
+import { globalLimiter, authLimiter } from '@/middleware/rateLimiter';
 import { verifyMailConnection } from '@/config/mail';
 
 import paymentsRoutes from "@/modules/payments/routes/payments";
@@ -33,13 +34,16 @@ app.use(cors({
 
 app.use(express.json());
 
+// Rate limiting global
+app.use(globalLimiter);
+
 app.get('/', (req, res) => res.send('Backend corriendo'));
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/', apiKeyGuard);
 
 // Rutas con protección selectiva (definen middlewares a nivel de ruta individual)

@@ -53,7 +53,7 @@ const SidebarItem = ({ icon, label, isActive, to, badge, disabled = false, onNav
       {icon}
 
       {badge && badge > 0 && !disabled && (
-        <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white border-2 border-[#0F172A]">
+        <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[11px] font-bold text-white border-2 border-[#0F172A] shadow-lg">
           {badge}
         </span>
       )}
