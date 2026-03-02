@@ -132,10 +132,7 @@ export class OrderController {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=orden-${(order._id as any).toString().slice(-8)}.pdf`);
       doc.pipe(res);
-
-      // --- LOGO Y HEADER ---
-      // Si tienes un logo, puedes usar doc.image('ruta/logo.png', x, y, {width: 60})
-      // Aquí solo agrego un círculo como placeholder
+      
       doc.save();
       doc.circle(70, 60, 30).fill('#059669');
       doc.restore();
@@ -143,11 +140,9 @@ export class OrderController {
       doc.fontSize(12).font('Helvetica').fillColor('#666').text('Comprobante de Orden', 120, 75, { align: 'left' });
       doc.moveDown(2);
 
-      // --- SEPARADOR ---
       doc.strokeColor('#059669').lineWidth(2).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
       doc.moveDown(1);
 
-      // --- DATOS DE LA ORDEN ---
       doc.rect(40, doc.y, 515, 70).fillAndStroke('#f0fdf4', '#059669');
       doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Detalles de la Orden', 55, doc.y + 10);
       doc.fontSize(10).font('Helvetica').fillColor('#475569');
@@ -156,28 +151,26 @@ export class OrderController {
       doc.text(`Estado: ${order.status}`, 400, doc.y + 25);
       doc.moveDown(3);
 
-      // --- DATOS DEL COMPRADOR ---
       doc.rect(40, doc.y, 515, 60).fillAndStroke('#f1f5f9', '#059669');
       doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Datos del Comprador', 55, doc.y + 10);
       doc.fontSize(10).font('Helvetica').fillColor('#475569');
-      doc.text(`👤 Nombre: ${order.buyer?.name || '-'}`, 55, doc.y + 25);
-      doc.text(`✉️ Email: ${order.buyer?.email || '-'}`, 250, doc.y + 25);
-      doc.text(`📞 Teléfono: ${order.buyer?.phone || '-'}`, 400, doc.y + 25);
+      doc.text(`Nombre: ${order.buyer?.name || '-'}`, 55, doc.y + 25);
+      doc.text(`Email: ${order.buyer?.email || '-'}`, 250, doc.y + 25);
+      doc.text(`Teléfono: ${order.buyer?.phone || '-'}`, 400, doc.y + 25);
       doc.moveDown(2);
 
-      // --- DATOS DE ENVÍO ---
+      
       doc.rect(40, doc.y, 515, 70).fillAndStroke('#f0fdf4', '#059669');
       doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Dirección de Envío', 55, doc.y + 10);
       doc.fontSize(10).font('Helvetica').fillColor('#475569');
-      doc.text(`🏠 Dirección: ${order.buyer?.address || '-'} ${order.buyer?.streetNumber || ''}`, 55, doc.y + 25);
-      doc.text(`🌆 Ciudad: ${order.buyer?.city || '-'}`, 250, doc.y + 25);
-      doc.text(`🏢 Provincia: ${order.buyer?.province || '-'}`, 400, doc.y + 25);
-      doc.text(`📮 Código Postal: ${order.buyer?.postalCode || '-'}`, 55, doc.y + 40);
+      doc.text(`Dirección: ${order.buyer?.address || '-'} ${order.buyer?.streetNumber || ''}`, 55, doc.y + 25);
+      doc.text(`Ciudad: ${order.buyer?.city || '-'}`, 250, doc.y + 25);
+      doc.text(`Provincia: ${order.buyer?.province || '-'}`, 400, doc.y + 25);
+      doc.text(`Código Postal: ${order.buyer?.postalCode || '-'}`, 55, doc.y + 40);
       if (order.buyer?.notes) doc.text(`📝 Notas: ${order.buyer.notes}`, 250, doc.y + 40);
-      doc.text(`🚚 Método: ${order.shipping?.method || 'Estándar'}`, 400, doc.y + 40);
+      doc.text(`Método: ${order.shipping?.method || 'Estándar'}`, 400, doc.y + 40);
       doc.moveDown(3);
 
-      // --- TABLA DE PRODUCTOS ---
       doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Productos', 40, doc.y);
       doc.moveDown(0.5);
       const tableTop = doc.y;
