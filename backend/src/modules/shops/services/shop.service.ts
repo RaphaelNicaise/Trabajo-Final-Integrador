@@ -11,11 +11,10 @@ import { CacheService } from "@/modules/cache/services/cache.service";
 import { MailService } from "@/modules/mail/services/mail.service";
 import { shopInvitationTemplate } from "@/modules/mail/templates/shopInvitation.template";
 
-const storageService = new StorageService();
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 export class ShopService {
-
+    private readonly storageService = new StorageService();
     private readonly PLATFORM_RESOURCE = 'platform:shop';
     private readonly USER_SHOPS_RESOURCE = 'platform:user_shops';
 
@@ -88,7 +87,7 @@ export class ShopService {
      */
     async getUserShops(userId: string) {
         const cacheKey = this.getUserShopsCacheKey(userId);
-        
+
         // 1. Intentar obtener lista enriquecida de caché
         const cached = await CacheService.get<any[]>(cacheKey);
         if (cached) return cached;
@@ -104,7 +103,7 @@ export class ShopService {
             user.associatedStores.map(async (store: any) => {
                 // Buscamos la imagen del tenant (podría estar en su propia caché)
                 const shopCacheKey = this.getShopCacheKey(store.slug);
-                let tenant = await CacheService.get<ITenant>(shopCacheKey);
+                let tenant: any = await CacheService.get<any>(shopCacheKey);
 
                 if (!tenant) {
                     tenant = await TenantModel.findById(store.tenantId).select("imageUrl").lean();
@@ -137,7 +136,7 @@ export class ShopService {
     ) {
         const metaConnection = getMetaDB();
         const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
-        
+
         const updated = await TenantModel.findOneAndUpdate({ slug: shopSlug }, updateData, {
             new: true,
         }).lean();
@@ -181,7 +180,7 @@ export class ShopService {
             console.error(`Error al borrar DB física ${shopSlug}:`, error);
         }
 
-        await storageService.deleteShopFolder(shopSlug);
+        await this.storageService.deleteShopFolder(shopSlug);
 
         const memberIds = tenantToDelete.members.map(m => m.userId);
         await UserModel.updateMany(
