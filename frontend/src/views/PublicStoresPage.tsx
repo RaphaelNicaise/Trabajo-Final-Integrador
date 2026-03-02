@@ -47,15 +47,31 @@ export function PublicStoresPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
         <PublicNavbar />
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="text-center">
-            <div className="relative w-16 h-16 mx-auto mb-4">
-              <div className="absolute inset-0 rounded-full border-4 border-slate-200"></div>
-              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-emerald-500 border-r-emerald-500 animate-spin"></div>
+        <main className="container mx-auto px-4 py-16 max-w-6xl">
+          {/* Header Section Skeleton */}
+          <div className="mb-16 text-center fade-in-up-pro">
+            <div className="mb-6 scale-in-pro">
+              <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full mb-4 border border-emerald-200 animate-pulse-pro">
+                &nbsp;
+              </span>
+            </div>
+            <div className="h-12 w-2/3 mx-auto bg-slate-200 rounded animate-pulse mb-4"></div>
+            <div className="h-6 w-1/2 mx-auto bg-slate-100 rounded animate-pulse mb-4"></div>
+            <div className="mt-8 max-w-xl mx-auto fade-in-down-pro delay-150-pro">
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded animate-pulse" />
+                <div className="w-full pl-12 pr-4 py-4 bg-slate-100 rounded-2xl animate-pulse" />
+              </div>
             </div>
             <p className="mt-4 text-slate-600 text-lg font-medium">Cargando tiendas increíbles...</p>
           </div>
-        </div>
+          {/* Tarjetas Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 fade-in-up-pro">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-80 bg-white rounded-2xl shadow-lg border border-slate-100 animate-pulse-pro" />
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -66,21 +82,21 @@ export function PublicStoresPage() {
 
       <main className="container mx-auto px-4 py-16 max-w-6xl">
         {/* Header Section */}
-        <div className="mb-16 text-center animate-fade-in-up">
-          <div className="mb-6 animate-scale-in">
-            <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full mb-4 border border-emerald-200">
+        <div className="mb-16 text-center fade-in-up">
+          <div className="mb-6 scale-in">
+            <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full mb-4 border border-emerald-200 shadow-md animate-pulse">
               Marketplace de Tiendas
             </span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4 animate-fade-in-down">
-            Explora Nuestras <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">Tiendas</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4 fade-in-down">
+            Explora Nuestras <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent animate-gradient">Tiendas</span>
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto animate-fade-in-down" style={{ animationDelay: '0.1s' }}>
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto fade-in-down delay-100">
             Descubre una colección curada de tiendas con productos únicos y de alta calidad
           </p>
 
           {/* Search Bar */}
-          <div className="mt-8 max-w-xl mx-auto animate-fade-in-down" style={{ animationDelay: '0.15s' }}>
+          <div className="mt-8 max-w-xl mx-auto fade-in-down delay-150">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
@@ -88,15 +104,15 @@ export function PublicStoresPage() {
                 placeholder="Buscar tiendas por nombre, ubicación o descripción..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 text-base border border-slate-200 rounded-2xl bg-white text-slate-800 placeholder-slate-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                className="w-full pl-12 pr-4 py-4 text-base border border-slate-200 rounded-2xl bg-white text-slate-800 placeholder-slate-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 hover:scale-[1.03]"
               />
             </div>
           </div>
         </div>
 
         {filteredShops.length === 0 && !loading ? (
-          <div className="text-center py-20">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
+          <div className="text-center py-20 fade-in-up">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center animate-bounce">
               <svg
                 className="w-12 h-12 text-slate-400"
                 fill="none"
@@ -119,15 +135,14 @@ export function PublicStoresPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 fade-in-up">
             {filteredShops.map((shop, index) => (
               <Link
                 key={shop.id}
                 href={`/tienda/${shop.slug}`}
-                className="group relative h-full stagger-item"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                className={`group relative h-full card-animate stagger-item`} style={{ animationDelay: `${index * 60}ms` }}
               >
-                <div className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 hover-lift">
+                <div className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 hover:border-emerald-200 hover:scale-[1.03] hover:-translate-y-1">
                   {/* Shop Header Image */}
                   <div className="relative h-48 bg-gradient-to-br from-emerald-400 via-cyan-400 to-cyan-500 overflow-hidden">
                     {shop.imageUrl ? (
@@ -208,7 +223,7 @@ export function PublicStoresPage() {
                     <div className="mt-4 pt-4 border-t border-slate-100">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-slate-500">Ver tienda</span>
-                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-all duration-300">
+                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-all duration-300 group-hover:scale-110">
                           <svg
                             className="w-4 h-4 text-emerald-600 group-hover:text-white transition-colors group-hover:translate-x-0.5"
                             fill="none"
@@ -237,14 +252,14 @@ export function PublicStoresPage() {
 
         {/* Bottom CTA Section */}
         {filteredShops.length > 0 && (
-          <div className="mt-20 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-3xl p-12 border border-emerald-100 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <div className="mt-20 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-3xl p-12 border border-emerald-100 text-center fade-in-up delay-300">
             <h2 className="text-3xl font-bold text-slate-900 mb-3">
               ¿No encuentras lo que buscas?
             </h2>
             <p className="text-slate-600 mb-6 text-lg max-w-2xl mx-auto">
               Descubre más productos visitando nuestras tiendas destacadas
             </p>
-            <button className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer inline-flex items-center gap-2">
+            <button className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer inline-flex items-center gap-2 animate-pulse">
               Explorar todas las tiendas
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -253,6 +268,45 @@ export function PublicStoresPage() {
           </div>
         )}
       </main>
+      {/* Animaciones CSS personalizadas */}
+      <style jsx global>{`
+        .fade-in-up {
+          animation: fadeInUp 0.8s cubic-bezier(.23,1,.32,1) both;
+        }
+        .fade-in-down {
+          animation: fadeInDown 0.8s cubic-bezier(.23,1,.32,1) both;
+        }
+        .scale-in {
+          animation: scaleIn 0.7s cubic-bezier(.23,1,.32,1) both;
+        }
+        .card-animate {
+          animation: fadeInUp 0.7s cubic-bezier(.23,1,.32,1) both;
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-150 { animation-delay: 0.15s; }
+        .delay-300 { animation-delay: 0.3s; }
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(40px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+          0% { opacity: 0; transform: translateY(-40px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+          0% { opacity: 0; transform: scale(0.8); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradientMove 3s ease-in-out infinite;
+        }
+        @keyframes gradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
     </div>
   );
 }

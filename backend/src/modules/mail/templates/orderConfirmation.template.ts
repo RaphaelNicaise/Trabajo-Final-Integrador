@@ -38,104 +38,100 @@ export const orderConfirmationTemplate = (data: OrderConfirmationData) => {
     .join('');
 
   return {
-    subject: `Confirmación de tu orden en ${data.storeName}`,
+    subject: `¡Gracias por tu compra en ${data.storeName}!`,
     html: `
       <!DOCTYPE html>
       <html lang="es">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body { background: #f4f4f4; font-family: 'Segoe UI', Arial, sans-serif; }
+          .main { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); max-width: 600px; margin: 40px auto; overflow: hidden; }
+          .header { background: linear-gradient(90deg, #059669 60%, #34d399 100%); padding: 32px 40px; text-align: left; }
+          .header h1 { color: #fff; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 1px; }
+          .header p { color: #d1fae5; font-size: 15px; margin: 8px 0 0; }
+          .content { padding: 40px; }
+          .title { color: #059669; font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+          .subtitle { color: #1e293b; font-size: 16px; margin-bottom: 24px; }
+          .summary { background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 32px; }
+          .summary p { margin: 0 0 8px; color: #64748b; font-size: 15px; }
+          .order-id { font-family: monospace; color: #059669; font-size: 16px; font-weight: 700; }
+          .products-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+          .products-table th { background: #f1f5f9; color: #059669; font-size: 13px; padding: 10px; text-align: left; }
+          .products-table td { color: #1e293b; font-size: 14px; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+          .totals-table { width: 100%; margin-bottom: 24px; }
+          .totals-table td { font-size: 15px; padding: 6px 0; }
+          .totals-table .label { color: #64748b; }
+          .totals-table .value { color: #059669; text-align: right; font-weight: 600; }
+          .address-block { background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; padding: 18px; margin-bottom: 32px; }
+          .address-block p { margin: 0 0 6px; color: #1e293b; font-size: 15px; }
+          .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 40px; text-align: center; }
+          .footer p { color: #94a3b8; font-size: 13px; margin: 0; }
+          .footer a { color: #059669; text-decoration: underline; }
+        </style>
       </head>
-      <body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4; padding:30px 0;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <!-- Header -->
+      <body>
+        <div class="main">
+          <div class="header">
+            <h1>StoreHub</h1>
+            <p>Confirmación de compra</p>
+          </div>
+          <div class="content">
+            <div class="title">¡Gracias por tu compra!</div>
+            <div class="subtitle">Estimado/a <strong>${data.buyerName}</strong>,<br>Tu pedido en <strong>${data.storeName}</strong> ha sido recibido y procesado correctamente.</div>
+            <div class="summary">
+              <p>Fecha de compra: <strong>${formattedDate}</strong></p>
+              <p>Número de orden: <span class="order-id">#${data.orderId}</span></p>
+            </div>
+            <h3 style="color:#059669; font-size:18px; margin-bottom:12px;">Detalle de productos</h3>
+            <table class="products-table">
+              <thead>
                 <tr>
-                  <td style="background-color:#059669; padding:28px 32px;">
-                    <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:700;">StoreHub</h1>
-                    <p style="margin:4px 0 0; color:#d1fae5; font-size:13px;">Confirmación de orden</p>
-                  </td>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Subtotal</th>
                 </tr>
-                <!-- Body -->
-                <tr>
-                  <td style="padding:32px;">
-                    <h2 style="margin:0 0 8px; color:#1e293b; font-size:20px;">✅ ¡Tu orden fue confirmada!</h2>
-                    <p style="margin:0 0 4px; color:#64748b; font-size:14px;">Hola <strong>${data.buyerName}</strong>, tu compra en <strong>${data.storeName}</strong> fue procesada con éxito.</p>
-                    <p style="margin:0 0 24px; color:#64748b; font-size:13px;">${formattedDate}</p>
-
-                    <!-- Datos de la orden -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:24px;">
-                      <tr>
-                        <td style="padding:16px 20px;">
-                          <p style="margin:0 0 4px; color:#64748b; font-size:12px;">Número de orden</p>
-                          <p style="margin:0; color:#1e293b; font-size:14px; font-family:monospace; font-weight:600;">#${data.orderId}</p>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <!-- Productos -->
-                    <h3 style="margin:0 0 12px; color:#1e293b; font-size:16px;">Productos</h3>
-                    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; margin-bottom:24px;">
-                      <thead>
-                        <tr style="background-color:#f8fafc;">
-                          <th style="padding:10px 12px; color:#64748b; font-size:12px; text-align:left; text-transform:uppercase;">Producto</th>
-                          <th style="padding:10px 12px; color:#64748b; font-size:12px; text-align:center; text-transform:uppercase;">Cant.</th>
-                          <th style="padding:10px 12px; color:#64748b; font-size:12px; text-align:right; text-transform:uppercase;">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${productRows}
-                      </tbody>
-                    </table>
-
-                    <!-- Totales -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-                      <tr>
-                        <td style="padding:4px 0; color:#64748b; font-size:13px;">Subtotal productos</td>
-                        <td style="padding:4px 0; color:#1e293b; font-size:13px; text-align:right;">$${data.subtotal.toFixed(2)}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:4px 0; color:#64748b; font-size:13px;">Envío</td>
-                        <td style="padding:4px 0; color:#1e293b; font-size:13px; text-align:right;">$${data.shippingCost.toFixed(2)}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0 0; color:#1e293b; font-size:16px; font-weight:700; border-top:2px solid #e2e8f0;">Total</td>
-                        <td style="padding:8px 0 0; color:#059669; font-size:16px; font-weight:700; text-align:right; border-top:2px solid #e2e8f0;">${formattedTotal}</td>
-                      </tr>
-                    </table>
-
-                    <!-- Dirección -->
-                    <h3 style="margin:0 0 12px; color:#1e293b; font-size:16px;">📍 Dirección de envío</h3>
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:24px;">
-                      <tr>
-                        <td style="padding:16px 20px;">
-                          <p style="margin:0 0 4px; color:#1e293b; font-size:14px;">${data.address} ${data.streetNumber}</p>
-                          <p style="margin:0 0 4px; color:#64748b; font-size:13px;">${data.city}, ${data.province}</p>
-                          <p style="margin:0 0 8px; color:#64748b; font-size:13px;">CP: ${data.postalCode}</p>
-                          <p style="margin:0; color:#059669; font-size:13px; font-weight:600;">Entrega estimada: ${data.estimatedDays} días hábiles</p>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <p style="margin:0; color:#64748b; font-size:13px; line-height:1.6;">
-                      Te enviaremos un aviso cuando tu pedido sea despachado. Si tenés alguna consulta, contactá directamente a la tienda.
-                    </p>
-                  </td>
-                </tr>
-                <!-- Footer -->
-                <tr>
-                  <td style="background-color:#f8fafc; border-top:1px solid #e2e8f0; padding:16px 32px;">
-                    <p style="margin:0; color:#94a3b8; font-size:12px; text-align:center;">
-                      Este correo fue generado automáticamente por StoreHub · No respondas a este mensaje
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+              </thead>
+              <tbody>
+                ${productRows}
+              </tbody>
+            </table>
+            <table class="totals-table">
+              <tr>
+                <td class="label">Subtotal productos</td>
+                <td class="value">$${data.subtotal.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td class="label">Costo de envío</td>
+                <td class="value">$${data.shippingCost.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td class="label" style="font-size:17px; font-weight:700;">Total a pagar</td>
+                <td class="value" style="font-size:17px; font-weight:700;">${formattedTotal}</td>
+              </tr>
+            </table>
+            <div class="address-block">
+              <p><strong>Dirección de entrega</strong></p>
+              <p>${data.address} ${data.streetNumber}</p>
+              <p>${data.city}, ${data.province}</p>
+              <p>CP: ${data.postalCode}</p>
+              <p style="color:#059669; font-weight:600;">Entrega estimada: ${data.estimatedDays} días hábiles</p>
+            </div>
+            <div style="color:#64748b; font-size:15px; margin-bottom:18px;">
+              Pronto recibirás una notificación cuando tu pedido sea despachado.<br>
+              Si tienes alguna consulta o necesitas asistencia, puedes responder a este correo o contactar directamente a la tienda.
+            </div>
+            <div style="color:#059669; font-size:15px; font-weight:600; margin-bottom:18px;">
+              ¡Gracias por confiar en StoreHub!
+            </div>
+          </div>
+          <div class="footer">
+            <p>Este correo fue generado automáticamente por StoreHub.<br>
+            Si tienes dudas, visita nuestro <a href="https://storehub.com/soporte">Centro de Ayuda</a>.<br>
+            No respondas a este mensaje.</p>
+          </div>
+        </div>
       </body>
       </html>
     `,
