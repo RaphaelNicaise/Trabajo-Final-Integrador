@@ -39,8 +39,9 @@ export class ShopService {
         storeName: string;
         location?: string;
         description?: string;
+        categoria?: string;
     }) {
-        const { userId, slug, storeName, location, description } = data;
+        const { userId, slug, storeName, location, description, categoria } = data;
 
         const metaConnection = getMetaDB();
         const TenantModel = getModelByTenant<ITenant>(metaConnection, "Tenant", TenantSchema);
@@ -62,6 +63,7 @@ export class ShopService {
             ownerEmail,
             location,
             description,
+            categoria: categoria || '',
             members: [{ userId: new Types.ObjectId(userId), role: "owner" }],
         });
         await newTenant.save();
@@ -133,6 +135,7 @@ export class ShopService {
             location?: string;
             description?: string;
             imageUrl?: string;
+            categoria?: string;
         }
     ) {
         const metaConnection = getMetaDB();

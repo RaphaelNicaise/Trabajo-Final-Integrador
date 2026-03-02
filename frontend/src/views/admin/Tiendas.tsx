@@ -179,6 +179,7 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
   const [slug, setSlug] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [categoria, setCategoria] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -194,7 +195,14 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
     setError(''); setLoading(true);
     if (!user) { setError('Usuario no autenticado'); setLoading(false); return; }
     try {
-      await shopsService.createShop({ userId: user.id, storeName: name, slug, location: location || undefined, description: description || undefined });
+      await shopsService.createShop({
+        userId: user.id,
+        storeName: name,
+        slug,
+        location: location || undefined,
+        description: description || undefined,
+        categoria: categoria || undefined
+      });
       if (logoFile) { try { await shopsService.uploadShopLogo(slug, logoFile); } catch {} }
       onSuccess();
     } catch (err: any) {
@@ -246,6 +254,31 @@ function CreateShopModal({ onClose, onSuccess }: CreateShopModalProps) {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Descripción (Opcional)</label>
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Describe tu tienda..."
                 className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Categoría de la Tienda *</label>
+              <select
+                value={categoria}
+                onChange={e => setCategoria(e.target.value)}
+                required
+                className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              >
+                <option value="">Selecciona una categoría</option>
+                <option value="Ropa">Ropa</option>
+                <option value="Calzado">Calzado</option>
+                <option value="Cosméticos">Cosméticos</option>
+                <option value="Farmacia">Farmacia</option>
+                <option value="Ferretería">Ferretería</option>
+                <option value="Alimentos">Alimentos</option>
+                <option value="Tecnología">Tecnología</option>
+                <option value="Hogar">Hogar</option>
+                <option value="Salud">Salud</option>
+                <option value="Deportes">Deportes</option>
+                <option value="Mascotas">Mascotas</option>
+                <option value="Arte">Arte</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Otros">Otros</option>
+              </select>
             </div>
 
             {/* Logo */}

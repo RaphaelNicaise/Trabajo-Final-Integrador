@@ -16,7 +16,7 @@ export const ConfiguracionPage = () => {
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [shopData, setShopData] = useState({ storeName: '', location: '', description: '', imageUrl: '' });
+  const [shopData, setShopData] = useState({ storeName: '', location: '', description: '', imageUrl: '', categoria: '' });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState('');
 
@@ -33,12 +33,17 @@ export const ConfiguracionPage = () => {
   }, [activeShop]);
 
   const loadShopData = async () => {
-// ... existing code ...
     if (!activeShop) return;
     setLoading(true);
     try {
       const data = await shopsService.getShopBySlug(activeShop.slug);
-      setShopData({ storeName: data.storeName || '', location: data.location || '', description: data.description || '', imageUrl: data.imageUrl || '' });
+      setShopData({
+        storeName: data.storeName || '',
+        location: data.location || '',
+        description: data.description || '',
+        imageUrl: data.imageUrl || '',
+        categoria: data.categoria || ''
+      });
     } catch { setError('Error al cargar la configuración'); }
     finally { setLoading(false); }
   };
@@ -121,7 +126,12 @@ export const ConfiguracionPage = () => {
     if (!activeShop) return;
     setLoading(true); setError(''); setSuccess('');
     try {
-      await shopsService.updateShop(activeShop.slug, { storeName: shopData.storeName, location: shopData.location, description: shopData.description });
+      await shopsService.updateShop(activeShop.slug, {
+        storeName: shopData.storeName,
+        location: shopData.location,
+        description: shopData.description,
+        categoria: shopData.categoria
+      });
       setSuccess('Configuración actualizada exitosamente');
       setTimeout(() => setSuccess(''), 3000);
     } catch { setError('Error al actualizar la configuración'); }
@@ -206,7 +216,7 @@ export const ConfiguracionPage = () => {
           <div><h2 className="text-lg font-bold text-slate-900">Información General</h2><p className="text-sm text-slate-500">Detalles básicos de tu comercio</p></div>
         </div>
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Nombre de la Tienda</label>
               <input type="text" value={shopData.storeName} onChange={(e) => setShopData({ ...shopData, storeName: e.target.value })}
@@ -219,6 +229,26 @@ export const ConfiguracionPage = () => {
                 <input type="text" value={shopData.location} onChange={(e) => setShopData({ ...shopData, location: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Categoría</label>
+              <select
+                value={shopData.categoria}
+                onChange={e => setShopData({ ...shopData, categoria: e.target.value })}
+                className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              >
+                <option value="">Selecciona una categoría</option>
+                <option value="Alimentos">Alimentos</option>
+                <option value="Ropa">Ropa</option>
+                <option value="Tecnología">Tecnología</option>
+                <option value="Hogar">Hogar</option>
+                <option value="Salud">Salud</option>
+                <option value="Deportes">Deportes</option>
+                <option value="Mascotas">Mascotas</option>
+                <option value="Arte">Arte</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Otros">Otros</option>
+              </select>
             </div>
           </div>
           <div>

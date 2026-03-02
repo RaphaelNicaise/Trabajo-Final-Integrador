@@ -11,12 +11,28 @@ interface Shop {
   location?: string;
   description?: string;
   imageUrl?: string;
+  categoria?: string;
 }
 
 export function PublicStoresPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  // Lista fija de categorías
+  const categories = [
+    'Alimentos',
+    'Ropa',
+    'Tecnología',
+    'Hogar',
+    'Salud',
+    'Deportes',
+    'Mascotas',
+    'Arte',
+    'Servicios',
+    'Otros',
+  ];
 
   useEffect(() => {
     const loadShops = async () => {
@@ -34,14 +50,20 @@ export function PublicStoresPage() {
   }, []);
 
   const filteredShops = useMemo(() => {
-    if (!searchQuery.trim()) return shops;
-    const q = searchQuery.toLowerCase();
-    return shops.filter(s =>
-      s.name.toLowerCase().includes(q) ||
-      (s.location && s.location.toLowerCase().includes(q)) ||
-      (s.description && s.description.toLowerCase().includes(q))
-    );
-  }, [shops, searchQuery]);
+    let result = shops;
+    if (selectedCategory) {
+      result = result.filter(s => s.categoria === selectedCategory);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.location && s.location.toLowerCase().includes(q)) ||
+        (s.description && s.description.toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [shops, searchQuery, selectedCategory]);
 
   if (loading) {
     return (
@@ -95,9 +117,21 @@ export function PublicStoresPage() {
             Descubre una colección curada de tiendas con productos únicos y de alta calidad
           </p>
 
-          {/* Search Bar */}
-          <div className="mt-8 max-w-xl mx-auto fade-in-down delay-150">
-            <div className="relative">
+          {/* Filter Bar: Categoría + Search Bar */}
+          <div className="mt-8 max-w-2xl mx-auto fade-in-down delay-150 flex flex-col md:flex-row gap-4 items-center justify-center">
+            <div className="flex-shrink-0 w-full md:w-auto">
+              <select
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                className="w-full md:w-auto px-4 py-3 border border-slate-200 rounded-2xl bg-white text-base text-slate-800 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300"
+              >
+                <option value="">Todas las categorías</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div className="relative w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
@@ -214,6 +248,12 @@ export function PublicStoresPage() {
                       </div>
                     )}
 
+                    {/* Categoría */}
+                    {shop.categoria && (
+                      <span className="inline-block mb-2 px-3 py-1 bg-cyan-50 text-cyan-700 text-xs font-semibold rounded-full border border-cyan-100">
+                        {shop.categoria}
+                      </span>
+                    )}
                     {/* Description */}
                     <p className="text-slate-600 text-sm line-clamp-2 flex-grow">
                       {shop.description || 'Explora nuestros productos seleccionados'}
