@@ -35,8 +35,8 @@ services:
       MINIO_ROOT_PASSWORD: testpassword
       JWT_SECRET: test_secret_key_123
       PORT: 4000
-      NEXT_PUBLIC_INTERNAL_API_KEY: ${INTERNAL_API_KEY}
-      REDIS_URL: ${REDIS_URL}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      REDIS_URL: redis://test_redis:6379
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       MAIL_USER: ${MAIL_USER}
@@ -48,8 +48,7 @@ services:
       - test_redis
     networks:
       - test_network
-    command: npm test 
-
+    command: npx jest --runInBand --forceExit --verbose
   frontend-tests:
     build: 
       context: ../
@@ -64,7 +63,7 @@ services:
       - /app/node_modules
     networks:
       - test_network
-    command: pnpm test
+    command: ["sh", "-c", "pnpm test; echo 'Frontend tests finished, waiting for backend...'; sleep 30"]
 
   test_redis:
     image: redis:7-alpine
