@@ -8,6 +8,6 @@ Integrantes:
 
 Documentacion Completa en -> [Docs](docs/documentacion.md) 
 
-   - docker compose -f infra/test.yml --env-file .env up --build --abort-on-container-exit --exit-code-from api-tests
+   - docker compose -f infra/test.yml --env-file .env up --build --exit-code-from api-tests
    - docker compose -f infra/dev.yml --env-file .env up --build
    - docker compose -f infra/prod.yml --env-file .env up -d --build

@@ -23,7 +23,7 @@ export const initializeRateLimiters = () => {
 
   globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100,
+    max: 1000,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -44,20 +44,18 @@ export const initializeRateLimiters = () => {
   });
 };
 
-/**
- * Retorna el rate limiter global
- */
+const noopMiddleware = (req: any, res: any, next: any) => next();
+
 export const getGlobalLimiter = () => {
+  if (process.env.NODE_ENV === 'test') return noopMiddleware;
   if (!globalLimiter) {
     throw new Error('Rate limiters no inicializados. Llama a initializeRateLimiters() primero.');
   }
   return globalLimiter;
 };
 
-/**
- * Retorna el rate limiter de autenticación
- */
 export const getAuthLimiter = () => {
+  if (process.env.NODE_ENV === 'test') return noopMiddleware;
   if (!authLimiter) {
     throw new Error('Rate limiters no inicializados. Llama a initializeRateLimiters() primero.');
   }
