@@ -12,6 +12,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^uuid$': '<rootDir>/tests/unit/mocks/uuid.mock.ts',
   },
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   transformIgnorePatterns: [
     "node_modules/(?!(@aws-sdk|uuid|dotenv)/)"
   ],
