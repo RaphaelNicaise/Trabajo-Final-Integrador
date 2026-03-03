@@ -57,7 +57,7 @@ const startServer = async () => {
     await verifyMailConnection();
 
     await runSeed();
-    
+
     app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);
     });
@@ -68,4 +68,5 @@ const startServer = async () => {
   }
 }
 
-startServer();
+export { app };
+
