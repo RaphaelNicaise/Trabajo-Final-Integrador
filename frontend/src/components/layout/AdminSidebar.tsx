@@ -169,9 +169,6 @@ export const AdminSidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
             disabled={!activeShop}
             onNavigate={onNavigate}
           />
-        </div>
-
-        <div className="w-full flex flex-col items-center border-t border-slate-800/50 pt-4 mt-auto gap-2">
           <SidebarItem
             icon={<Tags size={24} strokeWidth={1.5} />}
             label="Categorias"
@@ -180,6 +177,10 @@ export const AdminSidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
             disabled={!activeShop}
             onNavigate={onNavigate}
           />
+        </div>
+
+        <div className="w-full flex flex-col items-center border-t border-slate-800/50 pt-4 mt-auto gap-2">
+
           <SidebarItem
             icon={<Users size={24} strokeWidth={1.5} />}
             label="Usuarios"
