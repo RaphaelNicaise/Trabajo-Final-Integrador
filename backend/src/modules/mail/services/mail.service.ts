@@ -20,7 +20,7 @@ export class MailService {
       return info;
     } catch (error) {
       console.error('Error en MailService:', error);
-      throw new Error('No se pudo enviar el correo');
+      throw new Error('No se pudo enviar el correo', { cause: error });
     }
   }
 

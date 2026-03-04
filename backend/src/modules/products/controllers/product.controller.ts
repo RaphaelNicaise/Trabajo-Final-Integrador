@@ -8,27 +8,28 @@ const productService = new ProductService();
 
 export class ProductController {
 
-  async create(req: Request, res: Response) { 
+  async create(req: Request, res: Response) {
     try {
       const shopSlug = req.headers['x-tenant-id'] as string;
 
-      if (!shopSlug) {return res.status(400).json({ error: 'Falta el header x-tenant-id para identificar la tienda.' });}
-      
-      const { name, price, categories  } = req.body || {};
-      
-      if (!name) {return res.status(400).json({ error: 'El campo "name" es obligatorio.' });}      
-      if (price === undefined || price === null || price === '') { return res.status(400).json({ error: 'El campo "price" es obligatorio.' });}
+      if (!shopSlug) { return res.status(400).json({ error: 'Falta el header x-tenant-id para identificar la tienda.' }); }
 
-      let imageUrl = null; 
+      const { name, price, categories } = req.body || {};
+
+      if (!name) { return res.status(400).json({ error: 'El campo "name" es obligatorio.' }); }
+      if (price === undefined || price === null || price === '') { return res.status(400).json({ error: 'El campo "price" es obligatorio.' }); }
+
+      let imageUrl = null;
 
       if (req.file) {
         try {
           imageUrl = await storageService.uploadProductImage(shopSlug, req.file);
         } catch (uploadError) {
+          console.error('Error al subir la imagen al almacenamiento:', uploadError);
           return res.status(500).json({ error: 'Error al subir la imagen al almacenamiento.' });
         }
       }
-      
+
       const productData = {
         ...req.body,
         imageUrl: imageUrl,
@@ -36,7 +37,7 @@ export class ProductController {
       };
 
       const product = await productService.createProduct(shopSlug, productData);
-      
+
       res.status(201).json({
         message: 'Producto creado exitosamente',
         data: product
@@ -45,15 +46,15 @@ export class ProductController {
     } catch (error: any) {
 
       if (error.code === 11000) { // error de clave duplicada de MongoDB
-        return res.status(400).json({ 
-          error: 'Ya existe un producto con este nombre en tu tienda.' 
+        return res.status(400).json({
+          error: 'Ya existe un producto con este nombre en tu tienda.'
         });
       }
 
       if (error.name === 'ValidationError') {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Datos inválidos',
-          details: error.message 
+          details: error.message
         });
       }
 
@@ -74,7 +75,7 @@ export class ProductController {
       const products = isPublic
         ? await productService.getPublicProducts(shopId)
         : await productService.getProducts(shopId);
-      
+
       res.json(products);
 
     } catch (error: any) {
@@ -120,13 +121,13 @@ export class ProductController {
       }
 
       if (req.file) {
-        
+
         const newImageUrl = await storageService.uploadProductImage(shopSlug, req.file);
         updateData.imageUrl = newImageUrl;
 
-  
+
         if (currentProduct.imageUrl) {
-            await storageService.deleteFile(currentProduct.imageUrl); 
+          await storageService.deleteFile(currentProduct.imageUrl);
         }
       }
 
@@ -153,7 +154,7 @@ export class ProductController {
       if (!id) return res.status(400).json({ error: 'Falta el ID del producto' });
 
       const product = await productService.getProductById(shopSlug, id);
-      
+
       if (!product) {
         return res.status(404).json({ error: 'Producto no encontrado' });
       }
@@ -176,18 +177,19 @@ export class ProductController {
   // metodo para parsear categorias desde el req.body
   private parseCategories(categoriesInput: any): any[] {
     if (!categoriesInput) return [];
-    
+
     if (typeof categoriesInput === 'string') {
-        try {
-            const parsed = JSON.parse(categoriesInput);
-            if (Array.isArray(parsed)) return parsed;
-        } catch (e) {
-            return [categoriesInput];
-        }
+      try {
+        const parsed = JSON.parse(categoriesInput);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        console.error('Error al parsear categorías:', e);
         return [categoriesInput];
+      }
+      return [categoriesInput];
     }
     if (Array.isArray(categoriesInput)) return categoriesInput;
-    
+
     return [];
   }
 

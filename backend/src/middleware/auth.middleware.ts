@@ -17,7 +17,7 @@ declare global {
  */
 export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader) {
     res.status(401).json({ message: 'Token no proporcionado' });
     return;
@@ -35,7 +35,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
     res.status(401).json({ message: 'Token no proporcionado' });
     return;
   }
-  
+
   try {
     const secret = process.env.JWT_SECRET || 'default-secret-change-in-production';
     const decoded = jwt.verify(token.trim(), secret);
@@ -54,12 +54,12 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
  */
 export const tenantMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const tenantId = req.headers['x-tenant-id'] as string;
-  
+
   if (!tenantId) {
     res.status(400).json({ message: 'x-tenant-id requerido' });
     return;
   }
-  
+
   req.tenantId = tenantId;
   next();
 };
