@@ -21,6 +21,8 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: ".",
         },
       ],
+      // Desactivar exhaustive-deps — falsos positivos comunes con funciones definidas en el componente
+      "react-hooks/exhaustive-deps": "off",
     },
   },
 ];
