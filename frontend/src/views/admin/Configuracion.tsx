@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopsService } from '../../services/shops.service';
-import { configurationsService, Configuration } from '../../services/configurations.service';
+import { configurationsService } from '../../services/configurations.service';
 import { Store, Image as ImageIcon, MapPin, Upload, Check, Settings, X, AlertTriangle, CheckCircle, DollarSign, Truck } from 'lucide-react';
 
 const CONFIG_KEYS = {
@@ -12,7 +12,7 @@ const CONFIG_KEYS = {
 
 export const ConfiguracionPage = () => {
   const { activeShop } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [savingShop, setSavingShop] = useState(false);
   const [savingConfigs, setSavingConfigs] = useState(false);
   const [uploading, setUploading] = useState(false);

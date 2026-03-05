@@ -6,7 +6,7 @@ import type { ShippingQuote } from '../services/orders.service';
 import { fetchProvincias, fetchLocalidades } from '../services/georef.service';
 import type { Provincia, Localidad } from '../services/georef.service';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
-import { ShoppingBag, CreditCard, User, MapPin, Phone, Mail, Truck, ChevronRight, ChevronLeft, Check, Lock, Hash } from 'lucide-react';
+import { ShoppingBag, CreditCard, User, MapPin, Phone, Mail, Truck, ChevronRight, ChevronLeft, Check, Lock } from 'lucide-react';
 import { type Configuration } from '../services/configurations.service';
 
 const STEPS = [
@@ -67,9 +67,9 @@ export function CheckoutPage() {
   const shopItems = items.filter(item => item.shopSlug === slug);
   const subtotal = shopItems.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const shippingCost = shippingQuote?.cost || 0;
-  const grandTotal = subtotal + shippingCost;
+  const _grandTotal = subtotal + shippingCost;
 
-  const meetsMinPurchase = !minPurchaseAmount || subtotal >= minPurchaseAmount;
+  const _meetsMinPurchase = !minPurchaseAmount || subtotal >= minPurchaseAmount;
   const freeShippingApplied = freeShippingThreshold && freeShippingThreshold > 0 && subtotal >= freeShippingThreshold;
 
   useEffect(() => {

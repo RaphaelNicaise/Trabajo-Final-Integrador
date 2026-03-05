@@ -7,7 +7,7 @@ import { useCart } from '../contexts/CartContext';
 import { productsService } from '../services/products.service';
 import { categoriesService } from '../services/categories.service';
 import { shopsService } from '../services/shops.service';
-import { configurationsService, type Configuration } from '../services/configurations.service';
+import { configurationsService } from '../services/configurations.service';
 import type { Category } from '../services/categories.service';
 import {
   Search, ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight, Store as StoreIcon, Tag

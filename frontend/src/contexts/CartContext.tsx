@@ -133,7 +133,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           });
 
           setItems((prev) => {
-            let updated = [...prev];
+            const updated = [...prev];
             let changed  = false;
 
             for (let i = 0; i < updated.length; i++) {
