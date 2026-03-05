@@ -9,7 +9,6 @@ import { apiKeyGuard } from '@/middleware/apiKeyGuard';
 import { initializeRateLimiters, getGlobalLimiter, getAuthLimiter } from '@/middleware/rateLimiter';
 import { verifyMailConnection } from '@/config/mail';
 
-import paymentsRoutes from "@/modules/payments/routes/payments";
 import productRoutes from '@/modules/products/routes/product.routes';
 import shopRoutes from '@/modules/shops/routes/shop.routes';
 import categoryRoutes from '@/modules/categories/routes/category.routes';
