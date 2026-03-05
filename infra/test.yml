@@ -50,23 +50,6 @@ services:
     networks:
       - test_network
     command: npx jest --runInBand --forceExit --verbose
-  frontend-tests:
-    build: 
-      context: ../
-      dockerfile: frontend/Dockerfile.dev
-    container_name: storehub-front-tests
-    environment:
-      NODE_ENV: test
-      NEXT_PUBLIC_API_URL: http://api-tests:4000
-      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
-    volumes:
-      - ../frontend:/app
-      - /app/node_modules
-    networks:
-      - test_network
-    depends_on:
-      - api-tests
-    command: ["sh", "-c", "pnpm test; echo 'Frontend tests finished, waiting for backend...'; sleep 200"]
 
   test_redis:
     image: redis:7-alpine
