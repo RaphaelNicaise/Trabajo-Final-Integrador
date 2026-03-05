@@ -1,0 +1,76 @@
+#name: Main Workflow
+# Para que los tests sean exitosos, y pase al deploy, el exit code de los 2 debe ser 0.
+
+
+# Se ejecuta en cada push y pull request a las ramas principales
+name: CI - StoreHub Tests
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Crear archivo .env de prueba
+        run: |
+          # definir que variables de entorno se van a usar aca
+          echo "INTERNAL_API_KEY=${{ secrets.INTERNAL_API_KEY }}" >> .env
+          echo "SMTP_HOST=smtp.gmail.com" >> .env
+          echo "SMTP_PORT=465" >> .env
+          echo "MAIL_USER=test@storehub.com" >> .env
+          echo "MAIL_PASSWORD=testpassword" >> .env
+
+      - name: Levantar Infraestructura
+        run: |
+          docker compose -f infra/test.yml --env-file .env up -d --build
+
+      - name: Esperar Resultados de Tests
+        run: |
+          
+          FRONT_EXIT_CODE=$(docker wait storehub-front-tests)
+          API_EXIT_CODE=$(docker wait api-tests)
+          
+          docker logs storehub-front-tests
+          docker logs api-tests
+
+          echo "Frontend Exit Code: $FRONT_EXIT_CODE"
+          echo "Backend Exit Code: $API_EXIT_CODE"
+          
+          if [ "$FRONT_EXIT_CODE" != "0" ] || [ "$API_EXIT_CODE" != "0" ]; then
+            echo "ERROR: Uno o más suites de test fallaron."
+            exit 1
+          fi
+          
+
+      - name: Limpiar contenedores
+        if: always()
+        run: docker compose -f infra/test.yml down -v
+  
+  deploy:
+    name: Continuous Deployment to EC2
+    runs-on: ubuntu-latest
+    # condicion para que el deploy solo se ejecute si los tests fueron exitosos
+    needs: run-tests
+    # deploy solo si el push fue en la rama main
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        
+    steps:
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USER }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/Trabajo-Final-Integrador
+            git pull origin main
+            docker compose up -d --build
+            docker image prune -f

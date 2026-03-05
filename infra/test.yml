@@ -49,7 +49,7 @@ services:
       - test_redis
     networks:
       - test_network
-    command: npx jest --runInBand --forceExit --verbose
+    command: npx jest --runInBand --forceExit --verbose --detectOpenHandles
   frontend-tests:
     build: 
       context: ../
@@ -66,8 +66,9 @@ services:
       - test_network
     depends_on:
       - api-tests
-    command: ["sh", "-c", "pnpm test; echo 'Frontend tests finished, waiting for backend...'; sleep 200"]
-
+    command: >
+      sh -c "pnpm test && echo 'Frontend OK, esperando al backend...'"
+    
   test_redis:
     image: redis:7-alpine
     container_name: test_redis

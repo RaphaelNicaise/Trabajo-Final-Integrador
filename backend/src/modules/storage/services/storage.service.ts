@@ -85,7 +85,7 @@ export class StorageService {
       return `${PUBLIC_ENDPOINT}/${BUCKET_NAME}/${key}`;
     } catch (error) {
       console.error('Error subiendo imagen a MinIO:', error);
-      throw new Error('Falló la subida de la imagen');
+      throw new Error('Falló la subida de la imagen', { cause: error });
     }
   }
 
@@ -106,7 +106,7 @@ export class StorageService {
       return `${PUBLIC_ENDPOINT}/${BUCKET_NAME}/${key}`;
     } catch (error) {
       console.error('Error subiendo imagen a MinIO:', error);
-      throw new Error('Falló la subida de la imagen');
+      throw new Error('Falló la subida de la imagen', { cause: error });
     }
   }
 
