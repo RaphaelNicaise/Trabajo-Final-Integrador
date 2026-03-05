@@ -42,3 +42,8 @@ TODO.md
 **/.next
 
 **/.pnpm-store
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
