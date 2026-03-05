@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { app } from '../../src/index';
-import mongoose from 'mongoose';
 
 describe('Auth Integración', () => {
     const testUser = {
