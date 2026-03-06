@@ -59,7 +59,7 @@ jobs:
         run: cd frontend && pnpm install
 
       - name: Ejecutar tests unitarios
-        run: cd frontend && pnpm test -- --testPathPattern="__tests__/unit" --ci --runInBand
+        run: cd frontend && pnpm test --testPathPattern="__tests__/unit" --ci --runInBand
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
