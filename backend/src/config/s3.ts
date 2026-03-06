@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const BUCKET_NAME = process.env.AWS_BUCKET_NAME || 'platform-bucket';
+export const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'platform-bucket';
 export const INTERNAL_ENDPOINT = process.env.S3_INTERNAL_ENDPOINT || 'http://minio:9000'; 
 export const PUBLIC_ENDPOINT = process.env.S3_PUBLIC_ENDPOINT || 'http://localhost:9000';
 
