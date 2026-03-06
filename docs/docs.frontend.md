@@ -1,104 +1,408 @@
-## Guia de Frontend
-### 1. Colores Principales
+# Documentacion Frontend - StoreHub
 
-| Uso | Nombre | Código HEX | Descripción |
-|-----|--------|------------|-------------|
-| Primario | Tech Indigo | #6366F1 | Color principal de la marca. Usar en el logo, encabezados clave y elementos de navegación activos. Transmite tecnología y confianza. |
-| Secundario | Midnight Blue | #1E1B4B | Color de soporte para fondos oscuros, barra lateral (sidebar) y textos de alto contraste. Aporta solidez y profundidad. |
-| Acento | Growth Emerald | #10B981 | El color de la acción. Usar en botones de llamada a la acción (CTA) como "Crear Tienda", "Vender", indicadores de éxito y gráficos de ganancias. |
-| Fondo | Clean Slate | #F8FAFC | Fondo general de la aplicación. Un tono casi blanco pero con un toque frío para descansar la vista y mantener la limpieza. |
+- [Stack](#stack)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Rutas](#rutas)
+- [Arquitectura de Estado](#arquitectura-de-estado)
+- [Componentes](#componentes)
+- [Layouts](#layouts)
+- [Vistas Publicas](#vistas-publicas)
+- [Vistas Admin](#vistas-admin)
+- [Servicios](#servicios)
+- [Sistema de Diseño](#sistema-de-diseño)
 
-### 2. Guía de Uso Rápida (UI)
+---
 
-**Botones Principales (Primary Button):** Fondo #6366F1 (Indigo) o #10B981 (Emerald) para acciones de conversión. Texto blanco.
+## Stack
 
-**Texto Principal:** #1E1B4B (Midnight Blue) o un gris muy oscuro #1E293B.
+- **Next.js 15** con App Router (`app/`) y `output: 'standalone'` para Docker
+- **React 19** — todo el arbol marcado como `'use client'` (sin SSR por la dependencia de `localStorage`)
+- **TypeScript 5**
+- **Tailwind CSS v4** con tema personalizado en `globals.css`
+- **Material UI 7** para componentes de admin (tablas, modales, inputs)
+- **Axios** con interceptores automaticos de autenticacion, tenant y API key
+- **Framer Motion** para animaciones de transicion
+- **Lucide React** para iconografia
 
-**Bordes y Divisores:** #E2E8F0 (Gris claro compatible con el fondo).
+---
 
-**Estados de Alerta:**
-- Éxito: #10B981 (El mismo del acento)
-- Error: #EF4444 (Rojo suave)
-- Warning: #F59E0B (Ámbar)
+## Estructura del Proyecto
 
-### 3. Tipografía
+```
+frontend/src/
+├── app/                          # Rutas (Next.js App Router)
+│   ├── layout.tsx                # Layout raiz (AuthProvider + CartProvider)
+│   ├── page.tsx                  # Ruta / → PublicStoresPage
+│   ├── globals.css               # Tailwind + variables CSS del tema
+│   ├── login/
+│   ├── register/
+│   ├── confirmar-cuenta/
+│   ├── recuperar-contrasena/
+│   ├── restablecer-contrasena/
+│   ├── aceptar-invitacion/
+│   ├── tienda/[slug]/            # Tienda publica
+│   ├── checkout/[slug]/          # Proceso de compra
+│   └── admin/                    # Panel de administracion
+│       ├── page.tsx
+│       ├── dashboard/
+│       ├── tiendas/
+│       ├── productos/
+│       ├── categorias/
+│       ├── ordenes/
+│       ├── configuracion/
+│       ├── promociones/
+│       └── usuarios/
+├── components/
+│   ├── layout/
+│   │   ├── PublicNavbar.tsx      # Navbar de las paginas publicas
+│   │   └── AdminSidebar.tsx      # Sidebar del panel admin
+│   ├── ui/
+│   │   └── Select.tsx            # Select reutilizable
+│   ├── FloatingCart.tsx          # Carrito flotante con panel deslizante
+│   ├── PageHeader.tsx            # Cabecera de pagina reutilizable
+│   ├── PrivateRoute.tsx          # Guard de autenticacion
+│   └── ShopGuard.tsx             # Guard de tienda activa seleccionada
+├── contexts/
+│   ├── AuthContext.tsx           # Sesion de usuario y tienda activa
+│   └── CartContext.tsx           # Estado del carrito con polling de stock
+├── layouts/
+│   └── AdminLayout.tsx           # Layout de dos columnas (sidebar + main)
+├── services/
+│   ├── api.ts                    # Instancia Axios con interceptores
+│   ├── auth.service.ts
+│   ├── shops.service.ts
+│   ├── products.service.ts
+│   ├── categories.service.ts
+│   ├── orders.service.ts
+│   ├── configurations.service.ts
+│   ├── georef.service.ts
+│   └── index.ts                  # Re-exporta todos los servicios
+└── views/
+    ├── LoginPage.tsx
+    ├── RegisterPage.tsx
+    ├── PublicStoresPage.tsx
+    ├── PublicStorePage.tsx
+    ├── CheckoutPage.tsx
+    └── admin/
+        ├── Dashboard.tsx
+        ├── Tiendas.tsx
+        ├── Productos.tsx
+        ├── Categorias.tsx
+        ├── Ordenes.tsx
+        ├── Configuracion.tsx
+        ├── Promociones.tsx
+        └── Usuarios.tsx
+```
 
-**Fuente principal:** Inter (Google Fonts)
-**Fallback:** sans-serif
+---
 
-#### Escala de Tamaños
+## Rutas
 
-| Elemento | Tamaño (px/rem) | Peso (Font Weight) | Line Height | Uso |
-|----------|----------------|-------------------|-------------|-----|
-| H1 | 30px (1.875rem) | Bold (700) | 1.25 | Títulos de Página (Dashboard) |
-| H2 | 24px (1.5rem) | SemiBold (600) | 1.3 | Subtítulos de sección |
-| H3 | 20px (1.25rem) | Medium (500) | 1.4 | Títulos de tarjetas (Cards) |
-| Body | 16px (1rem) | Regular (400) | 1.5 | Texto general |
-| Small | 14px (0.875rem) | Regular (400) | 1.5 | Etiquetas, metadatos, hints |
+| Ruta | Vista | Acceso |
+|------|-------|--------|
+| `/` | `PublicStoresPage` | Publico |
+| `/tienda/[slug]` | `PublicStorePage` | Publico |
+| `/checkout/[slug]` | `CheckoutPage` | Publico |
+| `/login` | `LoginPage` | Publico |
+| `/register` | `RegisterPage` | Publico |
+| `/confirmar-cuenta` | — | Publico (token via query param) |
+| `/recuperar-contrasena` | — | Publico |
+| `/restablecer-contrasena` | — | Publico (token via query param) |
+| `/aceptar-invitacion` | — | Publico (token via query param) |
+| `/admin` | `DashboardPage` | Privado (`PrivateRoute`) |
+| `/admin/tiendas` | `TiendasPage` | Privado |
+| `/admin/dashboard` | `DashboardPage` | Privado + tienda activa (`ShopGuard`) |
+| `/admin/productos` | `ProductosPage` | Privado + tienda activa |
+| `/admin/categorias` | `CategoriasPage` | Privado + tienda activa |
+| `/admin/ordenes` | `OrdenesPage` | Privado + tienda activa |
+| `/admin/configuracion` | `ConfiguracionPage` | Privado + tienda activa |
+| `/admin/promociones` | `PromocionesPage` | Privado + tienda activa |
+| `/admin/usuarios` | `UsuariosPage` | Privado + tienda activa |
 
-#### Reglas de Texto
+---
 
-- **Color:** Nunca usar negro puro (#000000). Usar #1E293B para texto principal y #64748B para secundario.
-- **Alineación:** El texto general debe estar alineado a la izquierda. Evitar justify en web.
+## Arquitectura de Estado
 
-### 4. UI & Componentes
+### Layout Raiz
 
-#### Bordes y Redondeo (Radius)
+Toda la aplicacion esta envuelta en dos providers anidados definidos en [`app/layout.tsx`](../frontend/src/app/layout.tsx):
 
-Para mantener una estética moderna y amigable pero profesional:
+```tsx
+<AuthProvider>
+  <CartProvider>
+    {children}
+  </CartProvider>
+</AuthProvider>
+```
 
-- **Tarjetas y Modales:** border-radius: 8px (Tailwind: rounded-lg)
-- **Botones e Inputs:** border-radius: 6px (Tailwind: rounded-md)
-- **Bordes Sutiles:** Usar #E2E8F0 (border-slate-200) para separar secciones. No usar bordes oscuros a menos que sea un input activo.
+La app esta marcada como `'use client'` globalmente porque los contextos dependen de `localStorage` para persistir sesion y carrito.
 
-#### Sombras (Elevation)
+---
 
-Usamos sombras para dar profundidad, no bordes gruesos:
+### AuthContext — [`contexts/AuthContext.tsx`](../frontend/src/contexts/AuthContext.tsx)
 
-- **Nivel 1 (Cards, Dropdowns):** box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) (Tailwind: shadow-sm)
-- **Nivel 2 (Modales, Hovers):** box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) (Tailwind: shadow-md)
+Gestiona la sesion del usuario y la tienda actualmente seleccionada para administrar.
 
-### 5. Botones e Interacciones
+| Propiedad / Metodo | Tipo | Descripcion |
+|--------------------|------|-------------|
+| `user` | `User \| null` | Usuario autenticado (`id`, `name`, `email`) |
+| `token` | `string \| null` | JWT de sesion |
+| `activeShop` | `Shop \| null` | Tienda activa en admin (`id`, `slug`, `name`, `role`) |
+| `authLoading` | `boolean` | `true` mientras se restaura sesion desde `localStorage` |
+| `isAuthenticated` | `boolean` | `true` si hay `token` y `user` |
+| `login(user, token)` | funcion | Guarda sesion en estado y `localStorage` |
+| `logout()` | funcion | Limpia sesion y tienda activa de estado y `localStorage` |
+| `selectShop(shop)` | funcion | Establece la tienda activa para operar en el admin |
+| `clearActiveShop()` | funcion | Limpia la tienda activa |
 
-#### Botón Primario (Acción Principal)
+**Persistencia:** Al montar lee `token`, `user` y `activeShop` de `localStorage`. `authLoading` es `true` hasta que termine esta restauracion para evitar flashes de redireccion.
 
-- **Fondo:** #6366F1 (Indigo) o #10B981 (Emerald - solo para ventas/crear)
-- **Texto:** Blanco
-- **Hover:** Oscurecer el fondo un 10%
-- **Active:** Escalar 0.98 (efecto click sutil)
+**Acceso:** `useAuth()` — lanza error si se usa fuera del `AuthProvider`.
 
-#### Botón Secundario (Cancelar, Volver)
+---
 
-- **Fondo:** Transparente o Blanco
-- **Borde:** 1px sólido #E2E8F0
-- **Texto:** #1E293B (Slate 800)
-- **Hover:** Fondo #F1F5F9 (Slate 100)
+### CartContext — [`contexts/CartContext.tsx`](../frontend/src/contexts/CartContext.tsx)
 
-#### Inputs (Formularios)
+Gestiona el estado del carrito con persistencia en `localStorage` y polling de stock en tiempo real.
 
-- **Estado Normal:** Fondo blanco, Borde #CBD5E1
-- **Focus:** Borde #6366F1 (Indigo) + Ring de 2px con opacidad
-- **Error:** Borde #EF4444 (Rojo) + Texto de ayuda rojo
+| Propiedad / Metodo | Descripcion |
+|--------------------|-------------|
+| `items` | Array de productos en el carrito |
+| `addItem(item, qty?)` | Agrega un producto respetando el limite de stock |
+| `removeItem(productId)` | Elimina un producto del carrito |
+| `updateQuantity(productId, qty)` | Actualiza cantidad; si `qty <= 0` elimina el item |
+| `clearCart()` | Vacia el carrito completo |
+| `getTotal()` | Suma todos los items con promociones aplicadas |
+| `getItemCount()` | Suma total de unidades en el carrito |
+| `stockWarnings` | Advertencias cuando el stock de un producto cambia |
+| `clearStockWarnings()` | Limpia las advertencias de stock |
 
-### 6. Iconografía
+**Polling de stock:** Cada 30 segundos (primer poll a los 5 s) consulta `GET /products?public=true` por cada `shopSlug` unico en el carrito. Si un producto queda sin stock se elimina; si la cantidad supera el stock disponible se reduce. Los cambios se notifican via `FloatingCart` con un banner de advertencia.
 
-- **Librería Estándar:** Lucide React (Recomendada por su consistencia y peso ligero)
-- **Estilo:** Stroke (Línea), no relleno
-- **Grosor:** 2px (o 1.5px si el icono es muy grande)
-- **Tamaño:** 20px para botones, 24px para navegación
+**Calculo de precios:** Las funciones `calculateItemTotal(item)` y `calculateUnitPrice(price, promo)` se exportan desde el contexto y soportan promociones tipo `porcentaje`, `fijo` y `nxm`.
 
-### 7. Espaciado (Spacing System)
+**Acceso:** `useCart()` — lanza error si se usa fuera del `CartProvider`.
 
-Usamos un sistema base de 4px (escala estándar de Tailwind):
+---
 
-- **Padding Pequeño (Botones, Badges):** py-2 px-4 (8px vertical, 16px horizontal)
-- **Separación de Elementos (Gap):**
-    - Íconos y texto: gap-2 (8px)
-    - Inputs en un form: gap-4 (16px)
-    - Secciones grandes: gap-8 (32px)
+## Componentes
 
-### 8. Accesibilidad (A11y)
+### FloatingCart — [`components/FloatingCart.tsx`](../frontend/src/components/FloatingCart.tsx)
 
-- **Contraste:** Todo texto debe ser legible sobre su fondo
-- **Etiquetas:** Todos los botones que son solo ícono deben tener un aria-label o title
-- **Imágenes:** Todas las etiquetas <img> deben tener atributo alt
+Boton flotante fijo en la esquina inferior derecha que abre un panel lateral deslizante con el contenido completo del carrito.
+
+**Estructura del panel:**
+1. **Boton flotante** — se oculta si el carrito esta vacio; badge rojo con el total de unidades
+2. **Panel deslizante** con overlay oscuro:
+   - Header: "Tu Carrito" + cantidad de productos
+   - Banner de advertencias de stock (con icono `AlertTriangle` para productos eliminados o reducidos)
+   - Lista de items: imagen, nombre, tienda, badge de promocion, precio original tachado + precio final, controles +/- y boton eliminar
+   - Footer: total acumulado + boton "Proceder al Checkout" (enlaza a `/checkout/[shopSlug]`) + boton "Vaciar carrito"
+
+### PrivateRoute — [`components/PrivateRoute.tsx`](../frontend/src/components/PrivateRoute.tsx)
+
+Guard de autenticacion. Si `isAuthenticated` es `false` redirige a `/login` con `router.replace()`. Renderiza `null` mientras redirige para evitar flash de contenido protegido.
+
+### ShopGuard — [`components/ShopGuard.tsx`](../frontend/src/components/ShopGuard.tsx)
+
+Guard de tienda activa. Si `activeShop` es `null` y la ruta actual no es `/admin` ni `/admin/tiendas`, redirige a `/admin/tiendas` para que el usuario seleccione una tienda antes de operar. Todas las rutas admin excepto Tiendas requieren este guard.
+
+### PageHeader — [`components/PageHeader.tsx`](../frontend/src/components/PageHeader.tsx)
+
+Cabecera reutilizable en todas las vistas del admin. Acepta titulo, descripcion opcional y un slot de acciones (botones).
+
+---
+
+## Layouts
+
+### AdminLayout — [`layouts/AdminLayout.tsx`](../frontend/src/layouts/AdminLayout.tsx)
+
+Layout de dos columnas para el panel admin:
+
+- **Desktop:** sidebar izquierdo siempre visible (`md:sticky`, `h-screen`) + area principal con scroll independiente
+- **Mobile:** sidebar oculto por defecto, se abre con boton hamburguesa (`fixed top-4 left-4`) sobre un overlay semitransparente
+
+El area principal tiene `max-w-7xl mx-auto` con padding adaptativo por breakpoint.
+
+---
+
+## Vistas Publicas
+
+### PublicStoresPage — [`views/PublicStoresPage.tsx`](../frontend/src/views/PublicStoresPage.tsx)
+
+Pagina principal (`/`). Catalogo de todas las tiendas de la plataforma.
+
+- Carga tiendas con `shopsService.getAllShops()`
+- Filtro por nombre/descripcion (busqueda libre)
+- Filtro por categoria (10 predefinidas: Alimentos, Ropa, Tecnologia, Hogar, Salud, Deportes, Mascotas, Arte, Servicios, Otros)
+- Filtrado reactivo con `useMemo`
+- Cards con enlace a `/tienda/[slug]`
+
+### PublicStorePage — [`views/PublicStorePage.tsx`](../frontend/src/views/PublicStorePage.tsx)
+
+Pagina publica de una tienda individual (`/tienda/[slug]`).
+
+- Carga productos disponibles con stock > 0 via `productsService.getPublicAll()`
+- Carga categorias, datos de la tienda y configuraciones publicas (monto minimo de compra, umbral de envio gratis)
+- Filtros: busqueda por texto + filtro por categoria
+- Muestra precio original tachado y precio final con promocion aplicada (`calculateFinalPrice`, `getPromoBadgeText`)
+- Botones "Agregar al carrito" con validacion de stock en tiempo real
+- Incluye `FloatingCart` y `PublicNavbar`
+
+### CheckoutPage — [`views/CheckoutPage.tsx`](../frontend/src/views/CheckoutPage.tsx)
+
+Proceso de compra en 4 pasos para los productos de una tienda especifica (`/checkout/[slug]`).
+
+| Paso | Datos |
+|------|-------|
+| 1. Datos | Nombre completo, email, telefono del comprador |
+| 2. Envio | Provincia (API Georef), localidad, direccion, codigo postal, notas. Muestra cotizacion del envio |
+| 3. Pago | Datos mock de tarjeta (numero, titular, vencimiento, CVV) |
+| 4. Confirmar | Resumen con subtotal, envio y total. Boton "Confirmar Pedido" |
+
+Al confirmar llama a `ordersService.createOrder()`. Si el carrito de la tienda esta vacio redirige a `/tienda/[slug]`. Lee `minPurchaseAmount` y `freeShippingThreshold` desde las configuraciones de la tienda.
+
+### LoginPage / RegisterPage
+
+**LoginPage** (`/login`): email + password con toggle de visibilidad. Al exito guarda sesion en `AuthContext` y redirige a `/admin`.
+
+**RegisterPage** (`/register`): nombre, email, password y confirmar password con validacion local (match, minimo 6 caracteres). Al exito muestra pantalla de confirmacion "Verifica tu email" sin redirigir automaticamente.
+
+---
+
+## Vistas Admin
+
+Todas las vistas admin usan `PrivateRoute` + `ShopGuard` (excepto `TiendasPage`), leen `activeShop` del `AuthContext` y comparten la misma estructura: tabla paginada de 8 filas con ordenamiento por columnas, campo de busqueda/filtro y modal de confirmacion de eliminacion.
+
+### Dashboard — [`views/admin/Dashboard.tsx`](../frontend/src/views/admin/Dashboard.tsx)
+
+Metricas de la tienda activa: total de productos, total de ordenes, ordenes pendientes e ingresos totales.
+
+### Tiendas — [`views/admin/Tiendas.tsx`](../frontend/src/views/admin/Tiendas.tsx)
+
+Lista de tiendas del usuario. Crear, seleccionar como activa (redirige a `/admin/dashboard`) y eliminar. Al entrar limpia `activeShop`.
+
+### Productos — [`views/admin/Productos.tsx`](../frontend/src/views/admin/Productos.tsx)
+
+CRUD completo de productos. Tabla con busqueda, filtro por categoria y por estado (`Disponible` / `Agotado` / `Inactivo`). Subida de imagen via `multipart/form-data`.
+
+### Categorias — [`views/admin/Categorias.tsx`](../frontend/src/views/admin/Categorias.tsx)
+
+CRUD de categorias. Al eliminar, el backend remueve la categoria de todos los productos que la referencian.
+
+### Ordenes — [`views/admin/Ordenes.tsx`](../frontend/src/views/admin/Ordenes.tsx)
+
+Lista de ordenes con modal de detalle (comprador, productos, envio, pago). Cambio de estado (`Pendiente` → `Confirmado` → `Enviado` → `Cancelado`) y descarga de comprobante PDF.
+
+### Configuracion — [`views/admin/Configuracion.tsx`](../frontend/src/views/admin/Configuracion.tsx)
+
+Edicion del perfil de la tienda: nombre, ubicacion, descripcion, categoria, logo (upload). Configuracion del checkout: `minPurchaseAmount` y `freeShippingThreshold`.
+
+### Promociones — [`views/admin/Promociones.tsx`](../frontend/src/views/admin/Promociones.tsx)
+
+Gestion de promociones por producto.
+
+| Tipo | Descripcion | Ejemplo |
+|------|-------------|---------|
+| `porcentaje` | Descuento porcentual | 20% OFF |
+| `fijo` | Descuento de monto fijo | -$500 |
+| `nxm` | Llevando N unidades pagas M | 3x2 |
+
+Tabla paginada con badges de color por tipo. Las promociones pueden activarse/desactivarse sin eliminarse.
+
+### Usuarios — [`views/admin/Usuarios.tsx`](../frontend/src/views/admin/Usuarios.tsx)
+
+Gestion de miembros de la tienda. Roles: `owner` y `admin`. Invitar por email, listar y revocar acceso.
+
+---
+
+## Servicios
+
+### Cliente HTTP Base — [`services/api.ts`](../frontend/src/services/api.ts)
+
+Instancia Axios con `baseURL: NEXT_PUBLIC_API_URL`. En cada request los interceptores agregan automaticamente:
+
+1. `Authorization: Bearer <token>` — desde `localStorage`
+2. `x-tenant-id: <slug>` — desde `activeShop` en `localStorage`
+3. `x-api-key: <key>` — desde `NEXT_PUBLIC_INTERNAL_API_KEY`
+
+Si la respuesta es `401` en cualquier endpoint que no sea `/auth/login` o `/auth/register`, limpia `localStorage` y redirige a `/login`.
+
+### Variables de Entorno
+
+| Variable | Descripcion |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Base URL de la API (default: `http://127.0.0.1:4000/api`) |
+| `NEXT_PUBLIC_INTERNAL_API_KEY` | API key interna inyectada en cada request |
+
+### Resumen de Servicios
+
+| Servicio | Metodos principales |
+|----------|---------------------|
+| [`auth.service.ts`](../frontend/src/services/auth.service.ts) | `login`, `register`, `confirmAccount`, `forgotPassword`, `resetPassword`, `acceptInvitation` |
+| [`shops.service.ts`](../frontend/src/services/shops.service.ts) | `getUserShops`, `getAllShops`, `getShopBySlug`, `createShop`, `updateShop`, `deleteShop`, `uploadShopLogo`, `getMembers`, `addMember`, `removeMember` |
+| [`products.service.ts`](../frontend/src/services/products.service.ts) | `getAll`, `getPublicAll`, `getById`, `create`, `update`, `delete`, `setPromotion`, `removePromotion`, `getWithPromotions` |
+| [`categories.service.ts`](../frontend/src/services/categories.service.ts) | `getAll`, `getById`, `create`, `update`, `delete` |
+| [`orders.service.ts`](../frontend/src/services/orders.service.ts) | `getAll`, `getById`, `createOrder`, `updateStatus`, `getShippingQuote`, `downloadPDF` |
+| [`configurations.service.ts`](../frontend/src/services/configurations.service.ts) | `getAll`, `getPublic`, `upsert`, `delete` |
+| [`georef.service.ts`](../frontend/src/services/georef.service.ts) | `fetchProvincias()`, `fetchLocalidades(provincia)` — API publica `apis.datos.gob.ar` |
+
+---
+
+## Sistema de Diseño
+
+### Paleta de Colores
+
+Definida como variables CSS en [`globals.css`](../frontend/src/app/globals.css) e integrada con Tailwind v4 via `@theme`.
+
+| Rol | HEX | Uso |
+|-----|-----|-----|
+| Primario | `#6366F1` | Botones principales, navegacion activa, logo |
+| Primario hover | `#4F46E5` | Estado hover del primario |
+| Secundario | `#1E1B4B` | Sidebar, fondos oscuros, texto de alto contraste |
+| Acento / Exito | `#10B981` | CTAs (crear tienda, vender), indicadores de exito |
+| Fondo | `#F8FAFC` | Fondo general |
+| Superficie | `#FFFFFF` | Cards, modales, inputs |
+| Texto principal | `#1E293B` | Cuerpo de texto |
+| Texto secundario | `#64748B` | Etiquetas, metadatos, placeholders |
+| Borde | `#E2E8F0` | Divisores, bordes de inputs y cards |
+| Error | `#EF4444` | Mensajes de error |
+| Warning | `#F59E0B` | Alertas |
+
+### Tipografia
+
+**Fuente:** Inter (Google Fonts, pesos 400/500/600/700). Fallback: `system-ui, -apple-system, sans-serif`.
+
+| Elemento | Tamano | Peso | Uso |
+|----------|--------|------|-----|
+| H1 | 30px / 1.875rem | 700 | Titulos de pagina |
+| H2 | 24px / 1.5rem | 600 | Subtitulos de seccion |
+| H3 | 20px / 1.25rem | 500 | Titulos de cards |
+| Body | 16px / 1rem | 400 | Texto general |
+| Small | 14px / 0.875rem | 400 | Etiquetas, metadatos |
+
+Nunca usar negro puro `#000000`. Principal en `#1E293B`, secundario en `#64748B`.
+
+### Radios y Sombras
+
+| Contexto | Tailwind | Valor |
+|----------|---------|-------|
+| Botones e inputs | `rounded-md` | 6px |
+| Cards y modales | `rounded-lg` | 8px |
+| Elementos grandes | `rounded-xl` | 12px |
+
+| Nivel | Tailwind | Uso |
+|-------|---------|-----|
+| 1 | `shadow-sm` | Cards, dropdowns |
+| 2 | `shadow-md` | Modales, hover |
+
+### Iconografia
+
+- **Libreria:** Lucide React — stroke, grosor 2px
+- **Tamano:** 20px en botones, 24px en navegacion
+
+### Accesibilidad
+
+- Botones de solo icono deben tener `aria-label` o `title`
+- Todas las imagenes deben tener atributo `alt`
+- El contraste de la paleta cumple WCAG AA
