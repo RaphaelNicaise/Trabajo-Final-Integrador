@@ -16,7 +16,7 @@ test.describe('Navegación, Búsqueda y Login', () => {
     });
 
     test('Debería poder usar el filtro de categorías', async ({ page }) => {
-        const categoriaBoton = page.getByRole('button', { name: /Todas las categorías/i });
+        //const categoriaBoton = page.getByRole('button', { name: /Todas las categorías/i });
         const selectCats = page.locator('select');
         if (await selectCats.count() > 0) {
             await selectCats.selectOption({ label: 'Todas las categorías' });
