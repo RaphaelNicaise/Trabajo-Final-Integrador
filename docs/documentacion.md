@@ -1,5 +1,6 @@
 # Documentacion Tecnica - StoreHub
 
+- [StoreHub](#storehub)
 - [Stack](#stack)
 - [Deploy](#deploy)
 - [CI/CD](#cicd)
@@ -10,6 +11,29 @@
 - [Backend](#backend)
 - [Frontend](#frontend)
 - [Testing](#testing)
+
+## StoreHub
+
+StoreHub es una plataforma **multi-tenant de comercio electrónico** que permite a cualquier emprendedor o negocio crear y administrar su propia tienda online desde un único sistema centralizado. Cada tienda opera de forma completamente independiente: tiene su propio catálogo de productos, categorías, órdenes, configuraciones y archivos, sin que exista ninguna interferencia con las demás tiendas del sistema.
+
+### Qué problema resuelve
+
+La mayoría de las soluciones de e-commerce obligan a los vendedores a adaptarse a plataformas genéricas o a costear infraestructura propia. StoreHub resuelve esto ofreciendo un entorno donde múltiples tiendas conviven en la misma infraestructura pero con datos completamente aislados, reduciendo costos operativos y simplificando la gestión para el administrador de la plataforma.
+
+### Funcionalidades Principales
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| **Gestión de tiendas** | Creación, edición y eliminación de tiendas con slug único, logo y categoría |
+| **Catálogo de productos** | CRUD de productos con imágenes, categorías, stock y sistema de promociones (porcentaje, monto fijo, NxM) |
+| **Categorías** | Creación de categorías por tienda con generación automática de slug |
+| **Órdenes** | Recepción de pedidos con validación de stock, seguimiento de estados (Pendiente, Confirmado, Enviado, Cancelado), cotización de envío por provincia y generación de comprobante PDF |
+| **Configuraciones dinámicas** | Ajustes key-value por tienda para personalizar la experiencia pública (nombre, descripción, colores, etc.) |
+| **Autenticación y roles** | Registro con confirmación por email, login JWT, recuperación de contraseña y sistema de invitaciones para agregar co-administradores a una tienda |
+| **Almacenamiento de archivos** | Subida de imágenes de productos y logos a MinIO (desarrollo) o AWS S3 (producción), con carpetas aisladas por tienda |
+| **Caché con Redis** | Capa de caché Cache-Aside sobre MongoDB con claves segmentadas por tenant para reducir latencia |
+| **Notificaciones por email** | Emails transaccionales para confirmación de cuenta, nueva orden, confirmación de compra, reset de contraseña e invitaciones |
+| **Panel de administración** | Dashboard con métricas, gestión de productos, órdenes, miembros y configuración de la tienda |
 
 ---
 
@@ -193,16 +217,51 @@ cd frontend && pnpm test --testPathPattern="__tests__/unit" --ci --runInBand
 cd frontend && pnpm lint
 ```
 
-Primero se corren los tests unitarios del frontend con Jest, y luego el linter de ESLint/Next.js sobre todo el codigo fuente.
+#### Prod: 
+- Para deployar a producción, se debe hacer un push a la rama main, y el pipeline de GitHub Actions se encargará de ejecutar los tests y, si todo pasa correctamente, hacer el deploy automático a la instancia EC2 configurada.
+---
+
+## CI/CD
+
+El pipeline de integración continua y deploy se define en [`.github/workflows/main.yml`](../.github/workflows/main.yml) y se ejecuta automáticamente en GitHub Actions ante cada push o pull request a las ramas `main` y `dev`.
+
+### Filtro de Paths
+
+El workflow **solo se dispara si al menos un archivo modificado pertenece a alguna de las siguientes rutas**. Cambios exclusivos en `docs/`, `README.md` u otros archivos no listados no ejecutan ningún job:
+
+```yaml
+paths:
+  - 'backend/**'
+  - 'frontend/**'
+  - 'infra/**'
+  - 'nginx/**'
+  - 'e2e/**'
+  - '.github/workflows/**'
+```
+
+Este filtro aplica tanto a eventos `push` como `pull_request` en ambas ramas (`main` y `dev`).
+
+### Comportamiento por Rama
+
+| Evento | Rama | Tests | Deploy |
+|--------|------|-------|--------|
+| Push / PR | `dev` | Se ejecutan | No se deploya |
+| PR | `main` | Se ejecutan | No se deploya |
+| Push (merge) | `main` | Se ejecutan | Si pasan, se deploya |
+
+### Jobs
+
+#### 1. Backend Tests
+
+Levanta la infraestructura de tests con Docker Compose (`infra/test.yml`) y ejecuta Jest dentro del contenedor `api-tests`. El workflow espera a que el contenedor termine y verifica el código de salida.
+
+#### 2. Frontend Tests & Linter
+
+Instala dependencias con pnpm, ejecuta los tests unitarios del frontend y luego el linter de ESLint/Next.js.
 
 #### 3. Deploy to EC2
 
-Solo se ejecuta si:
-- La rama es `main`
-- El evento es `push` (no PR)
-- Ambos jobs anteriores pasaron (`needs: [backend-tests, frontend-tests-lint]`)
-
-El deploy conecta via SSH a la instancia EC2 usando `appleboy/ssh-action` y ejecuta:
+Solo se ejecuta si la rama es `main`, el evento es `push` (no PR) y ambos jobs anteriores pasaron. Conecta via SSH a la instancia EC2 y ejecuta:
 
 ```bash
 cd /home/ubuntu/storehub
