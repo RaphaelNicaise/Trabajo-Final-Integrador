@@ -1,3 +1,4 @@
+# docker compose -f infra/prod.yml --env-file .env up -d --build
 networks:
   app_network:
 
