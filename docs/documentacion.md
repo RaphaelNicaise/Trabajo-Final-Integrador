@@ -2,6 +2,7 @@
 
 - [Stack](#stack)
 - [Deploy](#deploy)
+- [CI/CD](#cicd)
 - [API](#api---documentacion-api)
 - [MongoDB Multi-Tenant](#mongodb-multi-tenant)
 - [Minio](#minio)
