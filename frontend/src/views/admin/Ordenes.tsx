@@ -4,9 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ordersService } from '../../services/orders.service';
 import type { Order } from '../../services/orders.service';
 import {
-  Eye, ShoppingBag, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, User, MapPin, Mail, Hash, Download
+  Eye, ShoppingBag, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, User, MapPin, Mail, Hash, Download, FileSpreadsheet
 } from 'lucide-react';
 import { Select } from '../../components/ui/Select';
+import { ExportOrdersModal } from '../../components/admin/ExportOrdersModal';
 
 const ROWS_PER_PAGE = 8;
 
@@ -33,6 +34,7 @@ export const OrdenesPage = () => {
 
   const [showBuyerModal, setShowBuyerModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => { if (activeShop) loadOrders(); }, [activeShop]);
@@ -119,6 +121,10 @@ export const OrdenesPage = () => {
             ]}
           />
         </div>
+        <button onClick={() => setShowExportModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer">
+          <FileSpreadsheet className="w-4 h-4" />Exportar Excel
+        </button>
       </div>
 
       {error && (
@@ -311,6 +317,13 @@ export const OrdenesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Exportar Excel */}
+      <ExportOrdersModal
+        open={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        orders={orders}
+      />
     </div>
   );
 };

@@ -7,9 +7,10 @@ import { categoriesService } from '../../services/categories.service';
 import type { Category } from '../../services/categories.service';
 import {
   Trash2, Edit, Plus, Package, DollarSign, Box, Tag, Image as ImageIcon,
-  Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, Filter
+  Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, X, AlertTriangle, Filter, FileSpreadsheet
 } from 'lucide-react';
 import { Select } from '../../components/ui/Select';
+import { ExportProductsModal } from '../../components/admin/ExportProductsModal';
 
 const ROWS_PER_PAGE = 8;
 
@@ -30,6 +31,7 @@ export const ProductosPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [formData, setFormData] = useState({
@@ -66,7 +68,7 @@ export const ProductosPage = () => {
   };
 
   const loadCategories = async () => {
-    try { setCategories(await categoriesService.getAll()); } catch {}
+    try { setCategories(await categoriesService.getAll()); } catch { }
   };
 
   // ── Category helpers ───────────────────────────────────────────────
@@ -94,7 +96,7 @@ export const ProductosPage = () => {
       setCategories(prev => [...prev, newCat]);
       setFormData({ ...formData, categories: [...formData.categories, newCat._id] });
       setCatInput(''); setShowCatDropdown(false);
-    } catch {}
+    } catch { }
   };
 
   const removeCategory = (catId: string) => {
@@ -209,9 +211,9 @@ export const ProductosPage = () => {
   const paginatedProducts = sortedProducts.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
 
   const STATUS_CONFIG: Record<ProductStatus, { label: string; selectClass: string; badgeClass: string }> = {
-    'Disponible':    { label: 'Disponible',    selectClass: 'text-emerald-700 bg-emerald-50 border-emerald-300', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    'No disponible': { label: 'No disponible', selectClass: 'text-slate-600   bg-slate-100  border-slate-300',   badgeClass: 'bg-slate-100  text-slate-600  border-slate-200'   },
-    'Agotado':       { label: 'Agotado',       selectClass: 'text-red-700    bg-red-50     border-red-300',     badgeClass: 'bg-red-50    text-red-700   border-red-200'     },
+    'Disponible': { label: 'Disponible', selectClass: 'text-emerald-700 bg-emerald-50 border-emerald-300', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    'No disponible': { label: 'No disponible', selectClass: 'text-slate-600   bg-slate-100  border-slate-300', badgeClass: 'bg-slate-100  text-slate-600  border-slate-200' },
+    'Agotado': { label: 'Agotado', selectClass: 'text-red-700    bg-red-50     border-red-300', badgeClass: 'bg-red-50    text-red-700   border-red-200' },
   };
 
   const handleStatusChange = async (product: Product, newStatus: ProductStatus) => {
@@ -312,11 +314,10 @@ export const ProductosPage = () => {
                     key={s}
                     type="button"
                     onClick={() => setFormData({ ...formData, status: s })}
-                    className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      isSelected
-                        ? `${cfg.badgeClass} ring-2 ring-offset-1 ${s === 'Disponible' ? 'ring-emerald-400' : s === 'Agotado' ? 'ring-red-400' : 'ring-slate-400'}`
-                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
-                    }`}
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${isSelected
+                      ? `${cfg.badgeClass} ring-2 ring-offset-1 ${s === 'Disponible' ? 'ring-emerald-400' : s === 'Agotado' ? 'ring-red-400' : 'ring-slate-400'}`
+                      : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                      }`}
                   >
                     {cfg.label}
                   </button>
@@ -395,10 +396,16 @@ export const ProductosPage = () => {
             ]}
           />
         </div>
-        <button onClick={() => { resetForm(); setShowCreateModal(true); }}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer">
-          <Plus className="w-4 h-4" />Crear Producto
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowExportModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer">
+            <FileSpreadsheet className="w-4 h-4" />Exportar Excel
+          </button>
+          <button onClick={() => { resetForm(); setShowCreateModal(true); }}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer">
+            <Plus className="w-4 h-4" />Crear Producto
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -562,6 +569,14 @@ export const ProductosPage = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Exportar Excel */}
+      <ExportProductsModal
+        open={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        products={products}
+        categories={categories}
+      />
     </div>
   );
 };
