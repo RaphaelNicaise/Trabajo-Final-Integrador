@@ -10,9 +10,11 @@ export const PUBLIC_ENDPOINT = process.env.S3_PUBLIC_ENDPOINT || 'http://localho
 export const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.MINIO_ROOT_USER || 'minioadmin',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.MINIO_ROOT_PASSWORD || 'minioadmin',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'minioadmin',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'minioadmin',
   },
-  endpoint: INTERNAL_ENDPOINT,
-  forcePathStyle: true,
+  ...(process.env.NODE_ENV !== 'production' && {
+    endpoint: INTERNAL_ENDPOINT,
+    forcePathStyle: true,
+  }),
 });

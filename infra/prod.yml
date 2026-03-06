@@ -51,6 +51,8 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      S3_INTERNAL_ENDPOINT: ${S3_INTERNAL_ENDPOINT}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT}
     depends_on:
       - mongo
       - redis

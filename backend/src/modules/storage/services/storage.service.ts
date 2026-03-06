@@ -82,9 +82,9 @@ export class StorageService {
 
     try {
       await s3Client.send(command);
-      return `${PUBLIC_ENDPOINT}/${BUCKET_NAME}/${key}`;
+      return `${PUBLIC_ENDPOINT}/${key}`;
     } catch (error) {
-      console.error('Error subiendo imagen a MinIO:', error);
+      console.error('Error subiendo imagen al servicio de storage:', error);
       throw new Error('Falló la subida de la imagen', { cause: error });
     }
   }
@@ -103,9 +103,9 @@ export class StorageService {
 
     try {
       await s3Client.send(command);
-      return `${PUBLIC_ENDPOINT}/${BUCKET_NAME}/${key}`;
+      return `${PUBLIC_ENDPOINT}/${key}`;
     } catch (error) {
-      console.error('Error subiendo imagen a MinIO:', error);
+      console.error('Error subiendo imagen a storage:', error);
       throw new Error('Falló la subida de la imagen', { cause: error });
     }
   }
