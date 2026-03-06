@@ -1,5 +1,6 @@
 # Documentacion Tecnica StoreHub
 
+- [StoreHub](#storehub)
 - [Stack](#stack)
 - [Deploy](#deploy)
 - [CI/CD](#cicd)
@@ -10,6 +11,31 @@
 - [Backend](#backend)
 - [Frontend](#frontend)
 - [Testing](#testing)
+
+## StoreHub
+
+StoreHub es una plataforma **multi-tenant de comercio electrónico** que permite a cualquier emprendedor o negocio crear y administrar su propia tienda online desde un único sistema centralizado. Cada tienda opera de forma completamente independiente: tiene su propio catálogo de productos, categorías, órdenes, configuraciones y archivos, sin que exista ninguna interferencia con las demás tiendas del sistema.
+
+### Qué problema resuelve
+
+La mayoría de las soluciones de e-commerce obligan a los vendedores a adaptarse a plataformas genéricas o a costear infraestructura propia. StoreHub resuelve esto ofreciendo un entorno donde múltiples tiendas conviven en la misma infraestructura pero con datos completamente aislados, reduciendo costos operativos y simplificando la gestión para el administrador de la plataforma.
+
+### Funcionalidades Principales
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| **Gestión de tiendas** | Creación, edición y eliminación de tiendas con slug único, logo y categoría |
+| **Catálogo de productos** | CRUD de productos con imágenes, categorías, stock y sistema de promociones (porcentaje, monto fijo, NxM) |
+| **Categorías** | Creación de categorías por tienda con generación automática de slug |
+| **Órdenes** | Recepción de pedidos con validación de stock, seguimiento de estados (Pendiente, Confirmado, Enviado, Cancelado), cotización de envío por provincia y generación de comprobante PDF |
+| **Configuraciones dinámicas** | Ajustes key-value por tienda para personalizar la experiencia pública (nombre, descripción, colores, etc.) |
+| **Autenticación y roles** | Registro con confirmación por email, login JWT, recuperación de contraseña y sistema de invitaciones para agregar co-administradores a una tienda |
+| **Almacenamiento de archivos** | Subida de imágenes de productos y logos a MinIO (desarrollo) o AWS S3 (producción), con carpetas aisladas por tienda |
+| **Caché con Redis** | Capa de caché Cache-Aside sobre MongoDB con claves segmentadas por tenant para reducir latencia |
+| **Notificaciones por email** | Emails transaccionales para confirmación de cuenta, nueva orden, confirmación de compra, reset de contraseña e invitaciones |
+| **Panel de administración** | Dashboard con métricas, gestión de productos, órdenes, miembros y configuración de la tienda |
+
+---
 
 ## Stack
 
