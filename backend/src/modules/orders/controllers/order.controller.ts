@@ -117,103 +117,116 @@ export class OrderController {
     }
   }
 
-  async downloadPDF(req: Request, res: Response) {
+async downloadPDF(req: Request, res: Response) {
     try {
-      const shopSlug = req.headers['x-tenant-id'] as string;
-      const { id } = req.params;
+        const shopSlug = req.headers['x-tenant-id'] as string;
+        const { id } = req.params;
 
-      if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
+        if (!shopSlug) return res.status(400).json({ error: 'Falta header x-tenant-id' });
 
-      const order = await orderService.getOrderById(shopSlug, id);
-      if (!order) return res.status(404).json({ error: 'Orden no encontrada' });
+        const order = await orderService.getOrderById(shopSlug, id);
+        if (!order) return res.status(404).json({ error: 'Orden no encontrada' });
 
-      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+        const doc = new PDFDocument({ margin: 40, size: 'A4', bufferPages: true });
 
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=orden-${(order._id as any).toString().slice(-8)}.pdf`);
-      doc.pipe(res);
-      
-      doc.save();
-      doc.circle(70, 60, 30).fill('#059669');
-      doc.restore();
-      doc.fontSize(26).font('Helvetica-Bold').fillColor('#059669').text('StoreHub', 120, 45, { align: 'left' });
-      doc.fontSize(12).font('Helvetica').fillColor('#666').text('Comprobante de Orden', 120, 75, { align: 'left' });
-      doc.moveDown(2);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=orden-${(order._id as any).toString().slice(-8)}.pdf`);
+        doc.pipe(res);
 
-      doc.strokeColor('#059669').lineWidth(2).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-      doc.moveDown(1);
+        // Función para dibujar el header en cada página
+        const drawHeader = () => {
+            doc.save();
+            doc.circle(70, 60, 30).fill('#059669');
+            doc.restore();
+            doc.fontSize(26).font('Helvetica-Bold').fillColor('#059669').text('StoreHub', 120, 45);
+            doc.fontSize(12).font('Helvetica').fillColor('#666').text('Comprobante de Orden', 120, 75);
+            doc.moveDown(2);
+            doc.strokeColor('#059669').lineWidth(2).moveTo(40, 110).lineTo(555, 110).stroke();
+            doc.y = 130;
+        };
 
-      doc.rect(40, doc.y, 515, 70).fillAndStroke('#f0fdf4', '#059669');
-      doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Detalles de la Orden', 55, doc.y + 10);
-      doc.fontSize(10).font('Helvetica').fillColor('#475569');
-      doc.text(`ID: #${(order._id as any).toString().slice(-8)}`, 55, doc.y + 25);
-      doc.text(`Fecha: ${new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' }).format(order.createdAt)}`, 200, doc.y + 25);
-      doc.text(`Estado: ${order.status}`, 400, doc.y + 25);
-      doc.moveDown(3);
+        drawHeader();
 
-      doc.rect(40, doc.y, 515, 60).fillAndStroke('#f1f5f9', '#059669');
-      doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Datos del Comprador', 55, doc.y + 10);
-      doc.fontSize(10).font('Helvetica').fillColor('#475569');
-      doc.text(`Nombre: ${order.buyer?.name || '-'}`, 55, doc.y + 25);
-      doc.text(`Email: ${order.buyer?.email || '-'}`, 250, doc.y + 25);
-      doc.text(`Teléfono: ${order.buyer?.phone || '-'}`, 400, doc.y + 25);
-      doc.moveDown(2);
+        let boxY = doc.y;
+        doc.rect(40, boxY, 515, 55).fillAndStroke('#f0fdf4', '#059669');
+        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Detalles de la Orden', 55, boxY + 10);
+        doc.fontSize(10).font('Helvetica').fillColor('#475569');
+        doc.text(`ID: #${(order._id as any).toString().slice(-8)}`, 55, boxY + 30);
+        doc.text(`Fecha: ${new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' }).format(order.createdAt)}`, 200, boxY + 30);
+        doc.text(`Estado: ${order.status}`, 430, boxY + 30);
+        doc.y = boxY + 65;
 
-      
-      doc.rect(40, doc.y, 515, 70).fillAndStroke('#f0fdf4', '#059669');
-      doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Dirección de Envío', 55, doc.y + 10);
-      doc.fontSize(10).font('Helvetica').fillColor('#475569');
-      doc.text(`Dirección: ${order.buyer?.address || '-'} ${order.buyer?.streetNumber || ''}`, 55, doc.y + 25);
-      doc.text(`Ciudad: ${order.buyer?.city || '-'}`, 250, doc.y + 25);
-      doc.text(`Provincia: ${order.buyer?.province || '-'}`, 400, doc.y + 25);
-      doc.text(`Código Postal: ${order.buyer?.postalCode || '-'}`, 55, doc.y + 40);
-      if (order.buyer?.notes) doc.text(`📝 Notas: ${order.buyer.notes}`, 250, doc.y + 40);
-      doc.text(`Método: ${order.shipping?.method || 'Estándar'}`, 400, doc.y + 40);
-      doc.moveDown(3);
+        boxY = doc.y;
+        doc.rect(40, boxY, 515, 55).fillAndStroke('#f1f5f9', '#059669');
+        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Datos del Comprador', 55, boxY + 10);
+        doc.fontSize(10).font('Helvetica').fillColor('#475569');
+        doc.text(`Nombre: ${order.buyer?.name || '-'}`, 55, boxY + 30);
+        doc.text(`Email: ${order.buyer?.email || '-'}`, 220, boxY + 30);
+        doc.text(`Telefono: ${order.buyer?.phone || '-'}`, 430, boxY + 30);
+        doc.y = boxY + 65;
 
-      doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Productos', 40, doc.y);
-      doc.moveDown(0.5);
-      const tableTop = doc.y;
-      const colX = { name: 50, price: 300, qty: 400, subtotal: 470 };
-      doc.fontSize(10).font('Helvetica-Bold').fillColor('#64748b');
-      doc.text('Producto', colX.name, tableTop);
-      doc.text('Precio', colX.price, tableTop, { width: 80, align: 'right' });
-      doc.text('Cant.', colX.qty, tableTop, { width: 50, align: 'right' });
-      doc.text('Subtotal', colX.subtotal, tableTop, { width: 75, align: 'right' });
-      doc.moveDown(0.3);
-      doc.strokeColor('#059669').lineWidth(1).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(0.3);
+        const hasNotes = !!order.buyer?.notes;
+        const shippingBoxH = hasNotes ? 75 : 55;
+        boxY = doc.y;
+        doc.rect(40, boxY, 515, shippingBoxH).fillAndStroke('#f0fdf4', '#059669');
+        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Direccion de Envio', 55, boxY + 10);
+        doc.fontSize(9).font('Helvetica').fillColor('#475569');
+        doc.text(`Direccion: ${order.buyer?.address || '-'} ${order.buyer?.streetNumber || ''}`, 55, boxY + 30);
+        doc.text(`Ciudad: ${order.buyer?.city || '-'}`, 310, boxY + 30);
+        doc.text(`Provincia: ${order.buyer?.province || '-'}`, 55, boxY + 45);
+        doc.text(`CP: ${order.buyer?.postalCode || '-'}`, 200, boxY + 45);
+        doc.text(`Metodo: ${order.shipping?.method || 'Estandar'}`, 360, boxY + 45);
+        if (hasNotes) doc.text(`Notas: ${order.buyer!.notes}`, 55, boxY + 60);
+        doc.y = boxY + shippingBoxH + 20;
 
-      doc.font('Helvetica').fontSize(10).fillColor('#334155');
-      for (const product of order.products) {
-        const rowY = doc.y;
-        doc.text(product.name || '-', colX.name, rowY, { width: 240 });
-        doc.text(`$${product.price.toFixed(2)}`, colX.price, rowY, { width: 80, align: 'right' });
-        doc.text(`${product.quantity}`, colX.qty, rowY, { width: 50, align: 'right' });
-        doc.text(`$${(product.price * product.quantity).toFixed(2)}`, colX.subtotal, rowY, { width: 75, align: 'right' });
+        doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Productos', 40);
         doc.moveDown(0.5);
-      }
+        
+        const colX = { name: 50, price: 300, qty: 380, subtotal: 460 };
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#64748b');
+        doc.text('Producto', colX.name, doc.y, { continued: true }).text('Precio', colX.price, doc.y, { width: 80, align: 'right', continued: true }).text('Cant.', colX.qty, doc.y, { width: 50, align: 'right', continued: true }).text('Subtotal', colX.subtotal, doc.y, { width: 85, align: 'right' });
+        
+        doc.strokeColor('#059669').lineWidth(1).moveTo(40, doc.y + 2).lineTo(555, doc.y + 2).stroke();
+        doc.moveDown(0.8);
 
-      doc.moveDown(0.3);
-      doc.strokeColor('#059669').lineWidth(1).moveTo(350, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(0.3);
+        doc.font('Helvetica').fontSize(10).fillColor('#334155');
+        
+        for (const product of order.products) {
+            if (doc.y > 700) { 
+                doc.addPage();
+                drawHeader();
+                doc.y = 140;
+            }
 
-      const subtotalProducts = order.products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
-      doc.fontSize(11).font('Helvetica').fillColor('#475569');
-      doc.text(`Subtotal: $${subtotalProducts.toFixed(2)}`, 350, doc.y, { width: 195, align: 'right' });
-      doc.moveDown(0.3);
-      doc.text(`Envío: $${(order.shipping?.cost || 0).toFixed(2)}`, 350, doc.y, { width: 195, align: 'right' });
-      doc.moveDown(0.3);
-      doc.fontSize(15).font('Helvetica-Bold').fillColor('#059669');
-      doc.text(`Total: $${order.total.toFixed(2)}`, 350, doc.y, { width: 195, align: 'right' });
+            const rowY = doc.y;
+            doc.text(product.name || '-', colX.name, rowY, { width: 240 });
+            doc.text(`$${product.price.toFixed(2)}`, colX.price, rowY, { width: 80, align: 'right' });
+            doc.text(`${product.quantity}`, colX.qty, rowY, { width: 50, align: 'right' });
+            doc.text(`$${(product.price * product.quantity).toFixed(2)}`, colX.subtotal, rowY, { width: 85, align: 'right' });
+            doc.moveDown(0.5);
+        }
 
-      doc.moveDown(2);
-      doc.fontSize(9).font('Helvetica').fillColor('#94a3b8').text('Documento generado automáticamente por StoreHub', { align: 'center' });
+        if (doc.y > 720) doc.addPage();
+        doc.moveDown(1);
+        doc.strokeColor('#e2e8f0').moveTo(350, doc.y).lineTo(555, doc.y).stroke();
+        doc.moveDown(0.5);
 
-      doc.end();
+        const subtotalProducts = order.products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+        doc.fontSize(10).font('Helvetica').fillColor('#475569');
+        doc.text(`Subtotal: $${subtotalProducts.toFixed(2)}`, 350, doc.y, { width: 200, align: 'right' });
+        doc.moveDown(0.4);
+        doc.text(`Envio: $${(order.shipping?.cost || 0).toFixed(2)}`, 350, doc.y, { width: 200, align: 'right' });
+        doc.moveDown(0.6);
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#059669');
+        doc.text(`Total: $${order.total.toFixed(2)}`, 350, doc.y, { width: 200, align: 'right' });
+
+        doc.fontSize(9).font('Helvetica').fillColor('#94a3b8').text('Documento generado automáticamente por StoreHub', 40, 780, { align: 'center' });
+
+        doc.end();
     } catch (error: any) {
-      console.error('Error generando PDF:', error);
-      res.status(500).json({ error: error.message || 'Error generando PDF' });
+        console.error('Error generando PDF:', error);
+        res.status(500).json({ error: 'Error generando PDF' });
     }
+
   }
 }

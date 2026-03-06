@@ -171,7 +171,7 @@ Content-Type: application/json
 
 #### Headers
 ```
-(No requiere headers especiales)
+x-api-key: <api_key>
 ```
 
 ---
@@ -182,7 +182,7 @@ Content-Type: application/json
 
 #### Headers
 ```
-(No requiere headers especiales)
+x-api-key: <api_key>
 ```
 
 #### Params
@@ -196,6 +196,7 @@ Content-Type: application/json
 
 #### Headers
 ```
+x-api-key: <api_key>
 Authorization: Bearer <token>
 ```
 
@@ -210,6 +211,7 @@ Authorization: Bearer <token>
 
 #### Headers
 ```
+x-api-key: <api_key>
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
@@ -243,6 +245,7 @@ Content-Type: application/json
 
 #### Headers
 ```
+x-api-key: <api_key>
 Authorization: Bearer <token>
 ```
 
@@ -267,6 +270,7 @@ Authorization: Bearer <token>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 ```
 
@@ -278,6 +282,7 @@ x-tenant-id: <tenant_id>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 Content-Type: application/json
@@ -305,6 +310,7 @@ Content-Type: application/json
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 ```
@@ -331,6 +337,7 @@ Authorization: Bearer <token>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 ```
@@ -343,6 +350,7 @@ Authorization: Bearer <token>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 ```
@@ -360,6 +368,7 @@ Authorization: Bearer <token>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Content-Type: application/json
 ```
@@ -403,6 +412,7 @@ Content-Type: application/json
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 Content-Type: application/json
@@ -444,7 +454,8 @@ Content-Type: application/json
 
 #### Headers
 ```
-x-tenant-id: <tenant_id> 
+x-api-key: <api_key>
+x-tenant-id: <tenant_id>
 ```
 
 ---
@@ -455,6 +466,7 @@ x-tenant-id: <tenant_id>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 ```
 
@@ -469,6 +481,7 @@ x-tenant-id: <tenant_id>
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
@@ -503,6 +516,7 @@ categories: []
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
@@ -532,6 +546,7 @@ Content-Type: multipart/form-data
 
 #### Headers
 ```
+x-api-key: <api_key>
 x-tenant-id: <tenant_id>
 Authorization: Bearer <token>
 ```

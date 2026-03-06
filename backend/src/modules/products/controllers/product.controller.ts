@@ -113,9 +113,9 @@ export class ProductController {
         return res.status(404).json({ error: 'Producto no encontrado' });
       }
 
-      const updateData = { ...req.body };
+      const updateData = req.body ? { ...req.body } : {};
 
-      if (req.body.categories) {
+      if (req.body?.categories) {
         updateData.categories = this.parseCategories(req.body.categories);
       }
 
