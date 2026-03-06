@@ -509,17 +509,21 @@ export function PublicStorePage() {
           </Link>
 
           <div className="flex items-start gap-6">
-            {shop.imageUrl && (
-              <div className="flex-shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl p-2 overflow-hidden">
+            <div className="flex-shrink-0">
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl p-2 overflow-hidden">
+                {shop.imageUrl ? (
                   <img
                     src={shop.imageUrl}
                     alt={`Logo de ${shop.storeName}`}
                     className="w-full h-full object-cover rounded-xl"
                   />
-                </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-emerald-100 to-cyan-100 rounded-xl flex items-center justify-center">
+                    <StoreIcon className="w-10 h-10 text-emerald-500" />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
             <div className="flex-1">
               <h1 className="text-5xl md:text-6xl font-bold mb-4">{shop.storeName}</h1>
               {shop.categoria && (

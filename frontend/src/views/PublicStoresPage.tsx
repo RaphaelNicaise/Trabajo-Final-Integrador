@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { shopsService } from '../services/shops.service';
 
@@ -70,6 +71,13 @@ export function PublicStoresPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
         <PublicNavbar />
         <main className="container mx-auto px-4 py-16 max-w-6xl">
+          {/* Hero Brand (skeleton) */}
+          <div className="text-center mb-8">
+            <h1 className="text-7xl md:text-9xl font-black tracking-tight leading-none">
+              <span style={{ color: '#059669' }}>Store</span><span className="text-slate-900">Hub</span>
+            </h1>
+            <div className="h-1 w-24 mx-auto mt-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-40 animate-pulse" />
+          </div>
           {/* Header Section Skeleton */}
           <div className="mb-16 text-center fade-in-up-pro">
             <div className="mb-6 scale-in-pro">
@@ -103,6 +111,25 @@ export function PublicStoresPage() {
       <PublicNavbar />
 
       <main className="container mx-auto px-4 py-16 max-w-6xl">
+        {/* Hero Brand */}
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, scale: 0.8, y: -24 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+        >
+          <h1 className="text-7xl md:text-9xl font-black tracking-tight leading-none">
+            <span style={{ color: '#059669' }}>Store</span><span className="text-slate-900">Hub</span>
+          </h1>
+          <motion.div
+            className="h-1 w-24 mx-auto mt-3 rounded-full"
+            style={{ background: 'linear-gradient(90deg, #059669, #06b6d4)' }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.4, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+          />
+        </motion.div>
+
         {/* Header Section */}
         <div className="mb-16 text-center fade-in-up">
           <div className="mb-6 scale-in">
@@ -110,9 +137,9 @@ export function PublicStoresPage() {
               Marketplace de Tiendas
             </span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4 fade-in-down">
+          <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4 fade-in-down">
             Explora Nuestras <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent animate-gradient">Tiendas</span>
-          </h1>
+          </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto fade-in-down delay-100">
             Descubre una colección curada de tiendas con productos únicos y de alta calidad
           </p>

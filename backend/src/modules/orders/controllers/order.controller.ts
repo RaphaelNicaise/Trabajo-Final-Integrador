@@ -127,106 +127,135 @@ async downloadPDF(req: Request, res: Response) {
         const order = await orderService.getOrderById(shopSlug, id);
         if (!order) return res.status(404).json({ error: 'Orden no encontrada' });
 
-        const doc = new PDFDocument({ margin: 40, size: 'A4', bufferPages: true });
+        const doc = new PDFDocument({ margin: 40, size: 'A4' });
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=orden-${(order._id as any).toString().slice(-8)}.pdf`);
         doc.pipe(res);
 
-        // Función para dibujar el header en cada página
-        const drawHeader = () => {
-            doc.save();
-            doc.circle(70, 60, 30).fill('#059669');
-            doc.restore();
-            doc.fontSize(26).font('Helvetica-Bold').fillColor('#059669').text('StoreHub', 120, 45);
-            doc.fontSize(12).font('Helvetica').fillColor('#666').text('Comprobante de Orden', 120, 75);
-            doc.moveDown(2);
-            doc.strokeColor('#059669').lineWidth(2).moveTo(40, 110).lineTo(555, 110).stroke();
-            doc.y = 130;
+        const pageW = doc.page.width;
+        const pageH = doc.page.height;
+        const margin = 40;
+        const contentW = pageW - margin * 2;
+        // Keep the footer comfortably above bottom margin to avoid implicit page breaks.
+        const footerY = pageH - margin - 14;
+        const bottomLimit = footerY - 30;
+
+        const col = {
+            name:     { x: margin + 10,  w: 230 },
+            price:    { x: margin + 250, w: 80  },
+            qty:      { x: margin + 340, w: 50  },
+            subtotal: { x: margin + 400, w: 115 },
         };
 
-        drawHeader();
+        const drawPageChrome = () => {
+            doc.save();
+            doc.circle(70, 55, 28).fill('#059669');
+            doc.restore();
+            doc.fontSize(26).font('Helvetica-Bold').fillColor('#059669').text('StoreHub', 110, 40);
+            doc.fontSize(12).font('Helvetica').fillColor('#666666').text('Comprobante de Orden', 110, 72);
+            doc.strokeColor('#059669').lineWidth(2).moveTo(margin, 105).lineTo(pageW - margin, 105).stroke();
+            doc.fontSize(9).font('Helvetica').fillColor('#94a3b8')
+             .text('Documento generado automáticamente por StoreHub', margin, footerY, {
+               width: contentW,
+               align: 'center',
+               lineBreak: false,
+             });
+        };
 
-        let boxY = doc.y;
-        doc.rect(40, boxY, 515, 55).fillAndStroke('#f0fdf4', '#059669');
-        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Detalles de la Orden', 55, boxY + 10);
+        const drawProductsHeader = (startY: number) => {
+          doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Productos', margin, startY);
+          let localY = startY + 24;
+
+          doc.fontSize(10).font('Helvetica-Bold').fillColor('#64748b');
+          doc.text('Producto', col.name.x, localY, { width: col.name.w });
+          doc.text('Precio', col.price.x, localY, { width: col.price.w, align: 'right' });
+          doc.text('Cant.', col.qty.x, localY, { width: col.qty.w, align: 'right' });
+          doc.text('Subtotal', col.subtotal.x, localY, { width: col.subtotal.w, align: 'right' });
+          localY += 18;
+          doc.strokeColor('#059669').lineWidth(1).moveTo(margin, localY).lineTo(pageW - margin, localY).stroke();
+
+          return localY + 8;
+        };
+
+        drawPageChrome();
+        let y = 125;
+
+        doc.rect(margin, y, contentW, 55).fillAndStroke('#f0fdf4', '#059669');
+        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Detalles de la Orden', margin + 15, y + 10);
         doc.fontSize(10).font('Helvetica').fillColor('#475569');
-        doc.text(`ID: #${(order._id as any).toString().slice(-8)}`, 55, boxY + 30);
-        doc.text(`Fecha: ${new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' }).format(order.createdAt)}`, 200, boxY + 30);
-        doc.text(`Estado: ${order.status}`, 430, boxY + 30);
-        doc.y = boxY + 65;
+        const orderId   = `#${(order._id as any).toString().slice(-8)}`;
+        const orderDate = new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' }).format(order.createdAt);
+        doc.text(`ID: ${orderId}`,          margin + 15,  y + 30);
+        doc.text(`Fecha: ${orderDate}`,     margin + 150, y + 30);
+        doc.text(`Estado: ${order.status}`, margin + 390, y + 30);
+        y += 65;
 
-        boxY = doc.y;
-        doc.rect(40, boxY, 515, 55).fillAndStroke('#f1f5f9', '#059669');
-        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Datos del Comprador', 55, boxY + 10);
+        doc.rect(margin, y, contentW, 55).fillAndStroke('#f1f5f9', '#059669');
+        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Datos del Comprador', margin + 15, y + 10);
         doc.fontSize(10).font('Helvetica').fillColor('#475569');
-        doc.text(`Nombre: ${order.buyer?.name || '-'}`, 55, boxY + 30);
-        doc.text(`Email: ${order.buyer?.email || '-'}`, 220, boxY + 30);
-        doc.text(`Telefono: ${order.buyer?.phone || '-'}`, 430, boxY + 30);
-        doc.y = boxY + 65;
+        doc.text(`Nombre: ${order.buyer?.name || '-'}`,    margin + 15,  y + 30);
+        doc.text(`Email: ${order.buyer?.email || '-'}`,    margin + 180, y + 30);
+        doc.text(`Teléfono: ${order.buyer?.phone || '-'}`, margin + 390, y + 30);
+        y += 65;
 
-        const hasNotes = !!order.buyer?.notes;
-        const shippingBoxH = hasNotes ? 75 : 55;
-        boxY = doc.y;
-        doc.rect(40, boxY, 515, shippingBoxH).fillAndStroke('#f0fdf4', '#059669');
-        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Direccion de Envio', 55, boxY + 10);
+        const hasNotes     = !!order.buyer?.notes;
+        const shippingBoxH = hasNotes ? 80 : 62;
+        doc.rect(margin, y, contentW, shippingBoxH).fillAndStroke('#f0fdf4', '#059669');
+        doc.fillColor('#059669').fontSize(12).font('Helvetica-Bold').text('Dirección de Envío', margin + 15, y + 10);
         doc.fontSize(9).font('Helvetica').fillColor('#475569');
-        doc.text(`Direccion: ${order.buyer?.address || '-'} ${order.buyer?.streetNumber || ''}`, 55, boxY + 30);
-        doc.text(`Ciudad: ${order.buyer?.city || '-'}`, 310, boxY + 30);
-        doc.text(`Provincia: ${order.buyer?.province || '-'}`, 55, boxY + 45);
-        doc.text(`CP: ${order.buyer?.postalCode || '-'}`, 200, boxY + 45);
-        doc.text(`Metodo: ${order.shipping?.method || 'Estandar'}`, 360, boxY + 45);
-        if (hasNotes) doc.text(`Notas: ${order.buyer!.notes}`, 55, boxY + 60);
-        doc.y = boxY + shippingBoxH + 20;
+        doc.text(`Dirección: ${order.buyer?.address || '-'} ${order.buyer?.streetNumber || ''}`, margin + 15,  y + 30);
+        doc.text(`Ciudad: ${order.buyer?.city || '-'}`,                                          margin + 310, y + 30);
+        doc.text(`Provincia: ${order.buyer?.province || '-'}`,                                   margin + 15,  y + 45);
+        doc.text(`CP: ${order.buyer?.postalCode || '-'}`,                                        margin + 200, y + 45);
+        doc.text(`Método envío: ${order.shipping?.method || 'Estándar'}`,                        margin + 310, y + 45);
+        if (hasNotes) doc.text(`Notas: ${order.buyer!.notes}`, margin + 15, y + 62);
+        y += shippingBoxH + 20;
 
-        doc.fillColor('#059669').fontSize(14).font('Helvetica-Bold').text('Productos', 40);
-        doc.moveDown(0.5);
-        
-        const colX = { name: 50, price: 300, qty: 380, subtotal: 460 };
-        doc.fontSize(10).font('Helvetica-Bold').fillColor('#64748b');
-        doc.text('Producto', colX.name, doc.y, { continued: true }).text('Precio', colX.price, doc.y, { width: 80, align: 'right', continued: true }).text('Cant.', colX.qty, doc.y, { width: 50, align: 'right', continued: true }).text('Subtotal', colX.subtotal, doc.y, { width: 85, align: 'right' });
-        
-        doc.strokeColor('#059669').lineWidth(1).moveTo(40, doc.y + 2).lineTo(555, doc.y + 2).stroke();
-        doc.moveDown(0.8);
+        y = drawProductsHeader(y);
 
         doc.font('Helvetica').fontSize(10).fillColor('#334155');
-        
         for (const product of order.products) {
-            if (doc.y > 700) { 
+            const nameHeight = doc.heightOfString(product.name || '-', { width: col.name.w });
+            const rowH = Math.max(nameHeight, 14) + 10;
+
+            if (y + rowH > bottomLimit) {
                 doc.addPage();
-                drawHeader();
-                doc.y = 140;
+                drawPageChrome();
+                y = 125;
+              y = drawProductsHeader(y);
             }
 
-            const rowY = doc.y;
-            doc.text(product.name || '-', colX.name, rowY, { width: 240 });
-            doc.text(`$${product.price.toFixed(2)}`, colX.price, rowY, { width: 80, align: 'right' });
-            doc.text(`${product.quantity}`, colX.qty, rowY, { width: 50, align: 'right' });
-            doc.text(`$${(product.price * product.quantity).toFixed(2)}`, colX.subtotal, rowY, { width: 85, align: 'right' });
-            doc.moveDown(0.5);
+            doc.text(product.name || '-',                                 col.name.x,     y, { width: col.name.w });
+            doc.text(`$${product.price.toFixed(2)}`,                      col.price.x,    y, { width: col.price.w,    align: 'right' });
+            doc.text(`${product.quantity}`,                               col.qty.x,      y, { width: col.qty.w,      align: 'right' });
+            doc.text(`$${(product.price * product.quantity).toFixed(2)}`, col.subtotal.x, y, { width: col.subtotal.w, align: 'right' });
+            y += rowH;
         }
 
-        if (doc.y > 720) doc.addPage();
-        doc.moveDown(1);
-        doc.strokeColor('#e2e8f0').moveTo(350, doc.y).lineTo(555, doc.y).stroke();
-        doc.moveDown(0.5);
+        y += 10;
+        if (y + 70 > bottomLimit) {
+            doc.addPage();
+            drawPageChrome();
+            y = 125;
+        }
 
-        const subtotalProducts = order.products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+        doc.strokeColor('#e2e8f0').lineWidth(1).moveTo(margin + 310, y).lineTo(pageW - margin, y).stroke();
+        y += 10;
+
+        const subtotalProducts = order.products.reduce((sum, p) => sum + p.price * p.quantity, 0);
         doc.fontSize(10).font('Helvetica').fillColor('#475569');
-        doc.text(`Subtotal: $${subtotalProducts.toFixed(2)}`, 350, doc.y, { width: 200, align: 'right' });
-        doc.moveDown(0.4);
-        doc.text(`Envio: $${(order.shipping?.cost || 0).toFixed(2)}`, 350, doc.y, { width: 200, align: 'right' });
-        doc.moveDown(0.6);
+        doc.text(`Subtotal: $${subtotalProducts.toFixed(2)}`, margin, y, { width: contentW, align: 'right' });
+        y += 18;
+        doc.text(`Envío: $${(order.shipping?.cost || 0).toFixed(2)}`, margin, y, { width: contentW, align: 'right' });
+        y += 24;
         doc.fontSize(14).font('Helvetica-Bold').fillColor('#059669');
-        doc.text(`Total: $${order.total.toFixed(2)}`, 350, doc.y, { width: 200, align: 'right' });
-
-        doc.fontSize(9).font('Helvetica').fillColor('#94a3b8').text('Documento generado automáticamente por StoreHub', 40, 780, { align: 'center' });
+        doc.text(`Total: $${order.total.toFixed(2)}`, margin, y, { width: contentW, align: 'right' });
 
         doc.end();
     } catch (error: any) {
         console.error('Error generando PDF:', error);
         res.status(500).json({ error: 'Error generando PDF' });
     }
-
   }
 }
