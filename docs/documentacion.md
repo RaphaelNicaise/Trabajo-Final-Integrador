@@ -76,7 +76,59 @@ docker compose -f infra/dev.yml --env-file .env down -v
 docker compose -f infra/dev.yml --env-file .envup --build
 ```
 
-#### Prod: (todavia no)
+#### Prod: 
+- Para deployar a producción, se debe hacer un push a la rama main, y el pipeline de GitHub Actions se encargará de ejecutar los tests y, si todo pasa correctamente, hacer el deploy automático a la instancia EC2 configurada.
+---
+
+## CI/CD
+
+El pipeline de integración continua y deploy se define en [`.github/workflows/main.yml`](../.github/workflows/main.yml) y se ejecuta automáticamente en GitHub Actions ante cada push o pull request a las ramas `main` y `dev`.
+
+### Filtro de Paths
+
+El workflow **solo se dispara si al menos un archivo modificado pertenece a alguna de las siguientes rutas**. Cambios exclusivos en `docs/`, `README.md` u otros archivos no listados no ejecutan ningún job:
+
+```yaml
+paths:
+  - 'backend/**'
+  - 'frontend/**'
+  - 'infra/**'
+  - 'nginx/**'
+  - 'e2e/**'
+  - '.github/workflows/**'
+```
+
+Este filtro aplica tanto a eventos `push` como `pull_request` en ambas ramas (`main` y `dev`).
+
+### Comportamiento por Rama
+
+| Evento | Rama | Tests | Deploy |
+|--------|------|-------|--------|
+| Push / PR | `dev` | Se ejecutan | No se deploya |
+| PR | `main` | Se ejecutan | No se deploya |
+| Push (merge) | `main` | Se ejecutan | Si pasan, se deploya |
+
+### Jobs
+
+#### 1. Backend Tests
+
+Levanta la infraestructura de tests con Docker Compose (`infra/test.yml`) y ejecuta Jest dentro del contenedor `api-tests`. El workflow espera a que el contenedor termine y verifica el código de salida.
+
+#### 2. Frontend Tests & Linter
+
+Instala dependencias con pnpm, ejecuta los tests unitarios del frontend y luego el linter de ESLint/Next.js.
+
+#### 3. Deploy to EC2
+
+Solo se ejecuta si la rama es `main`, el evento es `push` (no PR) y ambos jobs anteriores pasaron. Conecta via SSH a la instancia EC2 y ejecuta:
+
+```bash
+cd /home/ubuntu/storehub
+git pull origin main
+docker compose -f infra/prod.yml --env-file .env up -d --build
+docker image prune -f
+```
+
 ---
 
 ## API -> [Documentacion API](api.md)
