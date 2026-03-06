@@ -20,6 +20,9 @@ import { runSeed } from '@/seed';
 dotenv.config();
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 4000;
 const storageService = new StorageService();
 
@@ -60,7 +63,9 @@ const startServer = async () => {
     await redisClient.connect();
     initializeRateLimiters(); // iniciamos los rate limiters justo despues del await de redis
     await connectToMongoDB();
-    await storageService.initializeMainBucket();
+    if (process.env.NODE_ENV !== 'production') {
+      await storageService.initializeMainBucket();
+    }
     await verifyMailConnection();
 
     await runSeed();
