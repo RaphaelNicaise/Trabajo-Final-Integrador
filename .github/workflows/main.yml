@@ -3,9 +3,22 @@ name: CI/CD - StoreHub
 on:
   push:
     branches: [ main, dev ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'infra/**'
+      - 'nginx/**'
+      - 'e2e/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main, dev ]
-
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'infra/**'
+      - 'nginx/**'
+      - 'e2e/**'
+      - '.github/workflows/**'
 jobs:
   backend-tests:
     name: Backend Tests
