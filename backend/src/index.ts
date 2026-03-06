@@ -6,9 +6,9 @@ import { connectToMongoDB } from '@/modules/database/tenantConnection';
 import { StorageService } from '@/modules/storage/services/storage.service';
 import { redisClient } from '@/config/redis'
 import { apiKeyGuard } from '@/middleware/apiKeyGuard';
+import { initializeRateLimiters, getGlobalLimiter, getAuthLimiter } from '@/middleware/rateLimiter';
 import { verifyMailConnection } from '@/config/mail';
 
-import paymentsRoutes from "@/modules/payments/routes/payments";
 import productRoutes from '@/modules/products/routes/product.routes';
 import shopRoutes from '@/modules/shops/routes/shop.routes';
 import categoryRoutes from '@/modules/categories/routes/category.routes';
@@ -20,12 +20,15 @@ import { runSeed } from '@/seed';
 dotenv.config();
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 4000;
 const storageService = new StorageService();
 
 // Configurar CORS
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'], // Next.js dev server + Vite legacy
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://54.94.59.5'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-api-key'],
@@ -33,13 +36,19 @@ app.use(cors({
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  getGlobalLimiter()(req, res, next);
+});
+
 app.get('/', (req, res) => res.send('Backend corriendo'));
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', (req, res, next) => {
+  getAuthLimiter()(req, res, next);
+}, authRoutes);
 app.use('/api/', apiKeyGuard);
 
 // Rutas con protección selectiva (definen middlewares a nivel de ruta individual)
@@ -52,12 +61,15 @@ app.use('/api/configurations', configurationRoutes);
 const startServer = async () => {
   try {
     await redisClient.connect();
+    initializeRateLimiters(); // iniciamos los rate limiters justo despues del await de redis
     await connectToMongoDB();
-    await storageService.initializeMainBucket();
+    if (process.env.NODE_ENV !== 'production') {
+      await storageService.initializeMainBucket();
+    }
     await verifyMailConnection();
 
     await runSeed();
-    
+
     app.listen(PORT, () => {
       console.log(`Server corriendo en http://localhost:${PORT}`);
     });
@@ -68,4 +80,9 @@ const startServer = async () => {
   }
 }
 
-startServer();
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}
+
+export { app };
+

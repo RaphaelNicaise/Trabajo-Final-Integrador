@@ -7,7 +7,7 @@ import { useCart } from '../contexts/CartContext';
 import { productsService } from '../services/products.service';
 import { categoriesService } from '../services/categories.service';
 import { shopsService } from '../services/shops.service';
-import { configurationsService, type Configuration } from '../services/configurations.service';
+import { configurationsService } from '../services/configurations.service';
 import type { Category } from '../services/categories.service';
 import {
   Search, ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight, Store as StoreIcon, Tag
@@ -67,6 +67,7 @@ interface Shop {
   location?: string;
   description?: string;
   imageUrl?: string;
+  categoria?: string;
 }
 
 interface CategorySection {
@@ -357,15 +358,9 @@ export function PublicStorePage() {
         const tempShop = { slug };
         localStorage.setItem('activeShop', JSON.stringify(tempShop));
 
-        const [productsData, categoriesData, configs] = await Promise.all<[
-          Product[],
-          Category[],
-          Configuration[]
-        ]>([
-          productsService.getPublicAll(),
-          categoriesService.getAll(),
-          configurationsService.getPublic(),
-        ]);
+        const productsData = await productsService.getPublicAll();
+        const categoriesData = await categoriesService.getAll();
+        const configs = await configurationsService.getPublic();
         setProducts(productsData);
         setCategories(categoriesData);
 
@@ -527,6 +522,11 @@ export function PublicStorePage() {
             )}
             <div className="flex-1">
               <h1 className="text-5xl md:text-6xl font-bold mb-4">{shop.storeName}</h1>
+              {shop.categoria && (
+                <span className="inline-block mb-2 px-3 py-1 bg-cyan-50 text-cyan-700 text-xs font-semibold rounded-full border border-cyan-100">
+                  {shop.categoria}
+                </span>
+              )}
               {shop.location && (
                 <div className="flex items-center text-white/90 mb-4 gap-2">
                   <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

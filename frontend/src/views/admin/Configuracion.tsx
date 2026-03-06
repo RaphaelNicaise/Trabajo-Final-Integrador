@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopsService } from '../../services/shops.service';
-import { configurationsService, Configuration } from '../../services/configurations.service';
+import { configurationsService } from '../../services/configurations.service';
 import { Store, Image as ImageIcon, MapPin, Upload, Check, Settings, X, AlertTriangle, CheckCircle, DollarSign, Truck } from 'lucide-react';
 
 const CONFIG_KEYS = {
@@ -12,11 +12,13 @@ const CONFIG_KEYS = {
 
 export const ConfiguracionPage = () => {
   const { activeShop } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
+  const [savingShop, setSavingShop] = useState(false);
+  const [savingConfigs, setSavingConfigs] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [shopData, setShopData] = useState({ storeName: '', location: '', description: '', imageUrl: '' });
+  const [shopData, setShopData] = useState({ storeName: '', location: '', description: '', imageUrl: '', categoria: '' });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState('');
 
@@ -33,12 +35,17 @@ export const ConfiguracionPage = () => {
   }, [activeShop]);
 
   const loadShopData = async () => {
-// ... existing code ...
     if (!activeShop) return;
     setLoading(true);
     try {
       const data = await shopsService.getShopBySlug(activeShop.slug);
-      setShopData({ storeName: data.storeName || '', location: data.location || '', description: data.description || '', imageUrl: data.imageUrl || '' });
+      setShopData({
+        storeName: data.storeName || '',
+        location: data.location || '',
+        description: data.description || '',
+        imageUrl: data.imageUrl || '',
+        categoria: data.categoria || ''
+      });
     } catch { setError('Error al cargar la configuración'); }
     finally { setLoading(false); }
   };
@@ -67,7 +74,7 @@ export const ConfiguracionPage = () => {
   };
 
   const handleSaveSystemConfigs = async () => {
-    setLoading(true); setError(''); setSuccess('');
+    setSavingConfigs(true); setError(''); setSuccess('');
     try {
       const configsToUpdate = [
         {
@@ -89,7 +96,7 @@ export const ConfiguracionPage = () => {
     } catch {
       setError('Error al guardar las configuraciones del sistema.');
     } finally {
-      setLoading(false);
+      setSavingConfigs(false);
     }
   };
 
@@ -119,13 +126,18 @@ export const ConfiguracionPage = () => {
 
   const handleUpdateShop = async () => {
     if (!activeShop) return;
-    setLoading(true); setError(''); setSuccess('');
+    setSavingShop(true); setError(''); setSuccess('');
     try {
-      await shopsService.updateShop(activeShop.slug, { storeName: shopData.storeName, location: shopData.location, description: shopData.description });
+      await shopsService.updateShop(activeShop.slug, {
+        storeName: shopData.storeName,
+        location: shopData.location,
+        description: shopData.description,
+        categoria: shopData.categoria
+      });
       setSuccess('Configuración actualizada exitosamente');
       setTimeout(() => setSuccess(''), 3000);
     } catch { setError('Error al actualizar la configuración'); }
-    finally { setLoading(false); }
+    finally { setSavingShop(false); }
   };
 
   if (!activeShop) {
@@ -145,15 +157,17 @@ export const ConfiguracionPage = () => {
       <PageHeader title="Configuración" description={`Administración de "${activeShop.name || 'Tienda'}"`} />
 
       {success && (
-        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
-          <CheckCircle className="w-4 h-4 flex-shrink-0" />{success}
-          <button onClick={() => setSuccess('')} className="ml-auto hover:bg-emerald-100 rounded p-1 cursor-pointer"><X className="w-4 h-4" /></button>
+        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm animate-fade-in-down shadow-sm">
+          <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium">{success}</span>
+          <button onClick={() => setSuccess('')} className="ml-auto hover:bg-emerald-100 rounded p-1 cursor-pointer transition-colors"><X className="w-4 h-4" /></button>
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />{error}
-          <button onClick={() => setError('')} className="ml-auto hover:bg-red-100 rounded p-1 cursor-pointer"><X className="w-4 h-4" /></button>
+        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-fade-in-down shadow-sm">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium">{error}</span>
+          <button onClick={() => setError('')} className="ml-auto hover:bg-red-100 rounded p-1 cursor-pointer transition-colors"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -206,7 +220,7 @@ export const ConfiguracionPage = () => {
           <div><h2 className="text-lg font-bold text-slate-900">Información General</h2><p className="text-sm text-slate-500">Detalles básicos de tu comercio</p></div>
         </div>
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Nombre de la Tienda</label>
               <input type="text" value={shopData.storeName} onChange={(e) => setShopData({ ...shopData, storeName: e.target.value })}
@@ -220,6 +234,26 @@ export const ConfiguracionPage = () => {
                   className="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
               </div>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Categoría</label>
+              <select
+                value={shopData.categoria}
+                onChange={e => setShopData({ ...shopData, categoria: e.target.value })}
+                className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              >
+                <option value="">Selecciona una categoría</option>
+                <option value="Alimentos">Alimentos</option>
+                <option value="Ropa">Ropa</option>
+                <option value="Tecnología">Tecnología</option>
+                <option value="Hogar">Hogar</option>
+                <option value="Salud">Salud</option>
+                <option value="Deportes">Deportes</option>
+                <option value="Mascotas">Mascotas</option>
+                <option value="Arte">Arte</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Descripción</label>
@@ -227,9 +261,9 @@ export const ConfiguracionPage = () => {
               className="w-full px-4 py-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none" />
           </div>
           <div className="pt-2 flex justify-end">
-            <button onClick={handleUpdateShop} disabled={loading}
+            <button onClick={handleUpdateShop} disabled={savingShop}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
-              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Cambios</>}
+              {savingShop ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Cambios</>}
             </button>
           </div>
         </div>
@@ -277,9 +311,9 @@ export const ConfiguracionPage = () => {
             </div>
           </div>
           <div className="pt-2 flex justify-end">
-            <button onClick={handleSaveSystemConfigs} disabled={loading}
+            <button onClick={handleSaveSystemConfigs} disabled={savingConfigs}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-sm">
-              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Configuraciones</>}
+              {savingConfigs ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : <><Check className="w-4 h-4" />Guardar Configuraciones</>}
             </button>
           </div>
         </div>

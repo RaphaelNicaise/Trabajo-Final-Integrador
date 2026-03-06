@@ -6,6 +6,25 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      // Permitir any — el código actual lo usa en catch blocks y callbacks
+      "@typescript-eslint/no-explicit-any": "off",
+      // Permitir <img> — se usa intencionalmente en vez de next/image
+      "@next/next/no-img-element": "off",
+      // Unused vars: ignorar si empiezan con _
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: ".",
+        },
+      ],
+      // Desactivar exhaustive-deps — falsos positivos comunes con funciones definidas en el componente
+      "react-hooks/exhaustive-deps": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

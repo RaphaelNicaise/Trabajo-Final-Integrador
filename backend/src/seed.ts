@@ -62,7 +62,7 @@ export async function runSeed() {
   const UserModel = getModelByTenant<IUser>(metaConnection, 'User', UserSchema);
   const TenantModel = getModelByTenant<ITenant>(metaConnection, 'Tenant', TenantSchema);
 
-  const existingUser = await UserModel.findOne({ email: 'raphanicaise@gmail.com' });
+  const existingUser = await UserModel.findOne({ email: 'admin@gmail.com' });
   if (existingUser) {
     return;
   }
@@ -71,8 +71,8 @@ export async function runSeed() {
   const passwordHash = await bcrypt.hash('123456', salt);
 
   const user1 = new UserModel({
-    name: 'Rapha Nicaise',
-    email: 'raphanicaise@gmail.com',
+    name: 'Patricio',
+    email: 'admin@gmail.com',
     passwordHash,
     isConfirmed: true,
     associatedStores: [],
@@ -80,21 +80,20 @@ export async function runSeed() {
   await user1.save();
 
   const user2 = new UserModel({
-    name: 'Rapha Nicaise Alt',
-    email: 'raphanicaise1@gmail.com',
+    name: 'Damian',
+    email: 'admin1@gmail.com',
     passwordHash,
     isConfirmed: true,
     associatedStores: [],
   });
   await user2.save();
 
-  console.log('  ✓ Usuarios creados');
 
   const tenant = new TenantModel({
     slug: 'test',
     dbName: 'db_test',
     storeName: 'Tienda Test',
-    ownerEmail: 'raphanicaise@gmail.com',
+    ownerEmail: 'admin@gmail.com',
     location: 'Buenos Aires, Argentina',
     description: 'Tienda de prueba con productos variados',
     members: [{ userId: user1._id as Types.ObjectId, role: 'owner' }],

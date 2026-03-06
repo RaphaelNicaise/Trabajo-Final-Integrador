@@ -20,6 +20,7 @@ export const shopsService = {
     slug: string;
     location?: string;
     description?: string;
+    categoria?: string;
   }) => {
     const response = await api.post('/shops', shopData);
     return response.data;
@@ -34,6 +35,7 @@ export const shopsService = {
     storeName?: string;
     location?: string;
     description?: string;
+    categoria?: string;
   }) => {
     const response = await api.put(`/shops/${slug}`, shopData);
     return response.data;
@@ -53,6 +55,7 @@ export const shopsService = {
       location: shop.location,
       description: shop.description,
       imageUrl: shop.imageUrl,
+      categoria: shop.categoria || '',
     }));
   },
 

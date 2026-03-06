@@ -8,6 +8,7 @@ export interface ITenant extends Document {
   location?: string;
   description?: string;
   imageUrl?: string;
+  categoria?: string;
 
   members: Array<{
     userId: Types.ObjectId;
@@ -34,6 +35,7 @@ export const TenantSchema = new Schema<ITenant>({
   location: { type: String },
   description: { type: String },
   imageUrl: { type: String },
+  categoria: { type: String, default: '' },
 
   members: [{
     _id: false,
