@@ -30,7 +30,7 @@ export const accountConfirmationTemplate = (data: AccountConfirmationTemplateDat
                 <!-- Body -->
                 <tr>
                   <td style="padding:32px;">
-                    <h2 style="margin:0 0 8px; color:#1e293b; font-size:20px;">✅ ¡Bienvenido a StoreHub!</h2>
+                    <h2 style="margin:0 0 8px; color:#1e293b; font-size:20px;">Bienvenido a StoreHub</h2>
                     <p style="margin:0 0 16px; color:#64748b; font-size:14px; line-height:1.6;">
                       Hola <strong>${data.userName}</strong>,
                     </p>
