@@ -2,12 +2,18 @@ import rateLimit from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import { Request, Response, NextFunction } from 'express';
 import { redisClient } from '@/config/redis';
-import { AuthService } from '@/modules/auth/services/auth.service';
 
 let globalLimiter: any = null;
 let authLimiter: any = null;
 const ADMIN_BYPASS_EMAIL = (process.env.ADMIN_BYPASS_EMAIL || 'admin@gmail.com').toLowerCase();
-const authService = new AuthService();
+let authServicePromise: Promise<{ login: (credentials: { email: string; password?: string }) => Promise<any> }> | null = null;
+
+const getAuthService = async () => {
+  if (!authServicePromise) {
+    authServicePromise = import('@/modules/auth/services/auth.service').then(({ AuthService }) => new AuthService());
+  }
+  return authServicePromise;
+};
 
 /**
  * Inicializa los rate limiters después de que Redis está conectado.
@@ -78,6 +84,7 @@ export const authLimiterWithAdminBypass = async (req: Request, res: Response, ne
 
   if (email === ADMIN_BYPASS_EMAIL && password) {
     try {
+      const authService = await getAuthService();
       await authService.login({ email, password });
       return next();
     } catch {
