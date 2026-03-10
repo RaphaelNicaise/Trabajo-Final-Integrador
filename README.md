@@ -782,7 +782,9 @@ cd e2e
 |---------|-------------|
 | `npm run test` | Ejecuta todas las suites en modo headless. Genera reporte HTML en `/playwright-report` si hay fallos |
 | `npm run test:ui` | Abre la UI interactiva de Playwright para depurar tests visualmente, ver trazas y DOM en tiempo real |
-
+```
+npx playwright test --headed
+```
 Para ver el reporte HTML despues de una ejecucion:
 
 ```bash

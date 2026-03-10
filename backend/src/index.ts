@@ -6,7 +6,7 @@ import { connectToMongoDB } from '@/modules/database/tenantConnection';
 import { StorageService } from '@/modules/storage/services/storage.service';
 import { redisClient } from '@/config/redis'
 import { apiKeyGuard } from '@/middleware/apiKeyGuard';
-import { initializeRateLimiters, getGlobalLimiter, getAuthLimiter } from '@/middleware/rateLimiter';
+import { initializeRateLimiters, getGlobalLimiter, authLimiterWithAdminBypass } from '@/middleware/rateLimiter';
 import { verifyMailConnection } from '@/config/mail';
 
 import productRoutes from '@/modules/products/routes/product.routes';
@@ -46,9 +46,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-app.use('/api/auth', (req, res, next) => {
-  getAuthLimiter()(req, res, next);
-}, authRoutes);
+app.use('/api/auth', authLimiterWithAdminBypass, authRoutes);
 app.use('/api/', apiKeyGuard);
 
 // Rutas con protección selectiva (definen middlewares a nivel de ruta individual)

@@ -1,9 +1,13 @@
 import rateLimit from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
+import { Request, Response, NextFunction } from 'express';
 import { redisClient } from '@/config/redis';
+import { AuthService } from '@/modules/auth/services/auth.service';
 
 let globalLimiter: any = null;
 let authLimiter: any = null;
+const ADMIN_BYPASS_EMAIL = (process.env.ADMIN_BYPASS_EMAIL || 'admin@gmail.com').toLowerCase();
+const authService = new AuthService();
 
 /**
  * Inicializa los rate limiters después de que Redis está conectado.
@@ -60,4 +64,26 @@ export const getAuthLimiter = () => {
     throw new Error('Rate limiters no inicializados. Llama a initializeRateLimiters() primero.');
   }
   return authLimiter;
+};
+
+export const authLimiterWithAdminBypass = async (req: Request, res: Response, next: NextFunction) => {
+  const isLoginRoute = req.method === 'POST' && req.path === '/login';
+
+  if (!isLoginRoute) {
+    return getAuthLimiter()(req, res, next);
+  }
+
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const password = typeof req.body?.password === 'string' ? req.body.password : undefined;
+
+  if (email === ADMIN_BYPASS_EMAIL && password) {
+    try {
+      await authService.login({ email, password });
+      return next();
+    } catch {
+      // Si las credenciales no son válidas, aplica el rate limiter normalmente.
+    }
+  }
+
+  return getAuthLimiter()(req, res, next);
 };
